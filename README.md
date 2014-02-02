@@ -1,4 +1,4 @@
 Algo-Trading
 ============
 
-An algorithmic trading game.
+An algorithmic trading framework/game.
