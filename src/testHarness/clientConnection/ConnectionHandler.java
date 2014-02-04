@@ -29,7 +29,7 @@ public class ConnectionHandler {
 	public void close(){
 		try
 		{
-		socket.close();
+			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

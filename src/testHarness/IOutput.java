@@ -1,5 +1,8 @@
 package testHarness;
 
-public interface IOutput {
+import java.io.Serializable;
 
+public interface IOutput {
+	public Serializable getOutput();
+	public void evaluateData(TickData data);
 }
