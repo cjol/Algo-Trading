@@ -1,6 +1,9 @@
 package database;
 
 public class TestDataServer {
+	public TestDataServer() {
+		// TODO
+	}
 	
 	public Dataset getDataset(int id) {
 		return null;
