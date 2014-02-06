@@ -3,6 +3,7 @@ package valueObjects;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
 
 public class Book {
@@ -38,11 +39,15 @@ public class Book {
 	}
 	
 	public Iterator<OfferBid> getAllBids() {
-		return bids.iterator();
+		//Copy all bids into a list and return its iterator.
+		LinkedList<OfferBid> bidsList = new LinkedList<>(bids);
+		return bidsList.iterator();
 	}
 	
 	public Iterator<OfferBid> getAllOffers() {
-		return offers.iterator();
+		//Copy all offers into a list and return its iterator.
+		LinkedList<OfferBid> offersList = new LinkedList<>(offers);
+		return offersList.iterator();
 	}
 	
 	public Iterator<OfferBid> getMyOffers() {
