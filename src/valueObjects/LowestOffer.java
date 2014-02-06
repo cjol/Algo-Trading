@@ -1,6 +1,7 @@
 package valueObjects;
 
 public class LowestOffer implements IValued {
+	//TODO: lowest offer taken from the current book.
 	private OfferBid underlyingOffer;
 	
 	public LowestOffer(OfferBid underlyingOffer) {
@@ -10,7 +11,7 @@ public class LowestOffer implements IValued {
 	public OfferBid getUnderlyingOffer() {return underlyingOffer;}
 
 	@Override
-	public int getValue() {
+	public int getValue(int ticksBack) throws TickOutOfRangeException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
