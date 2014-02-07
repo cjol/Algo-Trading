@@ -12,6 +12,6 @@ public class Offset implements IValued {
 	@Override
 	public int getValue(int ticksBack) throws TickOutOfRangeException {
 		//Return the value offset ticks ago.
-		return underlying.getValue(ticksBack - offset);
+		return underlying.getValue(ticksBack + offset);
 	}
 }

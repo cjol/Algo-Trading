@@ -13,7 +13,7 @@ public class FirstDerivative implements IValued {
 		int curr = underlying.getValue(ticksBack);
 		int prev = underlying.getValue(ticksBack + 1);
 		
-		return prev - curr;
+		return curr - prev;
 	}
 
 }

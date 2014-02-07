@@ -14,7 +14,7 @@ public class MovingAverage implements IValued {
 		//Sum the previous windowSize values and divide by the windowSize.
 		int sum = 0;
 		for (int i = 0; i < windowSize; i++) {
-			sum += underlying.getValue(ticksBack - i);
+			sum += underlying.getValue(ticksBack + i);
 		}
 		
 		//TODO: we discard the fractional part here, losing precision
