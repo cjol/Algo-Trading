@@ -1,12 +1,14 @@
 package testHarness.clientConnection;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import database.OutputServer;
 import testHarness.IOutput;
 import testHarness.MarketView;
 import testHarness.TestDataHandler;
+import testHarness.clientConnection.TestRequestDescription.LoadClassException;
 
 public class TestInstance implements Runnable{
 
@@ -38,7 +40,7 @@ public class TestInstance implements Runnable{
 		TestResultDescription result = new TestResultDescription();
 		connection.sendResults(result);
 		
-		} catch (IOException | ClassNotFoundException io) {
+		} catch (IOException | ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | LoadClassException io) {
 			io.printStackTrace();
 		} finally {
 			connection.close();
