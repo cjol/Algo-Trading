@@ -3,9 +3,6 @@ package testHarness;
 import java.util.Iterator;
 import java.util.List;
 
-import valueObjects.Book;
-import valueObjects.StockHandle;
-
 public class MarketView {
 
 	private ITradingAlgorithm algo;
@@ -25,7 +22,13 @@ public class MarketView {
 	
 	public Iterator<Trade> tick() {
 		return null;
-		//TODO should progress time and return any matches (user matches only!)
+		//TODO calls OrderBook.updateTime on OrderBooks for all outstanding trades and returns a list of trades which are still outstanding at this time.
+
+	}
+	
+	public OrderBook getOrderBook(StockHandle s) {
+		//TODO calls Stock.getOrderBookAtTime(Date t) with t=current time
+		return null;
 	}
 	
 	public boolean isFinished() {
@@ -49,7 +52,7 @@ public class MarketView {
 	
 	public Iterator<StockHandle> getAllStocks() {
 		return null;
-		//TODO get stocks
+		//TODO get stocks (pass to TestDataHandler)
 	}
 	
 	public Iterator<StockHandle> getStocksWithOutstanding() {

@@ -4,7 +4,6 @@ import java.util.Iterator;
 
 import database.TestDataServer;
 import valueObjects.IValued;
-import valueObjects.StockHandle;
 
 public class TestDataHandler {
 

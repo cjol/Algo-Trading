@@ -1,6 +1,5 @@
 package testHarness;
 
-import valueObjects.StockHandle;
 
 public class Trade {
 	
