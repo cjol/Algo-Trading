@@ -1,6 +1,6 @@
 package orderBookReconstructor;
 
-public abstract class Order {
+public abstract class Order implements Comparable<Order> {
 	private String tickerSymbol;
 	private int price;
 	private int volume;
@@ -27,5 +27,12 @@ public abstract class Order {
 
 	public double getTimestamp() {
 		return timestamp;
+	}
+	
+	@Override
+	public int compareTo(Order that) {
+		//Compares two orders on timestamps: comparison by price is handled
+		//by the PriceLevel object.
+		if (this.timestamp < that.timestamp) return -1; else return 1;
 	}
 }
