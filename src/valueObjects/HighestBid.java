@@ -1,5 +1,7 @@
 package valueObjects;
 
+import testHarness.OfferBid;
+
 public class HighestBid implements IValued {
 	//TODO: highest bid taken from the current order book
 	private OfferBid underlyingBid;

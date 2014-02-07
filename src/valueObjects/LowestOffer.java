@@ -1,5 +1,7 @@
 package valueObjects;
 
+import testHarness.OfferBid;
+
 public class LowestOffer implements IValued {
 	//TODO: lowest offer taken from the current book.
 	private OfferBid underlyingOffer;
