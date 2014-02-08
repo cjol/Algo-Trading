@@ -26,7 +26,7 @@ public class ReflectionTest {
 		
 		ITradingAlgorithm algo = null;
 		try {
-			algo = req.getAlgo();
+			algo = TestRequestDescription.getAlgo(req);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("failed to load classes");

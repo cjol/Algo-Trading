@@ -3,13 +3,15 @@ package testHarness;
 import java.util.Iterator;
 import java.util.List;
 
+import testHarness.output.Output;
+
 public class MarketView {
 
 	private ITradingAlgorithm algo;
-	private List<IOutput> outputs; 
+	private List<Output> outputs; 
 	private TestDataHandler dataHandler;
 	
-	public MarketView(ITradingAlgorithm algo, List<IOutput> outputs, TestDataHandler dataHandler) {
+	public MarketView(ITradingAlgorithm algo, List<Output> outputs, TestDataHandler dataHandler) {
 		this.algo = algo;
 		this.outputs = outputs;
 		this.dataHandler = dataHandler;

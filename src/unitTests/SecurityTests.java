@@ -13,12 +13,12 @@ import java.util.List;
 
 import org.junit.Test;
 
-import testHarness.IOutput;
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
 import testHarness.StockHandle;
 import testHarness.TestDataHandler;
 import testHarness.clientConnection.TestRequestDescription;
+import testHarness.output.Output;
 import clientLoaders.FileLoader;
 
 public class SecurityTests {
@@ -52,7 +52,7 @@ public class SecurityTests {
 		
 		ITradingAlgorithm algo = null;
 		try {
-			algo = req.getAlgo();
+			algo = TestRequestDescription.getAlgo(req);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("failed to load classes");
@@ -74,7 +74,7 @@ public class SecurityTests {
 	private static class FakeMarket extends MarketView
 	{
 
-		public FakeMarket(ITradingAlgorithm algo, List<IOutput> outputs,
+		public FakeMarket(ITradingAlgorithm algo, List<Output> outputs,
 				TestDataHandler dataHandler) {
 			super(algo, outputs, dataHandler);
 			// TODO Auto-generated constructor stub
