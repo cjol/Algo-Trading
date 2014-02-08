@@ -5,10 +5,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import database.OutputServer;
-import testHarness.IOutput;
 import testHarness.MarketView;
 import testHarness.TestDataHandler;
 import testHarness.clientConnection.TestRequestDescription.LoadClassException;
+import testHarness.output.Output;
 
 public class TestInstance implements Runnable{
 
@@ -32,8 +32,8 @@ public class TestInstance implements Runnable{
 		TestRequestDescription desc = connection.getTest();
 		
 		//TODO outputs
-		List<IOutput> outputs = desc.getOutputs(outputServer);
-		marketView = new MarketView(desc.getAlgo(), outputs, dataHandler);
+		List<Output> outputs = TestRequestDescription.getOutputs(desc, outputServer);
+		marketView = new MarketView(TestRequestDescription.getAlgo(desc), outputs, dataHandler);
 		startSim(15000);
 		
 		//TODO build result message

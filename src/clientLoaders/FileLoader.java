@@ -46,7 +46,7 @@ public class FileLoader {
 		
 		jar.close();
 		
-		return new TestRequestDescription(classFiles);
+		return new TestRequestDescription(classFiles, null);
 	}
 	
 	public static TestResultDescription sendTest(TestRequestDescription testDescription, String address, int port) throws UnknownHostException, IOException, ClassNotFoundException, WrongResponseException {

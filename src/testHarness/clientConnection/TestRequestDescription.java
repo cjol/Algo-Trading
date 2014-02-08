@@ -1,28 +1,34 @@
 package testHarness.clientConnection;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Permissions;
 import java.security.ProtectionDomain;
 import java.security.SecureClassLoader;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import database.OutputServer;
-import testHarness.IOutput;
 import testHarness.ITradingAlgorithm;
+import testHarness.output.Output;
 
 public class TestRequestDescription implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	private List<ClassDescription> classFiles = new LinkedList<ClassDescription>();
 	
-	public TestRequestDescription(List<ClassDescription> classFiles) {
+	protected List<ClassDescription> classFiles;
+	protected List<OutputRequest>  outputsRequested;
+	
+	public TestRequestDescription(List<ClassDescription> classFiles, List<OutputRequest> outputsRequested) {
 		this.classFiles = classFiles;
+		this. outputsRequested = outputsRequested;
 	}
 	
 	
-	public ITradingAlgorithm getAlgo() throws LoadClassException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+	public static ITradingAlgorithm getAlgo(TestRequestDescription request) throws LoadClassException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		
 		Permissions permissions = new Permissions();
 		ProtectionDomain protectionDomain = new ProtectionDomain(null, permissions);
@@ -31,7 +37,7 @@ public class TestRequestDescription implements Serializable {
 		Class<?> tradingClass = null;
 		
 		//loads each class and remembers the first class found with the correct inteface
-		for(ClassDescription classFile : classFiles) {
+		for(ClassDescription classFile : request.classFiles) {
 			Class<?> newClass = netLoader.defineNewClass(classFile.name, classFile.definition);
 			
 			if(tradingClass == null) {
@@ -55,13 +61,39 @@ public class TestRequestDescription implements Serializable {
 
 	}
 	
-	public List<IOutput> getOutputs(OutputServer server) {
-		//TODO
-		return null;
+	public static List<Output> getOutputs(TestRequestDescription request, OutputServer server) throws ClassNotFoundException, LoadClassException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		LinkedList<Output> outputs = new LinkedList<Output>();
+		
+		ClassLoader loader = ClassLoader.getSystemClassLoader();
+		
+		Set<Class<?>> disjoint = new HashSet<Class<?>>();
+		
+		//construct outputs from requests
+		if(request.outputsRequested != null) {
+			for(OutputRequest outputRequest : request.outputsRequested) {
+				Class<?> classRequest = loader.loadClass(outputRequest.name);
+				
+				//remove duplicates
+				if(disjoint.contains(classRequest)) continue;
+				
+				disjoint.add(classRequest);
+				
+				Constructor<?> outputConstructor = classRequest.getConstructor(new Class<?>[]{OutputServer.class});
+				
+				//pass in server if user requested data should be committed
+				Object o = outputConstructor.newInstance(outputRequest.commitToDB ? server : null);
+				
+				if(o instanceof Output) {
+					outputs.add((Output) o);
+				} else throw new LoadClassException("an output as request that was not a subclass of Output");
+			}
+		}
+		
+		return outputs;
 	}
 	
 	
-	private class netClassLoader extends SecureClassLoader {
+	private static class netClassLoader extends SecureClassLoader {
 		private final ProtectionDomain domain;
 		public netClassLoader(ClassLoader parent, ProtectionDomain pd) {
 			super(parent);
