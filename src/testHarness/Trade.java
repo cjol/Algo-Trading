@@ -2,19 +2,32 @@ package testHarness;
 
 
 public class Trade {
-	
-	public StockHandle getStockHandle() {
-		return null;
-		//TODO
+	// Trade objects are deliberately immutable
+	private StockHandle s;
+	private int v;
+	private int p;
+	public Trade (StockHandle stock, int volume, int price) {
+		s = stock;
+		v = volume;
+		p = price;
 	}
-	
-	public int getVolume() {
-		return 0;
-		//TODO
-	}
-	
 	public int getPrice() {
-		return 0;
-		//TODO
+		return p;
 	}
+	private void setPrice(int p) {
+		this.p = p;
+	}
+	public int getVolume() {
+		return v;
+	}
+	private void setVolume(int v) {
+		this.v = v;
+	}
+	public StockHandle getStockHandle() {
+		return s;
+	}
+	private void setStockHandle(StockHandle s) {
+		this.s = s;
+	}
+	
 }

@@ -24,11 +24,13 @@ public class OrderBook {
 	 * -LastUpdated
 	 */
 	
-	public void buy(int volume, int price) {
+	public Trade buy(int volume, int price) {
+		return new Trade(stockHandle, volume, price);
 		//TODO: allows the user to buy the stock
 	}
 	
-	public void sell(int volume, int price) {
+	public Trade sell(int volume, int price) {
+		return new Trade(stockHandle, volume, price);
 		//TODO: allows the user to sell the stock
 	}
 	

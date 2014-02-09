@@ -19,7 +19,7 @@ public class TestDataHandler {
 	public Iterator<StockHandle> getStockHandles() {
 		return null;
 		//TODO: Please make stock handles unique so they can be compared by reference comparison.
-		//they shouod contain the ids used internally by the data handler (most likely an int).
+		//they should contain the ids used internally by the data handler (most likely an int).
 	}
 	
 	public Iterator<Trade> tick() {

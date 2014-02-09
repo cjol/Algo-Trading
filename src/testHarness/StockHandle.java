@@ -1,8 +1,11 @@
 package testHarness;
 
-public class StockHandle {
+import java.util.Date;
 
-	public OrderBook getOrderBookAtTime(double t) {
+public class StockHandle {
+	// StockHandle objects should be deliberately kept immutable
+
+	public OrderBook getOrderBookAtTime(Date currentTime) {
 		//TODO: probably uses orderBookReconstructor to get
 		//the data about the market-derived order book at time t,
 		//then formats the data from it as needed and puts it into
