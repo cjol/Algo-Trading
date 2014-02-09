@@ -23,16 +23,16 @@ public class OrderBookReconstructor {
 	//Current ID in the orders' list the reconstructor 
 	private int currentId;
 	
-	//Bids and asks at the current timestamp: a map from the stock ticker to the
-	//map from a price level to all the orders at that price level.
+	//Bids and asks at the current timestamp:
+	//a map from a price level to all the orders at that price level.
 	//TODO: a Frankenstein monster made of generics, maybe encapsulate?
-	private Map<StockHandle, Map<Integer, PriceLevel<BuyOrder>>> stockBids;
-	private Map<StockHandle, Map<Integer, PriceLevel<SellOrder>>> stockOffers;
+	private Map<Integer, PriceLevel<BuyOrder>> stockBids;
+	private Map<Integer, PriceLevel<SellOrder>> stockOffers;
 	
 	private void initialize() {
 		currentId = 0;
-		stockBids = new HashMap<StockHandle, Map<Integer, PriceLevel<BuyOrder>>>();
-		stockOffers = new HashMap<StockHandle, Map<Integer, PriceLevel<SellOrder>>>();
+		stockBids = new HashMap<Integer, PriceLevel<BuyOrder>>();
+		stockOffers = new HashMap<Integer, PriceLevel<SellOrder>>();
 	}
 	
 	public OrderBookReconstructor(Collection<Order> orders) {
@@ -43,12 +43,12 @@ public class OrderBookReconstructor {
 	/*
 	 * Performs matching of buys and sells for one stock.
 	 */
-	private void performMatching(StockHandle stock) {
+	private void performMatching() {
 		//Drop out if there are no bids or no offers for the stock.
-		if (!stockBids.containsKey(stock) || !stockOffers.containsKey(stock)) return;
+		if (stockBids.isEmpty() || stockOffers.isEmpty()) return;
 		
-		LinkedList<PriceLevel<BuyOrder>> bids = new LinkedList<>(stockBids.get(stock).values());
-		LinkedList<PriceLevel<SellOrder>> offers = new LinkedList<>(stockOffers.get(stock).values());
+		LinkedList<PriceLevel<BuyOrder>> bids = new LinkedList<>(stockBids.values());
+		LinkedList<PriceLevel<SellOrder>> offers = new LinkedList<>(stockOffers.values());
 		
 		//Sort bids in the order of decreasing price.
 		Collections.sort(bids, new Comparator<PriceLevel<BuyOrder>>() {
@@ -104,12 +104,12 @@ public class OrderBookReconstructor {
 			//Remove empty price levels both from our sorted view and the order book's map.
 			if (bidLevel.getOrders().isEmpty()) {
 				bids.removeFirst();
-				stockBids.get(stock).remove(bidLevel.getPrice());
+				stockBids.remove(bidLevel.getPrice());
 			}
 			
 			if (offerLevel.getOrders().isEmpty()) {
 				offers.removeFirst();
-				stockOffers.get(stock).remove(offerLevel.getPrice());
+				stockOffers.remove(offerLevel.getPrice());
 			}
 		}
 	}
@@ -131,32 +131,22 @@ public class OrderBookReconstructor {
 			Order currOrder = orders.get(currentId);
 			if (currOrder.getTimestamp() > timestamp) break;
 			
-			StockHandle ticker = currOrder.getStockHandle();
-			
 			if (currOrder instanceof BuyOrder) {
-				//Add this stock to the order book if we don't have it.
-				if (!stockBids.containsKey(ticker)) stockBids.put(ticker, 
-						new HashMap<Integer, PriceLevel<BuyOrder>>());
-				
 				//Add this stock's price level to the order book if we don't have it.
-				if (!stockBids.get(ticker).containsKey(currOrder.getPrice())) 
-					stockBids.get(ticker).put(currOrder.getPrice(), new PriceLevel<BuyOrder>(currOrder.getPrice()));
+				if (!stockBids.containsKey(currOrder.getPrice())) 
+					stockBids.put(currOrder.getPrice(), new PriceLevel<BuyOrder>(currOrder.getPrice()));
 				
-				stockBids.get(ticker).get(currOrder.getPrice()).getOrders().add((BuyOrder) currOrder);
+				stockBids.get(currOrder.getPrice()).getOrders().add((BuyOrder) currOrder);
 			} else if (currOrder instanceof SellOrder) {
-				//Add this stock to the order book if we don't have it.
-				if (!stockOffers.containsKey(ticker)) stockOffers.put(ticker, 
-						new HashMap<Integer, PriceLevel<SellOrder>>());
-				
 				//Add this stock's price level to the order book if we don't have it.
-				if (!stockOffers.get(ticker).containsKey(currOrder.getPrice())) 
-					stockOffers.get(ticker).put(currOrder.getPrice(), new PriceLevel<SellOrder>(currOrder.getPrice()));
+				if (!stockOffers.containsKey(currOrder.getPrice())) 
+					stockOffers.put(currOrder.getPrice(), new PriceLevel<SellOrder>(currOrder.getPrice()));
 				
-				stockOffers.get(ticker).get(currOrder.getPrice()).getOrders().add((SellOrder) currOrder);
+				stockOffers.get(currOrder.getPrice()).getOrders().add((SellOrder) currOrder);
 			}
 			
 			//Perform order matching for this stock.
-			performMatching(ticker);
+			performMatching();
 		}
 		
 		//Convert the current state of the book into the required format for output.
