@@ -27,6 +27,25 @@ public class TestRequestDescription implements Serializable {
 		this. outputsRequested = outputsRequested;
 	}
 	
+	public static TestResultDescription filterOutputs(TestRequestDescription request, List<Output> outputs) {
+		
+		//build output result based on which outputRequests had the respond flag.
+		List<String> requested = new LinkedList<String>();
+		if(request.outputsRequested != null) {
+			for(OutputRequest outputRequest : request.outputsRequested) {
+				if(outputRequest.respond) requested.add(outputRequest.name);
+			}
+		}
+		
+		List<OutputResult> results = new LinkedList<OutputResult>();
+		for(Output output : outputs) {
+			if(requested.contains(output.getClass().getName())) {
+				results.add(new OutputResult(output));
+			}
+		}
+		
+		return new TestResultDescription(results);
+	}
 	
 	public static ITradingAlgorithm getAlgo(TestRequestDescription request) throws LoadClassException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		
@@ -73,7 +92,7 @@ public class TestRequestDescription implements Serializable {
 			for(OutputRequest outputRequest : request.outputsRequested) {
 				Class<?> classRequest = loader.loadClass(outputRequest.name);
 				
-				//remove duplicates
+				//remove duplicates, FIXME: This should potentially be an error
 				if(disjoint.contains(classRequest)) continue;
 				
 				disjoint.add(classRequest);

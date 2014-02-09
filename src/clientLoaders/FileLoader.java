@@ -63,10 +63,6 @@ public class FileLoader {
 		
 		if(o instanceof TestResultDescription) return (TestResultDescription) o;
 		throw new WrongResponseException();
-		
-		
-		
-		//TODO should connect to connection server, send test, recieve result.
 	}
 	
 	private static void showUsage() {

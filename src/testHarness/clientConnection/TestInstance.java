@@ -12,6 +12,8 @@ import testHarness.output.Output;
 
 public class TestInstance implements Runnable{
 
+	private static final long testTimeLimit_mili = 60000;
+	
 	private ConnectionHandler connection;
 	private TestDataHandler dataHandler;
 	private OutputServer outputServer;
@@ -28,20 +30,27 @@ public class TestInstance implements Runnable{
 	@Override
 	public void run() {
 		try
-		{
-		TestRequestDescription desc = connection.getTest();
-		
-		//TODO outputs
-		List<Output> outputs = TestRequestDescription.getOutputs(desc, outputServer);
-		marketView = new MarketView(TestRequestDescription.getAlgo(desc), outputs, dataHandler);
-		startSim(15000);
-		
-		//TODO build result message
-		TestResultDescription result = new TestResultDescription();
-		connection.sendResults(result);
+		{	
+			
+			TestRequestDescription desc = connection.getTest();
+			
+			List<Output> outputs = TestRequestDescription.getOutputs(desc, outputServer);
+			marketView = new MarketView(TestRequestDescription.getAlgo(desc), outputs, dataHandler);
+			startSim(testTimeLimit_mili);
+			
+			TestResultDescription result = (marketView.isFinished()) ?
+											TestRequestDescription.filterOutputs(desc, outputs):
+											new TestResultDescription("Test timed out");
+											
+			connection.sendResults(result);
 		
 		} catch (IOException | ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | LoadClassException io) {
 			io.printStackTrace();
+			try {
+				connection.sendResults(new TestResultDescription(io.getMessage()));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		} finally {
 			connection.close();
 			//TODO notify connection server to remove this test from list
@@ -50,7 +59,7 @@ public class TestInstance implements Runnable{
 	}
 	
 	
-	private void startSim(int timeout)
+	private void startSim(long timeout)
 	{
 		marketViewThread = new TestThread(marketView);
 		
