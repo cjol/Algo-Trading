@@ -1,7 +1,9 @@
 package orderBookReconstructor;
 
+import testHarness.StockHandle;
+
 public class SellOrder extends Order {
-	public SellOrder(String tickerSymbol, int price, int volume, double timestamp) {
-		super(tickerSymbol, price, volume, timestamp);
+	public SellOrder(StockHandle stock, int price, int volume, double timestamp) {
+		super(stock, price, volume, timestamp);
 	}
 }

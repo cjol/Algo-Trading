@@ -2,7 +2,7 @@ package testHarness;
 
 import java.util.Date;
 
-public class StockHandle {
+public abstract class StockHandle {
 	// StockHandle objects should be deliberately kept immutable
 
 	public OrderBook getOrderBookAtTime(Date currentTime) {
@@ -15,7 +15,7 @@ public class StockHandle {
 	}
 	
 	public int getAmountOwned() {
+		// TODO - Is this possible? MarketView is the only one who knows how much you own
 		return 0;
-		//TODO
 	}
 }

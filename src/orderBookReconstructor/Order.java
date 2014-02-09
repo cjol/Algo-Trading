@@ -1,20 +1,22 @@
 package orderBookReconstructor;
 
+import testHarness.StockHandle;
+
 public abstract class Order implements Comparable<Order> {
-	private String tickerSymbol;
+	private StockHandle stock;
 	private int price;
 	private int volume;
 	private double timestamp; //A floating-point UNIX timestamp of when the order was placed.
 	
-	public Order(String tickerSymbol, int price, int volume, double timestamp) {
-		this.tickerSymbol = tickerSymbol;
+	public Order(StockHandle stock, int price, int volume, double timestamp) {
+		this.stock = stock;
 		this.price = price;
 		this.volume = volume;
 		this.timestamp = timestamp;
 	}
 	
-	public String getTickerSymbol() {
-		return tickerSymbol;
+	public StockHandle getStockHandle() {
+		return stock;
 	}
 
 	public int getPrice() {

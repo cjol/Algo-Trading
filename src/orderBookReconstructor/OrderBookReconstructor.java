@@ -9,6 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import testHarness.StockHandle;
+
 /*
  * Given a list of orders on the marketplace, reconstructs the
  * state of the order book at a certain timestamp. Does not
@@ -24,13 +26,13 @@ public class OrderBookReconstructor {
 	//Bids and asks at the current timestamp: a map from the stock ticker to the
 	//map from a price level to all the orders at that price level.
 	//TODO: a Frankenstein monster made of generics, maybe encapsulate?
-	private Map<String, Map<Integer, PriceLevel<BuyOrder>>> stockBids;
-	private Map<String, Map<Integer, PriceLevel<SellOrder>>> stockOffers;
+	private Map<StockHandle, Map<Integer, PriceLevel<BuyOrder>>> stockBids;
+	private Map<StockHandle, Map<Integer, PriceLevel<SellOrder>>> stockOffers;
 	
 	private void initialize() {
 		currentId = 0;
-		stockBids = new HashMap<String, Map<Integer, PriceLevel<BuyOrder>>>();
-		stockOffers = new HashMap<String, Map<Integer, PriceLevel<SellOrder>>>();
+		stockBids = new HashMap<StockHandle, Map<Integer, PriceLevel<BuyOrder>>>();
+		stockOffers = new HashMap<StockHandle, Map<Integer, PriceLevel<SellOrder>>>();
 	}
 	
 	public OrderBookReconstructor(Collection<Order> orders) {
@@ -41,12 +43,12 @@ public class OrderBookReconstructor {
 	/*
 	 * Performs matching of buys and sells for one stock.
 	 */
-	private void performMatching(String ticker) {
+	private void performMatching(StockHandle stock) {
 		//Drop out if there are no bids or no offers for the stock.
-		if (!stockBids.containsKey(ticker) || !stockOffers.containsKey(ticker)) return;
+		if (!stockBids.containsKey(stock) || !stockOffers.containsKey(stock)) return;
 		
-		LinkedList<PriceLevel<BuyOrder>> bids = new LinkedList<>(stockBids.get(ticker).values());
-		LinkedList<PriceLevel<SellOrder>> offers = new LinkedList<>(stockOffers.get(ticker).values());
+		LinkedList<PriceLevel<BuyOrder>> bids = new LinkedList<>(stockBids.get(stock).values());
+		LinkedList<PriceLevel<SellOrder>> offers = new LinkedList<>(stockOffers.get(stock).values());
 		
 		//Sort bids in the order of decreasing price.
 		Collections.sort(bids, new Comparator<PriceLevel<BuyOrder>>() {
@@ -81,7 +83,7 @@ public class OrderBookReconstructor {
 					//Sell order completely filled, buy order partially filled.
 					//TODO: notify the seller that his order has been filled if needed.
 					BuyOrder newBuyOrder = new BuyOrder(
-							buyOrder.getTickerSymbol(), buyOrder.getPrice(), 
+							buyOrder.getStockHandle(), buyOrder.getPrice(), 
 							buyOrder.getVolume() - sellOrder.getVolume(), buyOrder.getTimestamp());
 					//Push the remains of the order onto the queue (to be matched again with the next sell order)
 					bidLevel.getOrders().add(newBuyOrder);
@@ -89,7 +91,7 @@ public class OrderBookReconstructor {
 					//Buy order completely filled, sell order partially filled.
 					//TODO: notify the buyer that his order has been filled if needed.
 					SellOrder newSellOrder = new SellOrder(
-							sellOrder.getTickerSymbol(), sellOrder.getPrice(),
+							sellOrder.getStockHandle(), sellOrder.getPrice(),
 							sellOrder.getVolume() - buyOrder.getVolume(), sellOrder.getTimestamp());
 					//Push the remains of the order onto the queue (to be matched again with the next buy order)
 					offerLevel.getOrders().add(newSellOrder);
@@ -102,12 +104,12 @@ public class OrderBookReconstructor {
 			//Remove empty price levels both from our sorted view and the order book's map.
 			if (bidLevel.getOrders().isEmpty()) {
 				bids.removeFirst();
-				stockBids.get(ticker).remove(bidLevel.getPrice());
+				stockBids.get(stock).remove(bidLevel.getPrice());
 			}
 			
 			if (offerLevel.getOrders().isEmpty()) {
 				offers.removeFirst();
-				stockOffers.get(ticker).remove(offerLevel.getPrice());
+				stockOffers.get(stock).remove(offerLevel.getPrice());
 			}
 		}
 	}
@@ -129,7 +131,7 @@ public class OrderBookReconstructor {
 			Order currOrder = orders.get(currentId);
 			if (currOrder.getTimestamp() > timestamp) break;
 			
-			String ticker = currOrder.getTickerSymbol();
+			StockHandle ticker = currOrder.getStockHandle();
 			
 			if (currOrder instanceof BuyOrder) {
 				//Add this stock to the order book if we don't have it.

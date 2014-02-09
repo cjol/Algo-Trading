@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import orderBookReconstructor.Order;
 import testHarness.output.Output;
 
 public class MarketView {
@@ -24,8 +25,9 @@ public class MarketView {
 
 	private ITradingAlgorithm algo;
 	private Map<StockHandle, Integer> portfolio;
-	private List<Trade> outstandingTrades;
-	private List<Trade> allTrades;
+	private List<Order> outstandingOrders;
+	private Map<StockHandle,OrderBook> openedBooks;
+	private List<Order> allOrders;
 	private Calendar currentTime;
 	private int numTicks;
 	// NOTE: availableFunds is an int because I heard once that floating point types shouldn't be 
@@ -46,28 +48,27 @@ public class MarketView {
 		currentTime = Calendar.getInstance();
 		currentTime.setTime(STARTING_TIME);
 		numTicks = 0;
-		allTrades = new ArrayList<Trade>();
-		outstandingTrades = new ArrayList<Trade>();
+		allOrders = new ArrayList<Order>();
+		outstandingOrders = new ArrayList<Order>();
 		portfolio = new HashMap<StockHandle, Integer>();
 		
 		algo.run(this);
 	}
 	
-	public Iterator<Trade> tick() {
+	public Iterator<Order> tick() {
+		numTicks++;
 		currentTime.add(Calendar.MILLISECOND, TICK_SIZE);
 		
 		// updateTime on order books
 		
-//		for (Trade t : outstandingTrades) {
-//			OrderBook ob = getOrderBook(t.getStockHandle());
-//			ob.updateTime(currentTime.)
-//		}
 		return null;
 		//TODO calls OrderBook.updateTime on OrderBooks for all outstanding trades and returns a list of trades which are still outstanding at this time.
 
 	}
 	
 	public OrderBook getOrderBook(StockHandle s) {
+		if (openedBooks.containsKey(s))
+			return openedBooks.get(s);
 		return s.getOrderBookAtTime(currentTime.getTime());
 	}
 	
@@ -83,9 +84,9 @@ public class MarketView {
 		if (getRemainingFunds() < price * volume)
 			return false; // we don't have enough funds
 		
-		Trade t = getOrderBook(stock).buy(volume, price);
-		allTrades.add(t);
-		outstandingTrades.add(t);
+		Order o = getOrderBook(stock).buy(volume, price);
+		allOrders.add(o);
+		outstandingOrders.add(o);
 		return true;
 	}
 	
@@ -97,9 +98,9 @@ public class MarketView {
 		if (amtOwned < volume)
 			return false; // we don't own enough for this sale
 
-		Trade t = getOrderBook(stock).sell(volume, price);
-		allTrades.add(t);
-		outstandingTrades.add(t);
+		Order o = getOrderBook(stock).sell(volume, price);
+		allOrders.add(o);
+		outstandingOrders.add(o);
 		return true;
 	}
 	
@@ -109,10 +110,10 @@ public class MarketView {
 		return dataHandler.getStockHandles();
 	}
 
-	public Iterator<Trade> getOutstandingTrades() {
-		List<Trade> cloned = new ArrayList<Trade>();
-		for (Trade t : outstandingTrades) {
-			cloned.add(t);
+	public Iterator<Order> getOutstandingOrders() {
+		List<Order> cloned = new ArrayList<Order>();
+		for (Order o : outstandingOrders) {
+			cloned.add(o);
 		}
 		return cloned.iterator();
 	}
@@ -126,8 +127,8 @@ public class MarketView {
 	
 	public Iterator<StockHandle> getStocksWithOutstanding() {
 		Set<StockHandle> out = new HashSet<StockHandle>();
-		for (Trade t : outstandingTrades) {
-			out.add(t.getStockHandle());
+		for (Order o : outstandingOrders) {
+			out.add(o.getStockHandle());
 		}
 		return out.iterator();
 	}

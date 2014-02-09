@@ -6,6 +6,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
+import orderBookReconstructor.BuyOrder;
+import orderBookReconstructor.Order;
+import orderBookReconstructor.SellOrder;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 
@@ -24,17 +27,17 @@ public class OrderBook {
 	 * -LastUpdated
 	 */
 	
-	public Trade buy(int volume, int price) {
-		return new Trade(stockHandle, volume, price);
+	public BuyOrder buy(int volume, int price) {
+		return null;
 		//TODO: allows the user to buy the stock
 	}
 	
-	public Trade sell(int volume, int price) {
-		return new Trade(stockHandle, volume, price);
+	public SellOrder sell(int volume, int price) {
+		return null;
 		//TODO: allows the user to sell the stock
 	}
 	
-	public Iterator<Trade> updateTime(double t) {
+	public Iterator<Order> updateTime(double t) {
 		//TODO: tries to match user's trades (?)
 		/*  get trades from data handler
     		get trades from unaccountedTradeTable (ghost table)

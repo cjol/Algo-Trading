@@ -1,33 +1,38 @@
 package testHarness;
 
+import java.sql.Timestamp;
 
 public class Trade {
-	// Trade objects are deliberately immutable
-	private StockHandle s;
-	private int v;
-	private int p;
-	public Trade (StockHandle stock, int volume, int price) {
-		s = stock;
-		v = volume;
-		p = price;
+	public enum Type { BID, ASK };
+	
+	private final StockHandle stock;
+	private final Timestamp timestamp;
+	private final Type type;
+	private final int price, volume;
+	
+	public Trade(StockHandle stock, Timestamp timestamp, 
+				 Type type, int price, int volume) {
+		this.stock = stock;
+		this.timestamp = timestamp;
+		this.type = type;
+		this.price = price;
+		this.volume = volume;
 	}
+
+	public StockHandle getStock() {
+		return stock;
+	}
+
+	public Type getType() {
+		return type;
+	}
+
 	public int getPrice() {
-		return p;
+		return price;
 	}
-	private void setPrice(int p) {
-		this.p = p;
-	}
+
 	public int getVolume() {
-		return v;
-	}
-	private void setVolume(int v) {
-		this.v = v;
-	}
-	public StockHandle getStockHandle() {
-		return s;
-	}
-	private void setStockHandle(StockHandle s) {
-		this.s = s;
+		return volume;
 	}
 	
 }

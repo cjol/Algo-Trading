@@ -2,7 +2,7 @@ package database;
 
 public class TestDataLoader {
 	
-	public Dataset loadDatasetFromFile(String filePath) {
+	public DatasetHandle loadDatasetFromFile(String filePath) {
 		return null;
 		//TODO
 	}

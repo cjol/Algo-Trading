@@ -5,7 +5,7 @@ CREATE TABLE datasets (
 
 CREATE TABLE securities (
 	dataset_id serial REFERENCES datasets(dataset_id),
-	ticker varchar(10) NOT NULL,
+	ticker varchar(10) REFERENCES trades(ticker),
 	PRIMARY KEY (dataset_id, ticker)
 );
 	
