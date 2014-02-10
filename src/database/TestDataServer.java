@@ -14,7 +14,6 @@ import java.util.Properties;
 import orderBookReconstructor.BuyOrder;
 import orderBookReconstructor.Order;
 import orderBookReconstructor.SellOrder;
-import testHarness.Trade;
 
 
 public class TestDataServer {

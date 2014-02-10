@@ -2,8 +2,9 @@ package testHarness;
 
 import java.util.Iterator;
 
-import database.TestDataServer;
+import orderBookReconstructor.Order;
 import valueObjects.IValued;
+import database.TestDataServer;
 
 public class TestDataHandler {
 
@@ -22,7 +23,7 @@ public class TestDataHandler {
 		//they should contain the ids used internally by the data handler (most likely an int).
 	}
 	
-	public Iterator<Trade> tick() {
+	public Iterator<Order> tick() {
 		return null;
 		//TODO
 	}

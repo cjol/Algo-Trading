@@ -1,16 +1,16 @@
 package valueObjects;
 
-import testHarness.OfferBid;
+import orderBookReconstructor.BuyOrder;
 
 public class HighestBid implements IValued {
 	//TODO: highest bid taken from the current order book
-	private OfferBid underlyingBid;
+	private BuyOrder underlyingBid;
 	
-	public HighestBid(OfferBid underlyingBid) {
+	public HighestBid(BuyOrder underlyingBid) {
 		this.underlyingBid = underlyingBid;
 	}
 	
-	public OfferBid getUnderlyingBid() {return underlyingBid;}
+	public BuyOrder getUnderlyingBid() {return underlyingBid;}
 
 	@Override
 	public int getValue(int ticksBack) throws TickOutOfRangeException {
