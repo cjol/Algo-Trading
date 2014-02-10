@@ -11,6 +11,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import orderBookReconstructor.BuyOrder;
+import orderBookReconstructor.Order;
+import orderBookReconstructor.SellOrder;
 import testHarness.Trade;
 
 
@@ -78,7 +81,7 @@ public class TestDataServer {
 		}
 	}
 	
-	public List<Trade> getTrades(SQLStockHandle stock, 
+	public List<Order> getOrders(SQLStockHandle stock, 
 								 Timestamp start, Timestamp end) 
 								 throws SQLException {
 		if (start == null) {
@@ -88,7 +91,7 @@ public class TestDataServer {
 			end = new Timestamp(Long.MAX_VALUE);
 		}
 		
-		List<Trade> res = null;
+		List<Order> res = null;
 		
 		final String q = "SELECT ts,bid_or_ask,price,volume FROM trades" +
 						 "WHERE dataset_id='?' AND ticker='?'" +
@@ -101,18 +104,23 @@ public class TestDataServer {
 			
 			
 			try (ResultSet r = s.executeQuery()) {
-				res = new ArrayList<Trade>();
+				res = new ArrayList<Order>();
 				
 				while (r.next()) {
 					Timestamp ts = r.getTimestamp(1);
 					String bidOrAskC = r.getString(2);
-					assert (bidOrAskC.equals("A") || bidOrAskC.equals("B"));
-					Trade.Type type = bidOrAskC.equals("A") ? 
-									  Trade.Type.ASK : Trade.Type.BID;
 					int price = r.getInt(3);
 					int volume = r.getInt(4);
 					
-					res.add(new Trade(stock, ts, type, price, volume));
+					Order newOrder = null;
+					switch (bidOrAskC) {
+					case "A": newOrder = new BuyOrder(stock, ts, price, volume);
+							  break;
+					case "B": newOrder = new SellOrder(stock, ts, price, volume);
+							  break;
+					default:  throw new AssertionError("Invalid type " + bidOrAskC + " in database.");
+					}
+					res.add(newOrder);
 				}
 			}
 		} 

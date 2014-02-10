@@ -1,5 +1,6 @@
 package orderBookReconstructor;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -8,8 +9,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import testHarness.StockHandle;
 
 /*
  * Given a list of orders on the marketplace, reconstructs the
@@ -83,16 +82,16 @@ public class OrderBookReconstructor {
 					//Sell order completely filled, buy order partially filled.
 					//TODO: notify the seller that his order has been filled if needed.
 					BuyOrder newBuyOrder = new BuyOrder(
-							buyOrder.getStockHandle(), buyOrder.getPrice(), 
-							buyOrder.getVolume() - sellOrder.getVolume(), buyOrder.getTimestamp());
+							buyOrder.getStockHandle(), buyOrder.getTimePlaced(), 
+							buyOrder.getPrice(), buyOrder.getVolume() - sellOrder.getVolume());
 					//Push the remains of the order onto the queue (to be matched again with the next sell order)
 					bidLevel.getOrders().add(newBuyOrder);
 				} else if (buyOrder.getVolume() < sellOrder.getVolume()) {
 					//Buy order completely filled, sell order partially filled.
 					//TODO: notify the buyer that his order has been filled if needed.
 					SellOrder newSellOrder = new SellOrder(
-							sellOrder.getStockHandle(), sellOrder.getPrice(),
-							sellOrder.getVolume() - buyOrder.getVolume(), sellOrder.getTimestamp());
+							sellOrder.getStockHandle(), sellOrder.getTimePlaced(),
+							sellOrder.getPrice(), sellOrder.getVolume() - buyOrder.getVolume());
 					//Push the remains of the order onto the queue (to be matched again with the next buy order)
 					offerLevel.getOrders().add(newSellOrder);
 				} else {
@@ -114,11 +113,11 @@ public class OrderBookReconstructor {
 		}
 	}
 	
-	public OrderBookReconstructorResult getOrderBookAt(double timestamp) {
+	public OrderBookReconstructorResult getOrderBookAt(Timestamp timestamp) {
 		//Fast forwards the state of the order book up to the timestamp
 		//and returns the resultant order book.
 		
-		if (orders.get(currentId).getTimestamp() > timestamp) {
+		if (orders.get(currentId).getTimePlaced().compareTo(timestamp) > 0) {
 			//We are in front of what the user wants. Revert to the start.
 			//TODO: could improve performance by keeping track of all previous
 			//requests (timestamp, state of the order book) and reverting to the
@@ -129,7 +128,7 @@ public class OrderBookReconstructor {
 		//Continue until the required timestamp is reached.
 		for (; currentId < orders.size(); currentId++) {
 			Order currOrder = orders.get(currentId);
-			if (currOrder.getTimestamp() > timestamp) break;
+			if (currOrder.getTimePlaced().compareTo(timestamp) > 0) break;
 			
 			if (currOrder instanceof BuyOrder) {
 				//Add this stock's price level to the order book if we don't have it.

@@ -30,3 +30,6 @@ local.properties
 .texlipse
 
 .classpath
+
+# External dependencies
+lib/
