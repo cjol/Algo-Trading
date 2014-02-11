@@ -18,6 +18,8 @@ public class UserOrderBook extends OrderBook {
 	PriorityQueue<BuyOrder> OutstandingBids;
 	PriorityQueue<SellOrder> OutstandingOffers;
 	
+	
+	
 	public UserOrderBook(StockHandle handle, OrderBook parent) {
 		super(handle);
 		this.parent = parent;
@@ -28,15 +30,17 @@ public class UserOrderBook extends OrderBook {
 	}
 
 	@Override
-	public BuyOrder buy(int volume, int price) {
-		BuyOrder bo = new BuyOrder(handle, , price, volume)
-		return null;
+	public BuyOrder buy(int volume, int price, Timestamp time) {
+		BuyOrder bo = new BuyOrder(handle,time, price, volume);
+		OutstandingBids.add(bo);
+		return bo;
 	}
 
 	@Override
-	public SellOrder sell(int volume, int price) {
-		// TODO Auto-generated method stub
-		return null;
+	public SellOrder sell(int volume, int price, Timestamp time) {
+		SellOrder so = new SellOrder(handle,time, price, volume);
+		OutstandingOffers.add(so);
+		return so;
 	}
 
 	@Override
@@ -53,8 +57,8 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<Match> updateTime(Timestamp t) {
-		// TODO Auto-generated method stub
-		return null;
+		//TODO 
+		Iterator<Match> matches = parent.updateTime(t);
 	}
 
 	@Override
