@@ -40,7 +40,7 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 		if (match > this.volume) {
 			throw new AssertionError("match greater than volume");
 		}
-		this.volume -= volume;
+		this.volume -= match;
 	}
 
 	public Timestamp getTimePlaced() {
