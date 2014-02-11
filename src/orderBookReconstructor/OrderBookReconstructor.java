@@ -46,29 +46,28 @@ public class OrderBookReconstructor extends OrderBook{
 	/*
 	 * Tries to match one order against the market and add them to the matched orders' list 
 	 */
-	private void matchOneOrder(Order order, Collection<Match> matches) {
-		//Drop out if there are no bids or no offers for the stock.
-		if (stockBids.isEmpty() || stockOffers.isEmpty()) return;
-		
-		//If the order matches, it matches with the highest-priority order
-		//in the orders' set assuming that order's price is sufficient.
-		BuyOrder buyOrder;
-		SellOrder sellOrder;
-		
+	private void matchOneOrder(Order order, Collection<Match> matches) {		
+	
 		if (order instanceof BuyOrder) {
-			buyOrder = (BuyOrder)order;
-			stockBids.add(buyOrder);
-			sellOrder = stockOffers.first();
+			stockBids.add((BuyOrder) order);
 		} else if (order instanceof SellOrder) {
-			buyOrder = stockBids.first();
-			sellOrder = (SellOrder)order;
-			stockOffers.add(sellOrder);
+			stockOffers.add((SellOrder) order);
 		} else {
 			throw new AssertionError("Order not an instance of Buy or SellOrder!");
 		}
 		
-		if (buyOrder.getPrice() > sellOrder.getPrice()) {
-			//We've got a match.
+		//Will loop until either the offer we got is completely filled (might take
+		//several fills against different orders) or we have nothing to fill it against.
+		while (!stockBids.isEmpty() && !stockOffers.isEmpty()) {
+			
+			//Get the highest-priority bid and ask
+			BuyOrder buyOrder = stockBids.last();
+			SellOrder sellOrder = stockOffers.last();
+			
+			//Break if we can't match the orders anymore.
+			if (buyOrder.getPrice() < sellOrder.getPrice()) break;
+			
+			//We've got a match!
 			matches.add(new Match(buyOrder, order.getVolume()));
 			matches.add(new Match(sellOrder, order.getVolume()));
 			
