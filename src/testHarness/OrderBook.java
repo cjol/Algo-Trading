@@ -1,53 +1,23 @@
 package testHarness;
 
-import java.util.Collection;
-import java.util.Comparator;
+import java.sql.Timestamp;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
 
 import orderBookReconstructor.BuyOrder;
+import orderBookReconstructor.Match;
 import orderBookReconstructor.Order;
 import orderBookReconstructor.SellOrder;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 
 /*
- * User's view of the order book for a particular stock from which they
- * can view bids and offers as well as place their own orders.
+ * Abstract class representing an order book.
+ * 
  */
-public class OrderBook {
-	private StockHandle stockHandle;
-	private PriorityQueue<BuyOrder> bids;
-	private PriorityQueue<SellOrder> offers;
+public abstract class OrderBook {
+
 	
-	/*
-	 * -UnaccountedTradeTable
-	 * -RawTradeTable
-	 * -LastUpdated
-	 */
-	
-	public BuyOrder buy(int volume, int price) {
-		return null;
-		//TODO: allows the user to buy the stock
-	}
-	
-	public SellOrder sell(int volume, int price) {
-		return null;
-		//TODO: allows the user to sell the stock
-	}
-	
-	public Iterator<Order> updateTime(double t) {
-		//TODO: tries to match user's trades (?)
-		/*  get trades from data handler
-    		get trades from unaccountedTradeTable (ghost table)
-    		perform ghosting
-    		check if user flagged (?) trades have happened
-    	*/
-		
-		return null;
-	}
-	
+	/* Delete this unless you need to refer to it
 	public OrderBook(StockHandle stockHandle, Collection<BuyOrder> bids, Collection<SellOrder> offers) {
 		this.stockHandle = stockHandle;
 		
@@ -69,41 +39,29 @@ public class OrderBook {
 			}
 		});
 		this.offers.addAll(offers);
+	} */
+		
+	public final StockHandle handle;
+		
+	public OrderBook(StockHandle handle) {
+		this.handle = handle;
 	}
 	
-	public StockHandle getStockHandle() {
-		return stockHandle;
-	}
+	public abstract BuyOrder buy(int volume, int price);
 	
-	public Iterator<BuyOrder> getAllBids() {
-		//Copy all bids into a list and return its iterator.
-		LinkedList<BuyOrder> bidsList = new LinkedList<>(bids);
-		return bidsList.iterator();
-	}
+	public abstract SellOrder sell(int volume, int price);
 	
-	public Iterator<SellOrder> getAllOffers() {
-		//Copy all offers into a list and return its iterator.
-		LinkedList<SellOrder> offersList = new LinkedList<>(offers);
-		return offersList.iterator();
-	}
+	public abstract Iterator<BuyOrder> getAllBids();
 	
-	public Iterator<SellOrder> getMyOffers() {
-		return null;
-		//TODO
-	}
+	public abstract Iterator<SellOrder> getAllOffers();
 	
-	public Iterator<BuyOrder> getMyBids() {
-		return null;
-		//TODO
-	}
+	public abstract Iterator<Match> updateTime(Timestamp t);
 	
-	public HighestBid getHighestBid() {
-		//TODO return the value object representing the highest bid for this stock
-		return null;
-	}
+	public abstract Iterator<SellOrder> getMyOffers();
 	
-	public LowestOffer getLowestOffer() {
-		//TODO return the value object representing the lowest offer for this stock
-		return null;
-	}
+	public abstract Iterator<BuyOrder> getMyBids();
+	
+	public abstract HighestBid getHighestBid();
+	
+	public abstract LowestOffer getLowestOffer();
 }
