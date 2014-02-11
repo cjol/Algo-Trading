@@ -15,11 +15,10 @@ import testHarness.StockHandle;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 
-/*
+/**
  * Given a list of orders on the marketplace, reconstructs the
- * state of the order book at a certain timestamp. Does not
- * concern itself about making the player special/ghosting his
- * orders so far.
+ * state of the order book at a certain timestamp, as well as 
+ * returns a list of matches that have occurred.
  */
 public class OrderBookReconstructor extends OrderBook{
 	private List<Order> marketOrders;
@@ -37,14 +36,23 @@ public class OrderBookReconstructor extends OrderBook{
 		stockOffers = new TreeSet<>();
 	}
 	
+	/**
+	 * Creates an order book reconstructor instance.
+	 * @param handle The stock the order book is for.
+	 * @param marketOrders A time-ordered collection of market orders.
+	 */
 	public OrderBookReconstructor(StockHandle handle, Collection<Order> marketOrders) {
 		super(handle);
 		this.marketOrders = new ArrayList<>(marketOrders);
 		initialize();
 	}
-	
-	/*
-	 * Tries to match one order against the market and add them to the matched orders' list 
+
+	/**
+	 * Tries to match one order against the market and add them to the matched orders' list
+	 * @param order Order to be added to the order book and matched against.
+	 * @param matches A collection to which the found matches will be output. For every match,
+	 * outputs 2 Match instances: buyer and seller's order. In case of a partial match, the same Order
+	 * can be in several Match instances.
 	 */
 	private void matchOneOrder(Order order, Collection<Match> matches) {		
 	
