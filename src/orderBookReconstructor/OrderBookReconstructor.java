@@ -11,13 +11,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import testHarness.OrderBook;
+
 /*
  * Given a list of orders on the marketplace, reconstructs the
  * state of the order book at a certain timestamp. Does not
  * concern itself about making the player special/ghosting his
  * orders so far.
  */
-public class OrderBookReconstructor {
+public class OrderBookReconstructor extends OrderBook{
 	private List<Order> orders;
 	
 	//Current ID in the orders' list the reconstructor 
