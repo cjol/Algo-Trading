@@ -5,7 +5,6 @@ import java.util.Iterator;
 
 import orderBookReconstructor.BuyOrder;
 import orderBookReconstructor.Match;
-import orderBookReconstructor.Order;
 import orderBookReconstructor.SellOrder;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;

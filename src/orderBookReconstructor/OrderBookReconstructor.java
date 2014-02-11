@@ -50,9 +50,9 @@ public class OrderBookReconstructor extends OrderBook{
 	/**
 	 * Tries to match one order against the market and add them to the matched orders' list
 	 * @param order Order to be added to the order book and matched against.
-	 * @param matches A collection to which the found matches will be output. For every match,
-	 * outputs 2 Match instances: buyer and seller's order. In case of a partial match, the same Order
-	 * can be in several Match instances.
+	 * @param matches A collection to which the found matches will be output. For every buyer-seller
+	 * match, outputs a Match instance. An Order can be in several Match instances in case the first Match
+	 * didn't completely fill it.
 	 */
 	private void matchOneOrder(Order order, Collection<Match> matches) {		
 	
@@ -76,8 +76,10 @@ public class OrderBookReconstructor extends OrderBook{
 			if (buyOrder.getPrice() < sellOrder.getPrice()) break;
 			
 			//We've got a match!
-			matches.add(new Match(buyOrder, order.getVolume()));
-			matches.add(new Match(sellOrder, order.getVolume()));
+			//Make a trade on the average price: if the bid is greater than the ask, the
+			//buyer and the seller will split the difference.
+			matches.add(new Match(buyOrder, sellOrder, 
+					order.getVolume(), (int)(buyOrder.getPrice() + sellOrder.getPrice())/2));
 			
 			if (buyOrder.getVolume() > sellOrder.getVolume()) {
 				//Sell order completely filled, buy order partially filled.
