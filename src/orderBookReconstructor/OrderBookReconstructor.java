@@ -69,8 +69,8 @@ public class OrderBookReconstructor extends OrderBook{
 		
 		if (buyOrder.getPrice() > sellOrder.getPrice()) {
 			//We've got a match.
-			matches.add(new Match(buyOrder));
-			matches.add(new Match(sellOrder));
+			matches.add(new Match(buyOrder, order.getVolume()));
+			matches.add(new Match(sellOrder, order.getVolume()));
 			
 			if (buyOrder.getVolume() > sellOrder.getVolume()) {
 				//Sell order completely filled, buy order partially filled.
