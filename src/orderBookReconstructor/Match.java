@@ -1,13 +1,18 @@
 package orderBookReconstructor;
 
 public class Match {
-	private final Order order;
+	public final BuyOrder buyOrder;
+	public final SellOrder sellOrder;
 	public final int quantity;
-	public Match(Order order, int quantity) {
-		this.order = order;
+	public final int price;
+	public Match(BuyOrder buyOrder, SellOrder sellOrder, int quantity, int price) {
+		this.buyOrder = buyOrder;
+		this.sellOrder = sellOrder;
 		this.quantity = quantity;
+		this.price = price;
 	}
 	
+	/*
 	public Order getOrder() {
 		//FIXME do we really need a clone?
 		
@@ -18,4 +23,5 @@ public class Match {
 			return null;
 		}
 	}
+	*/
 }

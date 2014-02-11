@@ -2,6 +2,8 @@ package orderBookReconstructor;
 
 import java.sql.Timestamp;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,8 +24,8 @@ public class UserOrderBook extends OrderBook {
 	private final TreeSet<BuyOrder> outstandingBids;
 	private TreeSet<SellOrder> outstandingOffers;
 	
-	private TreeSet<BuyOrder> ghostBids;
-	private TreeSet<SellOrder> ghostOffers;
+	private HashMap<BuyOrder, Integer> ghostBids;
+	private HashMap<SellOrder, Integer> ghostOffers;
 	
 	public UserOrderBook(StockHandle handle, OrderBook parent) {
 		super(handle);
@@ -32,8 +34,8 @@ public class UserOrderBook extends OrderBook {
 		outstandingBids = new TreeSet<BuyOrder>();
 		outstandingOffers = new TreeSet<SellOrder>();
 		
-		ghostBids = new TreeSet<BuyOrder>();
-		ghostOffers = new TreeSet<SellOrder>();
+		ghostBids = new HashMap<>();
+		ghostOffers = new HashMap<>();
 	}
 
 	@Override
@@ -70,13 +72,37 @@ public class UserOrderBook extends OrderBook {
 	public Iterator<Match> updateTime(Timestamp t) {
 		List<Match> userMatches = new LinkedList<>();
 		
+		//TODO user matches now
+		
 		Iterator<Match> matches = parent.updateTime(t);
 		
-		//get in on all the matches that the market had
+		//TODO get in on all the matches that the market had
 		while(matches.hasNext()){
 			Match match = matches.next();
-			if(match.getOrder().)
+			
+			if(match.order instanceof BuyOrder) {
+				removeGhost(ghostBids, (BuyOrder)match.order, match.quantity);
+			} else if(match.order instanceof SellOrder) {
+				removeGhost(ghostOffers, (SellOrder)match.order, match.quantity);
+			}
 		}
+	}
+	
+	private <T> void removeGhost(HashMap<T, Integer> ghost,T offer, int q) {
+		if(ghost.containsKey(offer)) {
+			int left = ghost.get(offer) - q;
+			if(left <= 0)ghost.remove(offer);
+			else ghost.put(offer, (Integer)left);
+		}
+	}
+	
+	private <T> void addGhost(HashMap<T, Integer> ghost,T offer, int q) {
+		int val = ((ghost.containsKey(offer)) ? ghost.get(offer) : 0) + q;
+		ghost.put(offer, val);
+	}
+	
+	private Match tryMatch(SellOrder sell, BuyOrder buy) {
+		
 	}
 
 	@Override
@@ -102,20 +128,13 @@ public class UserOrderBook extends OrderBook {
 	private static class GhostingIterator<T extends Order> implements Iterator<T> 
 	{
 		private final Iterator<T> parent;
-		private final Iterator<T> ghost;
+		private final HashMap<T, Integer> ghost;
 		
 		private T next;
-		private T nextGhost;
 		
-		public GhostingIterator(Iterator<T> parent, TreeSet<T> ghostSet) {
+		public GhostingIterator(Iterator<T> parent, HashMap<T, Integer> ghostSet) {
 			this.parent = parent;
-			ghost = ghostSet.iterator();
-			try {
-				nextGhost = (T) ((ghost.hasNext()) ? ghost.next().clone() : null);
-			} catch (CloneNotSupportedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			this.ghost = ghostSet;
 			next = calculateNext();
 		}
 		
@@ -132,46 +151,25 @@ public class UserOrderBook extends OrderBook {
 		}
 		
 		T calculateNext() {
-			if(!parent.hasNext()) {
-				return null;
-			}
-			
-			if(nextGhost == null) {
-				return parent.next();
-			}
-			
-			//removes ghosts
-			try {
-				T nextFromParent = (T) parent.next().clone();
-				while(nextFromParent.getPrice() == nextGhost.getPrice()) {
-					int parentVol = nextFromParent.getVolume();
-					int ghostVol = nextGhost.getVolume();
-					if(parentVol > ghostVol) {
-						nextFromParent.decrementVolume(ghostVol);
-						if(!ghost.hasNext()) {
-							nextGhost = null;
-							return nextFromParent;
-						}
-						nextGhost = (T) ghost.next().clone();
-					} else {
-						if(!parent.hasNext()) return null;
-						nextFromParent = (T) parent.next().clone();
-						if(parentVol == ghostVol) {
-							if(!ghost.hasNext()) {
-								nextGhost = null;
-								return nextFromParent;
-							}
-							nextGhost = (T) ghost.next().clone();
-						} else nextGhost.decrementVolume(parentVol);
-					}
+			while(true) {
+				if(!parent.hasNext()) {
+					return null;
 				}
+				T pnext = parent.next();
+				if(!ghost.containsKey(pnext)) return pnext;
 				
-				return nextFromParent;
-			} catch (CloneNotSupportedException e) {
-				e.printStackTrace();
+				try {
+					T clone = (T)pnext.clone();
+					int ghostAmount = ghost.get(pnext);
+					if(ghostAmount < pnext.getVolume()) {
+						clone.decrementVolume(ghostAmount);
+						return clone;
+					}
+					
+				} catch (CloneNotSupportedException e) {
+					e.printStackTrace();
+				}
 			}
-			
-			return null;
 		}
 
 		@Override
