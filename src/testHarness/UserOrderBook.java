@@ -21,7 +21,8 @@ public class UserOrderBook extends OrderBook {
 	public UserOrderBook(StockHandle handle, OrderBook parent) {
 		super(handle);
 		this.parent = parent;
-
+		
+		OutstandingBids = new PriorityQueue<>(0,new Order.BuyOrderComparitor());
 	}
 
 	@Override

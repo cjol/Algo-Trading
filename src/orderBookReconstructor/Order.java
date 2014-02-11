@@ -69,10 +69,10 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 		}
 	}
 	
-	public static class SellOrderComparitor implements Comparator<BuyOrder> {
+	public static class SellOrderComparitor implements Comparator<SellOrder> {
 
 		@Override
-		public int compare(BuyOrder o1, BuyOrder o2) {
+		public int compare(SellOrder o1, SellOrder o2) {
 			int com = Integer.compare(o2.getPrice(), o1.getPrice());
 			return (com == 0) ? o2.getTimePlaced().compareTo(o1.getTimePlaced()) : com;
 		}
