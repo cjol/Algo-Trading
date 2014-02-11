@@ -1,9 +1,10 @@
 package orderBookReconstructor;
 
 import testHarness.StockHandle;
+
 import java.sql.Timestamp;
 
-public abstract class Order implements Comparable<Order> {
+public abstract class Order implements Comparable<Order>, Cloneable {
 	private final StockHandle stock;
 	private final int price;
 	private int volume;
@@ -51,5 +52,10 @@ public abstract class Order implements Comparable<Order> {
 		//Compares two orders on timestamps: comparison by price is handled
 		//by the PriceLevel object.
 		return timePlaced.compareTo(that.timePlaced);
+	}
+	
+	public Order clone() throws CloneNotSupportedException {
+		//Cloning the timestamp not required here: getTimestamp() returns a clone anyway
+		return (Order) super.clone();
 	}
 }
