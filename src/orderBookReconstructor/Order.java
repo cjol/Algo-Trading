@@ -48,33 +48,36 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 		return (Timestamp)timePlaced.clone();
 	}
 	
+	//No ordering makes sense here, much better to define the ordering lower down
 	@Override
-	public int compareTo(Order that) {
-		//Compares two orders on timestamps: comparison by price is handled
-		//by the PriceLevel object.
-		return timePlaced.compareTo(that.timePlaced);
-	}
+	public abstract int compareTo(Order that);
 	
 	public Order clone() throws CloneNotSupportedException {
 		//Cloning the timestamp not required here: getTimestamp() returns a clone anyway
 		return (Order) super.clone();
 	}
 	
-	public static class BuyOrderComparitor implements Comparator<BuyOrder> {
+	static class BuyOrderComparitor<T extends Order> implements Comparator<T> {
 
 		@Override
-		public int compare(BuyOrder o1, BuyOrder o2) {
-			int com = Integer.compare(o1.getPrice(), o2.getPrice());
-			return (com == 0) ? o2.getTimePlaced().compareTo(o1.getTimePlaced()) : com;
+		public int compare(Order o1, Order that) {
+			int com = Integer.compare(o1.getPrice(), that.getPrice());
+			return (com == 0) ? that.getTimePlaced().compareTo(o1.getTimePlaced()) : com;
 		}
 	}
 	
-	public static class SellOrderComparitor implements Comparator<SellOrder> {
+	static class SellOrderComparitor<T extends Order> implements Comparator<T> {
 
 		@Override
-		public int compare(SellOrder o1, SellOrder o2) {
+		public int compare(Order o1, Order o2) {
 			int com = Integer.compare(o2.getPrice(), o1.getPrice());
 			return (com == 0) ? o2.getTimePlaced().compareTo(o1.getTimePlaced()) : com;
 		}
 	}
+	
+	public static final Comparator<Order> buyOrderComparitor = new BuyOrderComparitor<Order>();
+	public static final Comparator<Order> sellOrderComparitor = new SellOrderComparitor<Order>();
+	
+	public static final Comparator<BuyOrder> buyOrderOnlyComparitor = new BuyOrderComparitor<BuyOrder>();
+	public static final Comparator<SellOrder> sellOrderOnlyComparitor = new SellOrderComparitor<SellOrder>();
 }

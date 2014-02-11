@@ -1,8 +1,8 @@
 package testHarness;
 
 import java.sql.Timestamp;
+import java.util.Comparator;
 import java.util.Iterator;
-import java.util.PriorityQueue;
 import java.util.TreeSet;
 
 import orderBookReconstructor.BuyOrder;
@@ -16,18 +16,21 @@ public class UserOrderBook extends OrderBook {
 
 	OrderBook parent;
 	
-	TreeSet<BuyOrder> outstandingBids;
-	TreeSet<SellOrder> outstandingOffers;
+	private final TreeSet<BuyOrder> outstandingBids;
+	private TreeSet<SellOrder> outstandingOffers;
 	
-	TreeSet<BuyOrder> ghostBids;
-	TreeSet<SellOrder> ghostOffers;
+	private TreeSet<BuyOrder> ghostBids;
+	private TreeSet<SellOrder> ghostOffers;
 	
 	public UserOrderBook(StockHandle handle, OrderBook parent) {
 		super(handle);
 		this.parent = parent;
 		
-		outstandingBids = new TreeSet<BuyOrder>(new Order.BuyOrderComparitor());
-		outstandingOffers = new TreeSet<SellOrder>(new Order.SellOrderComparitor());
+		outstandingBids = new TreeSet<BuyOrder>();
+		outstandingOffers = new TreeSet<SellOrder>();
+		
+		ghostBids = new TreeSet<BuyOrder>();
+		ghostOffers = new TreeSet<SellOrder>();
 	}
 
 	@Override
@@ -40,20 +43,24 @@ public class UserOrderBook extends OrderBook {
 	@Override
 	public SellOrder sell(int volume, int price, Timestamp time) {
 		SellOrder so = new SellOrder(handle,time, price, volume);
-		OutstandingOffers.add(so);
+		outstandingOffers.add(so);
 		return so;
 	}
 
 	@Override
 	public Iterator<BuyOrder> getAllBids() {
-		// TODO Auto-generated method stub
-		return null;
+		Comparator<BuyOrder> comp = Order.buyOrderOnlyComparitor;
+		PeekableIterator<BuyOrder> a = new PeekableIterator<>(new GhostingIterator<>(parent.getAllBids(),ghostBids));
+		PeekableIterator<BuyOrder> b = new PeekableIterator<>(outstandingBids.iterator());
+		return new InterleavingIterator<>(a, b, comp);
 	}
 
 	@Override
 	public Iterator<SellOrder> getAllOffers() {
-		// TODO Auto-generated method stub
-		return null;
+		Comparator<SellOrder> comp = Order.sellOrderOnlyComparitor;
+		PeekableIterator<SellOrder> a = new PeekableIterator<>(new GhostingIterator<>(parent.getAllOffers(),ghostOffers));
+		PeekableIterator<SellOrder> b = new PeekableIterator<>(outstandingOffers.iterator());
+		return new InterleavingIterator<>(a, b, comp);
 	}
 
 	@Override
@@ -64,27 +71,69 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<SellOrder> getMyOffers() {
-		// TODO Auto-generated method stub
-		return null;
+		return new ProtectedIterator<>(outstandingOffers.iterator());
 	}
 
 	@Override
 	public Iterator<BuyOrder> getMyBids() {
-		// TODO Auto-generated method stub
-		return null;
+		return new ProtectedIterator<>(outstandingBids.iterator());
 	}
 
 	@Override
 	public HighestBid getHighestBid() {
-		// TODO Auto-generated method stub
-		return null;
+		return new HighestBid(outstandingBids.first());
 	}
 
 	@Override
 	public LowestOffer getLowestOffer() {
-		// TODO Auto-generated method stub
-		return null;
+		return new LowestOffer(outstandingOffers.first());
 	}
 	
-	
+	private static class GhostingIterator<T extends Order> implements Iterator<T> 
+	{
+		private final Iterator<T> parent;
+		private final Iterator<T> ghost;
+		
+		private T next;
+		private T nextGhost;
+		
+		public GhostingIterator(Iterator<T> parent, TreeSet<T> ghostSet) {
+			this.parent = parent;
+			ghost = ghostSet.iterator();
+			nextGhost = (ghost.hasNext()) ? ghost.next() : null;
+			calculateNext();
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return next == null;
+		}
+
+		@Override
+		public T next() {
+			T hold = next;
+			calculateNext();
+			return hold;
+		}
+		
+		private void calculateNext() {
+			if(!parent.hasNext()) {
+				next = null;
+				return;
+			}
+			
+			if(nextGhost == null) {
+				next = parent.next();
+				return;
+			}
+			
+			//Filters out ghosts
+			
+		}
+
+		@Override
+		public void remove() {
+			throw new RuntimeException("Operation not supported");
+		}
+	}
 }
