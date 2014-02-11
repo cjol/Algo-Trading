@@ -1,5 +1,7 @@
 package testHarness;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -15,24 +17,22 @@ import orderBookReconstructor.Order;
 import testHarness.output.Output;
 
 public class MarketView {
-	private final int STARTING_FUNDS = 10000;
+	private final BigDecimal STARTING_FUNDS = new BigDecimal(10000);
 	// TODO: What is a useful starting time?
-	private final Date STARTING_TIME = new Date();
+	private final Timestamp STARTING_TIME = new Timestamp(0);
 	// TICK_SIZE is in milliseconds
 	private final int TICK_SIZE = 10;
 	// TODO: What is a useful ending time?
-	private final Date ENDING_TIME = new Date();
+	private final Date ENDING_TIME = new Timestamp(0);
 
 	private ITradingAlgorithm algo;
 	private Map<StockHandle, Integer> portfolio;
 	private List<Order> outstandingOrders;
 	private Map<StockHandle,OrderBook> openedBooks;
 	private List<Order> allOrders;
-	private Calendar currentTime;
+	private Timestamp currentTime;
 	private int numTicks;
-	// NOTE: availableFunds is an int because I heard once that floating point types shouldn't be 
-	// used for money. But what is the unit here?
-	private int availableFunds;
+	private BigDecimal availableFunds;
 	private List<Output> outputs; 
 	private TestDataHandler dataHandler;
 	
@@ -43,10 +43,9 @@ public class MarketView {
 	}
 	
 	public void startSimulation() {
-		// TODO STARTING_FUNDS and _TIME should be simulation parameters
+		// TODO STARTING_FUNDS and *_TIME should be simulation parameters
 		availableFunds = STARTING_FUNDS;
-		currentTime = Calendar.getInstance();
-		currentTime.setTime(STARTING_TIME);
+		currentTime = (Timestamp) STARTING_TIME.clone();
 		numTicks = 0;
 		allOrders = new ArrayList<Order>();
 		outstandingOrders = new ArrayList<Order>();
@@ -57,31 +56,34 @@ public class MarketView {
 	
 	public Iterator<Order> tick() {
 		numTicks++;
-		currentTime.add(Calendar.MILLISECOND, TICK_SIZE);
+
+		Timestamp newTime = new Timestamp(currentTime.getTime() + TICK_SIZE);
+		// probably not needed since nanos are never updated
+		newTime.setNanos(currentTime.getNanos()); 
 		
-		// updateTime on order books
+		//TODO calls OrderBook.updateTime on OrderBooks for all outstanding trades and returns a list of trades which are still outstanding at this time.
 		
 		return null;
-		//TODO calls OrderBook.updateTime on OrderBooks for all outstanding trades and returns a list of trades which are still outstanding at this time.
+
 
 	}
 	
 	public OrderBook getOrderBook(StockHandle s) {
 		if (openedBooks.containsKey(s))
 			return openedBooks.get(s);
-		return s.getOrderBookAtTime(currentTime.getTime());
+		return s.getOrderBookAtTime(currentTime);
 	}
 	
 	public boolean isFinished() {
-		return (!currentTime.getTime().before(ENDING_TIME));
+		return (!currentTime.before(ENDING_TIME));
 	}
 	
-	public int getRemainingFunds() {
+	public BigDecimal getRemainingFunds() {
 		return availableFunds;
 	}
 	
 	public boolean buy(StockHandle stock, int price, int volume) {
-		if (getRemainingFunds() < price * volume)
+		if (getRemainingFunds().compareTo(new BigDecimal(price * volume)) < 0)
 			return false; // we don't have enough funds
 		
 		Order o = getOrderBook(stock).buy(volume, price);
