@@ -28,13 +28,13 @@ public class OrderBookReconstructorTest {
 		
 		//Fast forward until the first buy offer is in the book.
 		//It shouldn't be matched with anything yet.
-		OrderBookReconstructorResult result1 = reconstructor.fastForward(new Timestamp(100));
+		OrderBookReconstructorResult result1 = reconstructor.updateTime(new Timestamp(100));
 		assertTrue(result1.getBidsMap().keySet().contains(100));
 		assertTrue(result1.getOffersMap().isEmpty());
 		
 		//Fast forward until both offers are in the book.
 		//They should match together, leaving the order book for the stock empty.
-		OrderBookReconstructorResult result2 = reconstructor.fastForward(new Timestamp(1000));
+		OrderBookReconstructorResult result2 = reconstructor.updateTime(new Timestamp(1000));
 		assertTrue(result2.getBidsMap().isEmpty());
 		assertTrue(result2.getOffersMap().isEmpty());
 	}
@@ -51,13 +51,13 @@ public class OrderBookReconstructorTest {
 		
 		//Fast forward until the second order (sell 10) has been partially filled
 		//so that there are no buy orders and the only sell order has volume 5.
-		OrderBookReconstructorResult result1 = reconstructor.fastForward(new Timestamp(700));
+		OrderBookReconstructorResult result1 = reconstructor.updateTime(new Timestamp(700));
 		assertTrue(result1.getBidsMap().isEmpty());
 		assertTrue(result1.getOffersMap().get(100).getOrders().size() == 1);
 		assertTrue(result1.getOffersMap().get(100).getOrders().peek().getVolume() == 5);
 		
 		//Fast forward until the 5-sell order has been filled against the 5-buy order.
-		OrderBookReconstructorResult result2 = reconstructor.fastForward(new Timestamp(1100));
+		OrderBookReconstructorResult result2 = reconstructor.updateTime(new Timestamp(1100));
 		assertTrue(result2.getBidsMap().isEmpty());
 		assertTrue(result2.getOffersMap().isEmpty());
 	}
@@ -90,32 +90,32 @@ public class OrderBookReconstructorTest {
 
 		OrderBookReconstructor reconstructor = new OrderBookReconstructor(testOrders);
 		
-		OrderBookReconstructorResult result1 = reconstructor.fastForward(new Timestamp(150));
+		OrderBookReconstructorResult result1 = reconstructor.updateTime(new Timestamp(150));
 		assertTrue(result1.getBidsMap().get(100).getOrders().peek().getVolume() == 15);
 		
-		OrderBookReconstructorResult result2 = reconstructor.fastForward(new Timestamp(250));
+		OrderBookReconstructorResult result2 = reconstructor.updateTime(new Timestamp(250));
 		assertTrue(result2.getBidsMap().get(100).getOrders().peek().getVolume() == 15);
 		assertTrue(result2.getOffersMap().get(101).getOrders().peek().getVolume() == 10);
 		
-		OrderBookReconstructorResult result3 = reconstructor.fastForward(new Timestamp(350));
+		OrderBookReconstructorResult result3 = reconstructor.updateTime(new Timestamp(350));
 		assertTrue(result3.getBidsMap().get(100).getOrders().peek().getVolume() == 15);
 		assertTrue(result3.getOffersMap().get(101).getOrders().peek().getVolume() == 5);
 		
-		OrderBookReconstructorResult result4 = reconstructor.fastForward(new Timestamp(450));
+		OrderBookReconstructorResult result4 = reconstructor.updateTime(new Timestamp(450));
 		assertTrue(result4.getBidsMap().get(100).getOrders().peek().getVolume() == 5);
 		assertTrue(result4.getOffersMap().get(101).getOrders().peek().getVolume() == 5);
 		
-		OrderBookReconstructorResult result5 = reconstructor.fastForward(new Timestamp(550));
+		OrderBookReconstructorResult result5 = reconstructor.updateTime(new Timestamp(550));
 		assertTrue(result5.getBidsMap().get(100).getOrders().peek().getVolume() == 5);
 		assertTrue(result5.getOffersMap().get(101).getOrders().peek().getVolume() == 5);
 		assertTrue(result5.getOffersMap().get(102).getOrders().peek().getVolume() == 10);
 		
-		OrderBookReconstructorResult result6 = reconstructor.fastForward(new Timestamp(650));
+		OrderBookReconstructorResult result6 = reconstructor.updateTime(new Timestamp(650));
 		assertTrue(result6.getBidsMap().get(100).getOrders().peek().getVolume() == 5);
 		assertTrue(result6.getBidsMap().get(101).getOrders().peek().getVolume() == 10);
 		assertTrue(result6.getOffersMap().get(102).getOrders().peek().getVolume() == 10);
 		
-		OrderBookReconstructorResult result7 = reconstructor.fastForward(new Timestamp(750));
+		OrderBookReconstructorResult result7 = reconstructor.updateTime(new Timestamp(750));
 		assertTrue(result7.getOffersMap().get(102).getOrders().peek().getVolume() == 10);
 	}
 }
