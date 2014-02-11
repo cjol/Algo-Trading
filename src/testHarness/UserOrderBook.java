@@ -2,18 +2,26 @@ package testHarness;
 
 import java.sql.Timestamp;
 import java.util.Iterator;
+import java.util.PriorityQueue;
 
 import orderBookReconstructor.BuyOrder;
 import orderBookReconstructor.Match;
+import orderBookReconstructor.Order;
 import orderBookReconstructor.SellOrder;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 
 public class UserOrderBook extends OrderBook {
 
+	OrderBook parent;
+	
+	PriorityQueue<BuyOrder> OutstandingBids;
+	PriorityQueue<SellOrder> OutstandingOffers;
+	
 	public UserOrderBook(StockHandle handle, OrderBook parent) {
 		super(handle);
-		// TODO Auto-generated constructor stub
+		this.parent = parent;
+
 	}
 
 	@Override
@@ -71,5 +79,4 @@ public class UserOrderBook extends OrderBook {
 	}
 	
 	
-
 }

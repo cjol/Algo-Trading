@@ -3,6 +3,7 @@ package orderBookReconstructor;
 import testHarness.StockHandle;
 
 import java.sql.Timestamp;
+import java.util.Comparator;
 
 public abstract class Order implements Comparable<Order>, Cloneable {
 	private final StockHandle stock;
@@ -57,5 +58,23 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 	public Order clone() throws CloneNotSupportedException {
 		//Cloning the timestamp not required here: getTimestamp() returns a clone anyway
 		return (Order) super.clone();
+	}
+	
+	public static class BuyOrderComparitor implements Comparator<BuyOrder> {
+
+		@Override
+		public int compare(BuyOrder o1, BuyOrder o2) {
+			int com = Integer.compare(o1.getPrice(), o2.getPrice());
+			return (com == 0) ? o2.getTimePlaced().compareTo(o1.getTimePlaced()) : com;
+		}
+	}
+	
+	public static class SellOrderComparitor implements Comparator<BuyOrder> {
+
+		@Override
+		public int compare(BuyOrder o1, BuyOrder o2) {
+			int com = Integer.compare(o2.getPrice(), o1.getPrice());
+			return (com == 0) ? o2.getTimePlaced().compareTo(o1.getTimePlaced()) : com;
+		}
 	}
 }
