@@ -3,6 +3,7 @@ package testHarness;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.PriorityQueue;
+import java.util.TreeSet;
 
 import orderBookReconstructor.BuyOrder;
 import orderBookReconstructor.Match;
@@ -15,24 +16,24 @@ public class UserOrderBook extends OrderBook {
 
 	OrderBook parent;
 	
-	PriorityQueue<BuyOrder> OutstandingBids;
-	PriorityQueue<SellOrder> OutstandingOffers;
+	TreeSet<BuyOrder> outstandingBids;
+	TreeSet<SellOrder> outstandingOffers;
 	
-	
+	TreeSet<BuyOrder> ghostBids;
+	TreeSet<SellOrder> ghostOffers;
 	
 	public UserOrderBook(StockHandle handle, OrderBook parent) {
 		super(handle);
 		this.parent = parent;
 		
-		OutstandingBids = new PriorityQueue<>(0,new Order.BuyOrderComparitor());
-		OutstandingOffers = new PriorityQueue<>(0,new Order.SellOrderComparitor());
-		
+		outstandingBids = new TreeSet<BuyOrder>(new Order.BuyOrderComparitor());
+		outstandingOffers = new TreeSet<SellOrder>(new Order.SellOrderComparitor());
 	}
 
 	@Override
 	public BuyOrder buy(int volume, int price, Timestamp time) {
 		BuyOrder bo = new BuyOrder(handle,time, price, volume);
-		OutstandingBids.add(bo);
+		outstandingBids.add(bo);
 		return bo;
 	}
 
