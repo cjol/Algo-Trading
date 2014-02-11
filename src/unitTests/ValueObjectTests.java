@@ -1,13 +1,17 @@
 package unitTests;
 
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
+import valueObjects.Addition;
 import valueObjects.ArrayValueObject;
+import valueObjects.Constant;
+import valueObjects.Division;
 import valueObjects.FirstDerivative;
 import valueObjects.MovingAverage;
+import valueObjects.Multiplication;
 import valueObjects.Offset;
+import valueObjects.Subtraction;
 import valueObjects.TickOutOfRangeException;
 
 
@@ -62,5 +66,32 @@ public class ValueObjectTests {
 		for (int i = 0; i <= 6; i++) {
 			assertTrue(derivative.getValue(i) == offsetData.getValue(i));
 		}
+	}
+	
+	@Test
+	public void testArithmetic() throws TickOutOfRangeException {
+		//Tests for +, -, /, *.
+		
+		ArrayValueObject testData1 = new ArrayValueObject(new int[]{1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 42});
+		ArrayValueObject testData2 = new ArrayValueObject(new int[]{1, 0, -1, -2, -2, -3, -4, -5, -5, -6, 32});
+		
+		Addition addition = new Addition(testData1, testData1);
+		assertTrue(addition.getValue(0) == 84);
+		assertTrue(addition.getValue(5) == 4);
+		
+		Subtraction subtraction = new Subtraction(testData1, testData1);
+		Constant constant = new Constant(0);
+		assertTrue(subtraction.getValue(0) == constant.getValue(0));
+		assertTrue(subtraction.getValue(8) == constant.getValue(8));
+		
+		Multiplication multiplication = new Multiplication(testData1, testData2);
+		assertTrue(multiplication.getValue(1) == -18);
+		assertTrue(multiplication.getValue(6) == -4);
+		
+		Division division = new Division(testData1, new Constant(2));
+		assertTrue(division.getValue(9) == 0);
+		assertTrue(division.getValue(6) == 1);
+		assertTrue(division.getValue(5) == 1);
+		
 	}
 }
