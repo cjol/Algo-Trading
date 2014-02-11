@@ -15,6 +15,11 @@ import database.OutputServer;
 import testHarness.ITradingAlgorithm;
 import testHarness.output.Output;
 
+/**
+ *	A communication object between the server and client that describes a test request. 
+ * @author Lawrence Esswood
+ *
+ */
 public class TestRequestDescription implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -22,11 +27,22 @@ public class TestRequestDescription implements Serializable {
 	protected List<ClassDescription> classFiles;
 	protected List<OutputRequest>  outputsRequested;
 	
+	/**
+	 * 
+	 * @param classFiles The class files the client wrote.
+	 * @param outputsRequested The outputs the client would like to be given.
+	 */
 	public TestRequestDescription(List<ClassDescription> classFiles, List<OutputRequest> outputsRequested) {
 		this.classFiles = classFiles;
 		this. outputsRequested = outputsRequested;
 	}
 	
+	/**
+	 * Builds a response given a request and the finished outputs.
+	 * @param request The original request.
+	 * @param outputs The finished outputs.
+	 * @return
+	 */
 	public static TestResultDescription filterOutputs(TestRequestDescription request, List<Output> outputs) {
 		
 		//build output result based on which outputRequests had the respond flag.
@@ -47,6 +63,18 @@ public class TestRequestDescription implements Serializable {
 		return new TestResultDescription(results);
 	}
 	
+	/**
+	 * Loads user code and performs reflection.
+	 * @param request The client request
+	 * @return The class with the entry point of the user code.
+	 * @throws LoadClassException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 * @throws SecurityException
+	 */
 	public static ITradingAlgorithm getAlgo(TestRequestDescription request) throws LoadClassException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		
 		Permissions permissions = new Permissions();
@@ -80,6 +108,20 @@ public class TestRequestDescription implements Serializable {
 
 	}
 	
+	/**
+	 * Builds outputs from a user request.
+	 * @param request The users request.
+	 * @param server The output server where outputs are stored.
+	 * @return A list of outputs usable by a MarketView.
+	 * @throws ClassNotFoundException
+	 * @throws LoadClassException
+	 * @throws NoSuchMethodException
+	 * @throws SecurityException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 */
 	public static List<Output> getOutputs(TestRequestDescription request, OutputServer server) throws ClassNotFoundException, LoadClassException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		LinkedList<Output> outputs = new LinkedList<Output>();
 		
@@ -111,7 +153,11 @@ public class TestRequestDescription implements Serializable {
 		return outputs;
 	}
 	
-	
+	/**
+	 * A class loader that loads classes given a byte array.
+	 * @author Lawrence Esswood
+	 *
+	 */
 	private static class netClassLoader extends SecureClassLoader {
 		private final ProtectionDomain domain;
 		public netClassLoader(ClassLoader parent, ProtectionDomain pd) {

@@ -10,6 +10,11 @@ import testHarness.TestDataHandler;
 import testHarness.clientConnection.TestRequestDescription.LoadClassException;
 import testHarness.output.Output;
 
+/**
+ * Runs a test instance and communicates with a client
+ * @author Lawrence Esswood
+ *
+ */
 public class TestInstance implements Runnable{
 
 	private static final long testTimeLimit_mili = 60000;
@@ -21,12 +26,21 @@ public class TestInstance implements Runnable{
 	private MarketView marketView;
 	private Thread marketViewThread;
 	
+	/**
+	 * 
+	 * @param connection The connection to the client.
+	 * @param dataHandler The data handler to use to retrieve test data
+	 * @param outputServer The server to use to store output to the database
+	 */
 	public TestInstance(ConnectionHandler connection, TestDataHandler dataHandler, OutputServer outputServer) {
 		this.connection = connection;
 		this.dataHandler = dataHandler;
 		this.outputServer = outputServer;
 	}
 
+	/**
+	 * Starts the test
+	 */
 	@Override
 	public void run() {
 		try
@@ -58,7 +72,10 @@ public class TestInstance implements Runnable{
 		
 	}
 	
-	
+	/**
+	 * Starts market in another thread
+	 * @param timeout How long to give the market before terminating.
+	 */
 	private void startSim(long timeout)
 	{
 		marketViewThread = new TestThread(marketView);
@@ -72,6 +89,11 @@ public class TestInstance implements Runnable{
 		}
 	}
 	
+	/**
+	 * The thread for the marketView
+	 * @author Lawrence Esswood
+	 *
+	 */
 	private class TestThread extends Thread{
 		final MarketView mv;
 		public TestThread(MarketView mv) {
@@ -84,6 +106,10 @@ public class TestInstance implements Runnable{
 		};
 	};
 	
+	
+	/**
+	 * Trys to cleanly abort the test, then kills it.
+	 */
 	@SuppressWarnings("deprecation")
 	public void abortTest() {
 		if(marketView != null)

@@ -16,12 +16,22 @@ import testHarness.clientConnection.ClassDescription;
 import testHarness.clientConnection.TestRequestDescription;
 import testHarness.clientConnection.TestResultDescription;
 
+/**
+ * 
+ * @author Lawrence Esswood
+ */
 public class FileLoader {
 
 	private FileLoader() {}
 	
 	private static String usage = "Usage: FileLoader filePath remoteAddress remotePort";
 	
+	/**
+	 * 
+	 * @param filename The path to the jar file containing user code
+	 * @return A an object to send to the test server
+	 * @throws IOException if the jar cannot be read
+	 */
 	public static TestRequestDescription getRequestFromFile(String filename) throws IOException {
 		//TODO options
 		JarFile jar = new JarFile(filename);
@@ -49,6 +59,17 @@ public class FileLoader {
 		return new TestRequestDescription(classFiles, null);
 	}
 	
+	/**
+	 * 
+	 * @param testDescription The request object to send to the test server.
+	 * @param address The IP address of the test server.
+	 * @param port The port number of the server.
+	 * @return A result object from the server.
+	 * @throws UnknownHostException.
+	 * @throws IOException.
+	 * @throws ClassNotFoundException.
+	 * @throws WrongResponseException if the server response in an unexpected way.
+	 */
 	public static TestResultDescription sendTest(TestRequestDescription testDescription, String address, int port) throws UnknownHostException, IOException, ClassNotFoundException, WrongResponseException {
 		
 		Socket s = new Socket(address, port);
@@ -65,6 +86,9 @@ public class FileLoader {
 		throw new WrongResponseException();
 	}
 	
+	/**
+	 * Displays Usage.
+	 */
 	private static void showUsage() {
 		System.out.println(usage);
 		System.exit(1);

@@ -8,9 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 
+import Iterators.ProtectedIterator;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import testHarness.OrderBook;
-import testHarness.ProtectedIterator;
 import testHarness.StockHandle;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;

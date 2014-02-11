@@ -1,8 +1,14 @@
-package testHarness;
+package Iterators;
 
 import java.util.Comparator;
 import java.util.Iterator;
 
+/**
+ * An iterator that takes two iterators and interleaves their contents together by a specified ordering
+ * @author Lawrence Esswood
+ *
+ * @param <T> The type to iterate over
+ */
 public class InterleavingIterator<T> implements Iterator<T>{
 
 	private final PeekableIterator<T> a;

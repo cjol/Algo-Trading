@@ -1,7 +1,13 @@
-package testHarness;
+package Iterators;
 
 import java.util.Iterator;
 
+/**
+ * An iterator that adds a peek operator
+ * @author Lawrence Esswood
+ *
+ * @param <T>
+ */
 public class PeekableIterator<T> implements Iterator<T>{
 
 	private final Iterator<T> parent;
@@ -23,6 +29,10 @@ public class PeekableIterator<T> implements Iterator<T>{
 		return hold;
 	}
 	
+	/**
+	 * 
+	 * @return The next value but does not remove it from the queue.
+	 */
 	public T peek() {
 		return top;
 	}

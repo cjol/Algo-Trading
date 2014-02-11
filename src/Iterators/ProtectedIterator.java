@@ -1,7 +1,13 @@
-package testHarness;
+package Iterators;
 
 import java.util.Iterator;
 
+/**
+ * An iterator that blocks use of the remove method.
+ * @author Lawrence Esswood
+ *
+ * @param <T>
+ */
 public class ProtectedIterator<T> implements Iterator<T>{
 
 	private final Iterator<T> parent;

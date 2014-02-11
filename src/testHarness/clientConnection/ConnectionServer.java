@@ -9,6 +9,11 @@ import java.util.List;
 import database.OutputServer;
 import testHarness.TestDataHandler;
 
+/**
+ * A server that listens to communication from clients.
+ * @author Lawrence Esswood
+ *
+ */
 public class ConnectionServer {
 
 	private TestDataHandler dataHandler;
@@ -18,12 +23,23 @@ public class ConnectionServer {
 	private Thread listenThread;
 	private List<TestInstance> testInstances = new LinkedList<TestInstance>();
 	
+	/**
+	 * 
+	 * @param port Port number to listen on.
+	 * @param dataHandler The data handler that provides data to test instances.
+	 * @param outputServer The output server that stores results in the database.
+	 * @throws IOException
+	 */
 	public ConnectionServer(int port, TestDataHandler dataHandler, OutputServer outputServer) throws IOException {
 		this.dataHandler = dataHandler;
 		this.outputServer = outputServer;
 		listenSocket = new ServerSocket(port);
 	}
 	
+	/**
+	 * Starts the server's listening.
+	 * @throws IOException
+	 */
 	public void startServer() throws IOException{
 		
 		listenThread = Thread.currentThread();
@@ -42,6 +58,10 @@ public class ConnectionServer {
 		}
 	}
 	
+	/**
+	 * Halts the server and all the test instances.
+	 * @throws IOException
+	 */
 	public void stopServer() throws IOException {
 		listenThread.interrupt();
 		listenSocket.close();

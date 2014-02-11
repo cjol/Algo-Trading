@@ -9,14 +9,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 
-import testHarness.InterleavingIterator;
+import Iterators.InterleavingIterator;
+import Iterators.PeekableIterator;
+import Iterators.ProtectedIterator;
 import testHarness.OrderBook;
-import testHarness.PeekableIterator;
-import testHarness.ProtectedIterator;
 import testHarness.StockHandle;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 
+/**
+ * A decorating order book that keeps track of user orders and filters another order book with them
+ * @author Lawrence Esswood
+ *
+ */
 public class UserOrderBook extends OrderBook {
 
 	OrderBook parent;
@@ -68,10 +73,18 @@ public class UserOrderBook extends OrderBook {
 		return new InterleavingIterator<>(a, b, comp);
 	}
 	
+	/**
+	 * 
+	 * @return Bids as the user should see them.
+	 */
 	private Iterator<BuyOrder> getGhostedBids() {
 		return new GhostingIterator<>(parent.getAllBids(),ghostBids);
 	}
 	
+	/**
+	 * 
+	 * @return Offers as the user should see them.
+	 */
 	private Iterator<SellOrder> getGhostedOffers() {
 		return new GhostingIterator<>(parent.getAllOffers(),ghostOffers);
 	}
@@ -85,8 +98,8 @@ public class UserOrderBook extends OrderBook {
 		//for all the market matches we can also have a match
 		while(matches.hasNext()){
 			Match match = matches.next();
-			coverMatch(match.buyOrder, match.quantity, ghostBids, ghostOffers, outstandingOffers, userMatches);
-			coverMatch(match.sellOrder, match.quantity, ghostOffers, ghostBids, outstandingBids, userMatches);
+			coverMatch(match.buyOrder, match.quantity, ghostBids, outstandingOffers, userMatches);
+			coverMatch(match.sellOrder, match.quantity, ghostOffers, outstandingBids, userMatches);
 		}
 		
 		//match things the market did not.
@@ -96,8 +109,17 @@ public class UserOrderBook extends OrderBook {
 		return userMatches.iterator();
 	}
 	
+	
+	/**
+	 * Takes a matched order from the market and allows the user to match with it as well.
+	 * @param marketOrder The markets order.
+	 * @param q The quantity.
+	 * @param marketGhost The ghost map for this type.
+	 * @param userOrders The outstanding orders for the user.
+	 * @param userMatches The matches list to append matches to.
+	 */
 	private static <Market extends Order, User extends Order> 
-	void coverMatch(Market marketOrder, int q, HashMap<Market, Integer> marketGhost, HashMap<User, Integer> userGhost , TreeSet<User> userOrders, List<Match> userMatches) {
+	void coverMatch(Market marketOrder, int q, HashMap<Market, Integer> marketGhost, TreeSet<User> userOrders, List<Match> userMatches) {
 		int exisitingGhosting = (marketGhost.containsKey(marketOrder)) ? marketGhost.get(marketOrder) : 0;
 		
 		int available = q - exisitingGhosting;
@@ -127,6 +149,13 @@ public class UserOrderBook extends OrderBook {
 		else if(newGhosting != 0) marketGhost.put(marketOrder, (Integer)newGhosting);
 	}
 	
+	/**
+	 * Matches with the parent book.
+	 * @param ghost The ghost map for this type.
+	 * @param marketIter An iterator for the markets orders.
+	 * @param userIter An iterator for the users orders.
+	 * @param userMatches A list to append the output matches to.
+	 */
 	private static <Market extends Order, User extends Order> 
 	void match(HashMap<Market, Integer> ghost, Iterator<Market> marketIter, Iterator<User> userIter, List<Match> userMatches) {
 		if( marketIter.hasNext() && userIter.hasNext()) {
@@ -182,6 +211,12 @@ public class UserOrderBook extends OrderBook {
 		return new Match(buy, sell, q, p);
 	}
 	
+	/**
+	 * Removes ghosting for an order.
+	 * @param ghost The ghost map for the given type.
+	 * @param offer The order to change.
+	 * @param q the amount to decrement by.
+	 */
 	private static <T> void removeGhost(HashMap<T, Integer> ghost,T offer, int q) {
 		if(ghost.containsKey(offer)) {
 			int left = ghost.get(offer) - q;
@@ -190,6 +225,12 @@ public class UserOrderBook extends OrderBook {
 		}
 	}
 	
+	/**
+	 * Add ghosting for a type.
+	 * @param ghost The ghost map for the given type.
+	 * @param offer The order to change.
+	 * @param q the amount to increment by.
+	 */
 	private static <T> void addGhost(HashMap<T, Integer> ghost,T offer, int q) {
 		int val = ((ghost.containsKey(offer)) ? ghost.get(offer) : 0) + q;
 		ghost.put(offer, val);
@@ -215,6 +256,12 @@ public class UserOrderBook extends OrderBook {
 		return new LowestOffer(outstandingOffers.first());
 	}
 	
+	/**
+	 * A decorating Iterator that removes ghosts
+	 * @author Lawrence Esswood
+	 *
+	 * @param <T> The type of order
+	 */
 	private static class GhostingIterator<T extends Order> implements Iterator<T> 
 	{
 		private final Iterator<T> parent;
@@ -222,6 +269,11 @@ public class UserOrderBook extends OrderBook {
 		
 		private T next;
 		
+		/**
+		 * 
+		 * @param parent The unfiltered Iterator.
+		 * @param ghostSet The ghost filter.
+		 */
 		public GhostingIterator(Iterator<T> parent, HashMap<T, Integer> ghostSet) {
 			this.parent = parent;
 			this.ghost = ghostSet;
