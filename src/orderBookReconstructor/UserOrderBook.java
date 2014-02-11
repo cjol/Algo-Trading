@@ -34,8 +34,8 @@ public class UserOrderBook extends OrderBook {
 		outstandingBids = new TreeSet<BuyOrder>();
 		outstandingOffers = new TreeSet<SellOrder>();
 		
-		ghostBids = new HashMap<>();
-		ghostOffers = new HashMap<>();
+		ghostBids = new HashMap<BuyOrder, Integer>();
+		ghostOffers = new HashMap<SellOrder, Integer>();
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class UserOrderBook extends OrderBook {
 	@Override
 	public Iterator<BuyOrder> getAllBids() {
 		Comparator<BuyOrder> comp = Order.buyOrderOnlyComparitor;
-		PeekableIterator<BuyOrder> a = new PeekableIterator<>(new GhostingIterator<>(parent.getAllBids(),ghostBids));
+		PeekableIterator<BuyOrder> a = new PeekableIterator<>(getGhostedBids());
 		PeekableIterator<BuyOrder> b = new PeekableIterator<>(outstandingBids.iterator());
 		return new InterleavingIterator<>(a, b, comp);
 	}
@@ -63,46 +63,136 @@ public class UserOrderBook extends OrderBook {
 	@Override
 	public Iterator<SellOrder> getAllOffers() {
 		Comparator<SellOrder> comp = Order.sellOrderOnlyComparitor;
-		PeekableIterator<SellOrder> a = new PeekableIterator<>(new GhostingIterator<>(parent.getAllOffers(),ghostOffers));
+		PeekableIterator<SellOrder> a = new PeekableIterator<>(getGhostedOffers());
 		PeekableIterator<SellOrder> b = new PeekableIterator<>(outstandingOffers.iterator());
 		return new InterleavingIterator<>(a, b, comp);
+	}
+	
+	private Iterator<BuyOrder> getGhostedBids() {
+		return new GhostingIterator<>(parent.getAllBids(),ghostBids);
+	}
+	
+	private Iterator<SellOrder> getGhostedOffers() {
+		return new GhostingIterator<>(parent.getAllOffers(),ghostOffers);
 	}
 
 	@Override
 	public Iterator<Match> updateTime(Timestamp t) {
 		List<Match> userMatches = new LinkedList<>();
 		
-		//TODO user matches now
-		
 		Iterator<Match> matches = parent.updateTime(t);
 		
-		//TODO get in on all the matches that the market had
+		//for all the market matches we can also have a match
 		while(matches.hasNext()){
 			Match match = matches.next();
+			coverMatch(match.buyOrder, match.quantity, ghostBids, ghostOffers, outstandingOffers, userMatches);
+			coverMatch(match.sellOrder, match.quantity, ghostOffers, ghostBids, outstandingBids, userMatches);
+		}
+		
+		//match things the market did not.
+		match(ghostBids,parent.getAllBids(),outstandingOffers.iterator(), userMatches);
+		match(ghostOffers,parent.getAllOffers(),outstandingBids.iterator(), userMatches);
+		
+		return userMatches.iterator();
+	}
+	
+	private static <Market extends Order, User extends Order> 
+	void coverMatch(Market marketOrder, int q, HashMap<Market, Integer> marketGhost, HashMap<User, Integer> userGhost , TreeSet<User> userOrders, List<Match> userMatches) {
+		int exisitingGhosting = (marketGhost.containsKey(marketOrder)) ? marketGhost.get(marketOrder) : 0;
+		
+		int available = q - exisitingGhosting;
+		int userIntercepted = 0;
+		
+		//buy anything the market did in this tick
+		while(available > 0 && !userOrders.isEmpty()) {
+			User userOrder = userOrders.first();
+			if(canTrade(userOrder, marketOrder)) {
+				int userVolume = userOrder.getVolume();
+				int tradeVolume = (available > userVolume) ? userVolume : available;
+				int price = marketOrder.getPrice() + (marketOrder.getPrice() + userOrder.getPrice()) / 2;
+				
+				userMatches.add(makeMatch(marketOrder, userOrder, tradeVolume, price));
+				available -= tradeVolume;
+				userIntercepted += tradeVolume;
+				
+				if(userVolume == tradeVolume) userOrders.remove(userOrder);
+				else userOrder.decrementVolume(tradeVolume);
+			}
+		}
+		
+		//update ghosting
+		int newGhosting = exisitingGhosting + userIntercepted - q;
+		if(newGhosting < 0) newGhosting = 0;
+		if(exisitingGhosting != 0 && newGhosting == 0) marketGhost.remove(marketOrder);
+		else if(newGhosting != 0) marketGhost.put(marketOrder, (Integer)newGhosting);
+	}
+	
+	private static <Market extends Order, User extends Order> 
+	void match(HashMap<Market, Integer> ghost, Iterator<Market> marketIter, Iterator<User> userIter, List<Match> userMatches) {
+		if( marketIter.hasNext() && userIter.hasNext()) {
 			
-			if(match.order instanceof BuyOrder) {
-				removeGhost(ghostBids, (BuyOrder)match.order, match.quantity);
-			} else if(match.order instanceof SellOrder) {
-				removeGhost(ghostOffers, (SellOrder)match.order, match.quantity);
+			Market marketOrder = marketIter.next();	
+			User userOrder = userIter.next();
+			
+			//break totally, no more matches
+			while(canTrade(marketOrder, userOrder)) {
+					
+				//how much we can buy
+				int marketVolume = marketOrder.getVolume() - (ghost.containsKey(marketOrder) ? ghost.get(marketOrder) : 0);
+				int userVolume = userOrder.getVolume();
+				int tradeVolume = (marketVolume > userVolume) ? userVolume : marketVolume;
+				int price = (marketOrder.getPrice() + userOrder.getPrice()) / 2;
+					
+				//ghost
+				addGhost(ghost, marketOrder, tradeVolume);
+					
+				//create match
+				userMatches.add(makeMatch(marketOrder, userOrder, tradeVolume, price));
+				
+				//update out outstanding
+				if(tradeVolume == userVolume) {
+					userIter.remove();
+					if(!userIter.hasNext()) break;
+					userOrder = userIter.next();
+				} else {
+					userOrder.decrementVolume(tradeVolume);
+					if(! marketIter.hasNext()) break;
+					marketOrder =  marketIter.next();
+				}
 			}
 		}
 	}
 	
-	private <T> void removeGhost(HashMap<T, Integer> ghost,T offer, int q) {
+	//FIXME hacky way of losing track of types due to generics...
+	private static boolean canTrade(Order a, Order b) {
+		boolean swap = (a instanceof BuyOrder);
+		
+		BuyOrder buy = (BuyOrder) ((swap) ? a : b);
+		SellOrder sell = (SellOrder) ((swap) ? b : a);
+		
+		return (buy.getPrice() >= sell.getPrice());
+	}
+	
+	private static Match makeMatch(Order a, Order b, int q, int p) {
+		boolean swap = (a instanceof BuyOrder);
+		
+		BuyOrder buy = (BuyOrder) ((swap) ? a : b);
+		SellOrder sell = (SellOrder) ((swap) ? b : a);
+		
+		return new Match(buy, sell, q, p);
+	}
+	
+	private static <T> void removeGhost(HashMap<T, Integer> ghost,T offer, int q) {
 		if(ghost.containsKey(offer)) {
 			int left = ghost.get(offer) - q;
-			if(left <= 0)ghost.remove(offer);
+			if(left <= 0) ghost.remove(offer);
 			else ghost.put(offer, (Integer)left);
 		}
 	}
 	
-	private <T> void addGhost(HashMap<T, Integer> ghost,T offer, int q) {
+	private static <T> void addGhost(HashMap<T, Integer> ghost,T offer, int q) {
 		int val = ((ghost.containsKey(offer)) ? ghost.get(offer) : 0) + q;
 		ghost.put(offer, val);
-	}
-	
-	private Match tryMatch(SellOrder sell, BuyOrder buy) {
-		
 	}
 
 	@Override
