@@ -1,11 +1,11 @@
 package testHarness;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 public abstract class StockHandle {
 	// StockHandle objects should be deliberately kept immutable
 
-	public OrderBook getOrderBookAtTime(Date currentTime) {
+	public OrderBook getOrderBookAtTime(Timestamp currentTime) {
 		//TODO: probably uses orderBookReconstructor to get
 		//the data about the market-derived order book at time t,
 		//then formats the data from it as needed and puts it into
