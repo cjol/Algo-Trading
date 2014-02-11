@@ -1,14 +1,17 @@
-package testHarness;
+package orderBookReconstructor;
 
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.TreeSet;
 
-import orderBookReconstructor.BuyOrder;
-import orderBookReconstructor.Match;
-import orderBookReconstructor.Order;
-import orderBookReconstructor.SellOrder;
+import testHarness.InterleavingIterator;
+import testHarness.OrderBook;
+import testHarness.PeekableIterator;
+import testHarness.ProtectedIterator;
+import testHarness.StockHandle;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 
@@ -65,8 +68,15 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<Match> updateTime(Timestamp t) {
-		//TODO 
+		List<Match> userMatches = new LinkedList<>();
+		
 		Iterator<Match> matches = parent.updateTime(t);
+		
+		//get in on all the matches that the market had
+		while(matches.hasNext()){
+			Match match = matches.next();
+			if(match.getOrder().)
+		}
 	}
 
 	@Override
@@ -100,8 +110,13 @@ public class UserOrderBook extends OrderBook {
 		public GhostingIterator(Iterator<T> parent, TreeSet<T> ghostSet) {
 			this.parent = parent;
 			ghost = ghostSet.iterator();
-			nextGhost = (ghost.hasNext()) ? ghost.next() : null;
-			calculateNext();
+			try {
+				nextGhost = (T) ((ghost.hasNext()) ? ghost.next().clone() : null);
+			} catch (CloneNotSupportedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			next = calculateNext();
 		}
 		
 		@Override
@@ -112,23 +127,51 @@ public class UserOrderBook extends OrderBook {
 		@Override
 		public T next() {
 			T hold = next;
-			calculateNext();
+			next = calculateNext();
 			return hold;
 		}
 		
-		private void calculateNext() {
+		T calculateNext() {
 			if(!parent.hasNext()) {
-				next = null;
-				return;
+				return null;
 			}
 			
 			if(nextGhost == null) {
-				next = parent.next();
-				return;
+				return parent.next();
 			}
 			
-			//Filters out ghosts
+			//removes ghosts
+			try {
+				T nextFromParent = (T) parent.next().clone();
+				while(nextFromParent.getPrice() == nextGhost.getPrice()) {
+					int parentVol = nextFromParent.getVolume();
+					int ghostVol = nextGhost.getVolume();
+					if(parentVol > ghostVol) {
+						nextFromParent.decrementVolume(ghostVol);
+						if(!ghost.hasNext()) {
+							nextGhost = null;
+							return nextFromParent;
+						}
+						nextGhost = (T) ghost.next().clone();
+					} else {
+						if(!parent.hasNext()) return null;
+						nextFromParent = (T) parent.next().clone();
+						if(parentVol == ghostVol) {
+							if(!ghost.hasNext()) {
+								nextGhost = null;
+								return nextFromParent;
+							}
+							nextGhost = (T) ghost.next().clone();
+						} else nextGhost.decrementVolume(parentVol);
+					}
+				}
+				
+				return nextFromParent;
+			} catch (CloneNotSupportedException e) {
+				e.printStackTrace();
+			}
 			
+			return null;
 		}
 
 		@Override
