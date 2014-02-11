@@ -47,9 +47,9 @@ public abstract class OrderBook {
 		this.handle = handle;
 	}
 	
-	public abstract BuyOrder buy(int volume, int price);
+	public abstract BuyOrder buy(int volume, int price, Timestamp time);
 	
-	public abstract SellOrder sell(int volume, int price);
+	public abstract SellOrder sell(int volume, int price, Timestamp time);
 	
 	public abstract Iterator<BuyOrder> getAllBids();
 	

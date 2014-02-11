@@ -23,11 +23,13 @@ public class UserOrderBook extends OrderBook {
 		this.parent = parent;
 		
 		OutstandingBids = new PriorityQueue<>(0,new Order.BuyOrderComparitor());
+		OutstandingOffers = new PriorityQueue<>(0,new Order.SellOrderComparitor());
+		
 	}
 
 	@Override
 	public BuyOrder buy(int volume, int price) {
-		// TODO Auto-generated method stub
+		BuyOrder bo = new BuyOrder(handle, , price, volume)
 		return null;
 	}
 
