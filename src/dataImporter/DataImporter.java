@@ -2,10 +2,9 @@
  * This class is used to load data from the provided .m5 files
  * into our SQL database
  * @author Nick Burscough
- * 
  */
 
-import ncsa.hdf.hdf5lib.H5;
+import ncsa.hdf.hdf5lib.*;
 import ncsa.hdf.hdf5lib.HDF5Constants;
 
 public class DataImporter{
