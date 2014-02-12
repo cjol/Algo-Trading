@@ -1,5 +1,7 @@
 package valueObjects;
 
+import java.math.BigDecimal;
+
 /**
  * An n-element moving average time series.
  */
@@ -19,15 +21,16 @@ public class MovingAverage implements IValued {
 	}
 	
 	@Override
-	public int getValue(int ticksBack) throws TickOutOfRangeException {
+	public BigDecimal getValue(int ticksBack) throws TickOutOfRangeException {
 		//Sum the previous windowSize values and divide by the windowSize.
-		int sum = 0;
+		BigDecimal sum = new BigDecimal(0);
 		for (int i = 0; i < windowSize; i++) {
-			sum += underlying.getValue(ticksBack + i);
+			sum = sum.add(underlying.getValue(ticksBack + i));
 		}
 		
-		//TODO: we discard the fractional part here, losing precision
-		return (Math.round(sum / (float)windowSize));
+		//TODO: throws ArithmeticException if the decimal expansion is infinite
+		//(for window sizes that are not of the form 2^x*5^y)
+		return sum.divide(new BigDecimal(windowSize));
 	}
 
 }

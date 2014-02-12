@@ -1,5 +1,7 @@
 package valueObjects;
 
+import java.math.BigDecimal;
+
 /**
  * Offsets a value object by a certain amount of ticks.
  */
@@ -19,7 +21,7 @@ public class Offset implements IValued {
 	}
 	
 	@Override
-	public int getValue(int ticksBack) throws TickOutOfRangeException {
+	public BigDecimal getValue(int ticksBack) throws TickOutOfRangeException {
 		//Return the value offset ticks ago.
 		return underlying.getValue(ticksBack + offset);
 	}

@@ -134,14 +134,14 @@ public class OrderBookReconstructor extends OrderBook{
 	
 	@Override
 	public HighestBid getHighestBid() {
-		// TODO Auto-generated method stub
-		return null;
+		//TODO: discuss about how we don't keep the history of the book
+		//and so we can't get a value object representing the highest bid.
+		throw new NotImplementedException();
 	}
 
 	@Override
 	public LowestOffer getLowestOffer() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new NotImplementedException();
 	}
 	
 	//The remaining methods are not supposed to be implemented by the matcher.

@@ -1,21 +1,23 @@
 package valueObjects;
 
+import java.math.BigDecimal;
+
 /**
  * Represents a constant value object.
  */
 public class Constant implements IValued {
-	int constant;
+	BigDecimal constant;
 	
 	/**
 	 * Creates a constant value object.
 	 * @param constant The constant this value object will always return.
 	 */
-	public Constant(int constant) {
+	public Constant(BigDecimal constant) {
 		this.constant = constant;
 	}
 
 	@Override
-	public int getValue(int ticksBack) throws TickOutOfRangeException {
+	public BigDecimal getValue(int ticksBack) throws TickOutOfRangeException {
 		return constant;
 	}
 

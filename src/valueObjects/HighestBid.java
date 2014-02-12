@@ -1,5 +1,7 @@
 package valueObjects;
 
+import java.math.BigDecimal;
+
 import orderBookReconstructor.BuyOrder;
 
 public class HighestBid implements IValued {
@@ -13,9 +15,9 @@ public class HighestBid implements IValued {
 	public BuyOrder getUnderlyingBid() {return underlyingBid;}
 
 	@Override
-	public int getValue(int ticksBack) throws TickOutOfRangeException {
+	public BigDecimal getValue(int ticksBack) throws TickOutOfRangeException {
 		// TODO Auto-generated method stub
-		return 0;
+		return null;
 	}
 
 }
