@@ -57,7 +57,7 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 		return (Order) super.clone();
 	}
 	
-	static class BuyOrderComparitor<T extends Order> implements Comparator<T> {
+	static class BuyOrderComparator<T extends Order> implements Comparator<T> {
 
 		@Override
 		public int compare(Order o1, Order that) {
@@ -66,7 +66,7 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 		}
 	}
 	
-	static class SellOrderComparitor<T extends Order> implements Comparator<T> {
+	static class SellOrderComparator<T extends Order> implements Comparator<T> {
 
 		@Override
 		public int compare(Order o1, Order o2) {
@@ -75,9 +75,9 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 		}
 	}
 	
-	public static final Comparator<Order> buyOrderComparitor = new BuyOrderComparitor<Order>();
-	public static final Comparator<Order> sellOrderComparitor = new SellOrderComparitor<Order>();
+	public static final Comparator<Order> buyOrderComparitor = new BuyOrderComparator<Order>();
+	public static final Comparator<Order> sellOrderComparitor = new SellOrderComparator<Order>();
 	
-	public static final Comparator<BuyOrder> buyOrderOnlyComparitor = new BuyOrderComparitor<BuyOrder>();
-	public static final Comparator<SellOrder> sellOrderOnlyComparitor = new SellOrderComparitor<SellOrder>();
+	public static final Comparator<BuyOrder> buyOrderOnlyComparator = new BuyOrderComparator<BuyOrder>();
+	public static final Comparator<SellOrder> sellOrderOnlyComparator = new SellOrderComparator<SellOrder>();
 }

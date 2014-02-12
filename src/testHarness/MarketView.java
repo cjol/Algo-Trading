@@ -16,6 +16,16 @@ import java.util.Set;
 import orderBookReconstructor.Order;
 import testHarness.output.Output;
 
+/**
+ * Thrown at the user when their algorithm tries to access any function after the thread has been told to abort.
+ * @author Christopher Little
+ */
+class SimulationAbortedException extends RuntimeException{}
+/**
+ * Allows the user's algorithm to interact with historical market data, both for reading and posting orders.
+ * Also logs the user's actions for calculating how well the algorithm performs.
+ * @author Christopher Little
+ */
 public class MarketView {
 	private final BigDecimal STARTING_FUNDS = new BigDecimal(10000);
 	// TODO: What is a useful starting time?
@@ -35,13 +45,23 @@ public class MarketView {
 	private BigDecimal availableFunds;
 	private List<Output> outputs; 
 	private TestDataHandler dataHandler;
+	private boolean threadShouldBeAborting;
 	
+	/**
+	 * Creates a new MarketView instance for a given algorithm to use
+	 * @param algo			The user's trading algorithm
+	 * @param outputs		The types of output which this MarketView will log
+	 * @param dataHandler	The source of data which this MarketView will use
+	 */
 	public MarketView(ITradingAlgorithm algo, List<Output> outputs, TestDataHandler dataHandler) {
 		this.algo = algo;
 		this.outputs = outputs;
 		this.dataHandler = dataHandler;
 	}
 	
+	/**
+	 * Initialise the MarketView with defaults (will eventually be parameterised). Must be called before any other methods.
+	 */
 	public void startSimulation() {
 		// TODO STARTING_FUNDS and *_TIME should be simulation parameters
 		availableFunds = STARTING_FUNDS;
@@ -50,11 +70,19 @@ public class MarketView {
 		allOrders = new ArrayList<Order>();
 		outstandingOrders = new ArrayList<Order>();
 		portfolio = new HashMap<StockHandle, Integer>();
+		threadShouldBeAborting = false;
 		
 		algo.run(this);
 	}
 	
+	/**
+	 * Called by the user's algorithm at every iteration. The MarketView then updates its representation of time, 
+	 * and increments the simulation as necessary (updating the user's portfolio and funds).
+	 * @return An iterator over Orders which completed since the user last called tick().
+	 */
 	public Iterator<Order> tick() {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
 		numTicks++;
 
 		Timestamp newTime = new Timestamp(currentTime.getTime() + TICK_SIZE);
@@ -62,37 +90,77 @@ public class MarketView {
 		newTime.setNanos(currentTime.getNanos()); 
 		
 		//TODO calls OrderBook.updateTime on OrderBooks for all outstanding trades and returns a list of trades which are still outstanding at this time.
+		for (Order o : outstandingOrders) {
+			
+		}
 		
 		return null;
+	}
 
-
+	/**
+	 * Called by the user to view the OrderBook for a given stock, in order to determine the current BBO for that stock. 
+	 * @param stock A StockHandle for the stock the user wishes to query.
+	 * @return An OrderBook representing the market data for the given stock, at the current simulation time.
+	 */
+	public OrderBook getOrderBook(StockHandle stock) {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
+		if (openedBooks.containsKey(stock))
+			return openedBooks.get(stock);
+		return stock.getOrderBookAtTime(currentTime);
 	}
 	
-	public OrderBook getOrderBook(StockHandle s) {
-		if (openedBooks.containsKey(s))
-			return openedBooks.get(s);
-		return s.getOrderBookAtTime(currentTime);
-	}
-	
+	/**
+	 * Called by the user to determine if the simulation is over.
+	 * @return A boolean indicating if the simulation has finished.
+	 */
 	public boolean isFinished() {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
 		return (!currentTime.before(ENDING_TIME));
 	}
 	
-	public BigDecimal getRemainingFunds() {
+	/**
+	 * Gets the user's remaining funds
+	 * @return the user's current available funds.
+	 */
+	public BigDecimal getAvailableFunds() {
+		if (threadShouldBeAborting)
+			return null;
 		return availableFunds;
 	}
 	
+	// TODO: The user needs to be able to cancel an order!
+	
+	/**
+	 * Called by the user to place a buy offer to the market.
+	 * @param stock		The stock which the user wants to buy
+	 * @param price		The price the user is offering to buy at
+	 * @param volume	The amount of stock the user wants to buy
+	 * @return Whether the offer was successfully posted (may return false if we have insufficient funds)
+	 */
 	public boolean buy(StockHandle stock, int price, int volume) {
-		if (getRemainingFunds().compareTo(new BigDecimal(price * volume)) < 0)
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
+		if (getAvailableFunds().compareTo(new BigDecimal(price * volume)) < 0)
 			return false; // we don't have enough funds
 		
-		Order o = getOrderBook(stock).buy(volume, price);
+		Order o = getOrderBook(stock).buy(volume, price, currentTime);
 		allOrders.add(o);
 		outstandingOrders.add(o);
 		return true;
 	}
-	
+
+	/**
+	 * Called by the user to place a sell offer to the market.
+	 * @param stock		The stock which the user wants to sell
+	 * @param price		The price the user is offering to sell at
+	 * @param volume	The amount of stock the user wants to sell
+	 * @return Whether the offer was successfully posted (may return false if we have insufficient stock)
+	 */
 	public boolean sell(StockHandle stock, int price, int volume) {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
 		if (!portfolio.containsKey(stock))
 			return false; // we don't own any of this stock (for now that means no trade (TODO?))
 		
@@ -100,34 +168,59 @@ public class MarketView {
 		if (amtOwned < volume)
 			return false; // we don't own enough for this sale
 
-		Order o = getOrderBook(stock).sell(volume, price);
+		Order o = getOrderBook(stock).sell(volume, price, currentTime);
 		allOrders.add(o);
 		outstandingOrders.add(o);
 		return true;
 	}
 	
+	/**
+	 * Called by the user to determine which stocks are available to trade.
+	 * @return An iterator over StockHandles for all stocks available in this market 
+	 */
 	public Iterator<StockHandle> getAllStocks() {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
 		// TODO: Does this need cloning HERE before being handed to the user?
 		// probably should determine a policy for where such clones are made so we don't make them a million times
 		return dataHandler.getStockHandles();
 	}
-
+	
+	/**
+	 * Called by the user to get the Orders which have not yet been filled.
+	 * @return A new iterator over orders which are still outstanding
+	 */
 	public Iterator<Order> getOutstandingOrders() {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
 		List<Order> cloned = new ArrayList<Order>();
 		for (Order o : outstandingOrders) {
 			cloned.add(o);
 		}
 		return cloned.iterator();
 	}
+
+	/**
+	 * Called by the user to get the user's current portfolio (stocks and amounts)
+	 * @return A new iterator over Map entries between StockHandle and amounts of stock.
+	 */
 	public Iterator<Entry<StockHandle, Integer>> getPortfolio() {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
 		Set<Entry<StockHandle, Integer>> cloned = new HashSet<Entry<StockHandle, Integer>>();
 		for (Entry<StockHandle, Integer> e : portfolio.entrySet()) {
 			cloned.add(e);
 		}
 		return cloned.iterator();
 	}
-	
+
+	/**
+	 * Called by the user to get the stocks for which the user has outstanding orders.
+	 * @return A new iterator over stocks which have outstanding orders
+	 */
 	public Iterator<StockHandle> getStocksWithOutstanding() {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
 		Set<StockHandle> out = new HashSet<StockHandle>();
 		for (Order o : outstandingOrders) {
 			out.add(o.getStockHandle());
@@ -135,7 +228,13 @@ public class MarketView {
 		return out.iterator();
 	}
 	
+	/**
+	 * Get a simple iterator over all StockHandles the user owns any of.
+	 * @return A new iterator over stocks which the user has some of.
+	 */
 	public Iterator<StockHandle> getOwnedStocks() {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
 		Set<StockHandle> out = new HashSet<StockHandle>();
 		for (Entry<StockHandle, Integer> e : portfolio.entrySet()) {
 			out.add(e.getKey());
@@ -143,10 +242,12 @@ public class MarketView {
 		return out.iterator();
 	}
 	
-	
+	/**
+	 * Called when the user's algorithm should terminate, to try to encourage him to.
+	 * @param runningThread 
+	 */
 	public void tryCleanAbort(Thread runningThread) {
-		//TODO
-		//This method should try and cleanly release any locks held by the marketView, and ensure it does not try to take
-		//out any more.
+		threadShouldBeAborting = true;
+		// TODO: Anything else?
 	}
 }

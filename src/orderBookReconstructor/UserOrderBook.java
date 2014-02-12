@@ -59,7 +59,7 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<BuyOrder> getAllBids() {
-		Comparator<BuyOrder> comp = Order.buyOrderOnlyComparitor;
+		Comparator<BuyOrder> comp = Order.buyOrderOnlyComparator;
 		PeekableIterator<BuyOrder> a = new PeekableIterator<>(getGhostedBids());
 		PeekableIterator<BuyOrder> b = new PeekableIterator<>(outstandingBids.iterator());
 		return new InterleavingIterator<>(a, b, comp);
@@ -67,7 +67,7 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<SellOrder> getAllOffers() {
-		Comparator<SellOrder> comp = Order.sellOrderOnlyComparitor;
+		Comparator<SellOrder> comp = Order.sellOrderOnlyComparator;
 		PeekableIterator<SellOrder> a = new PeekableIterator<>(getGhostedOffers());
 		PeekableIterator<SellOrder> b = new PeekableIterator<>(outstandingOffers.iterator());
 		return new InterleavingIterator<>(a, b, comp);
