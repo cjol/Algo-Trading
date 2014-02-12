@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -15,11 +16,23 @@ import orderBookReconstructor.BuyOrder;
 import orderBookReconstructor.Order;
 import orderBookReconstructor.SellOrder;
 
-
+/**
+ * 
+ * Responds to queries for test data from the rest of the system. 
+ * Responsible for communicating with underlying (PostgreSQL) database,
+ * including establishing connection, whilst hiding implementation details.
+ *
+ */
 public class TestDataServer {
 	private static final String url = "postgresql:testenv";
 	Connection conn;
 	
+	/**
+	 * Connects to the database. If successful, creates a new instance of
+	 * TestDataServer. Throws SQLException on error; e.g. server unavailable.
+	 * 
+	 * @throws SQLException
+	 */
 	public TestDataServer() throws SQLException {
 		// TODO: Make parameters configurable
 		Properties props = new Properties();
@@ -29,27 +42,20 @@ public class TestDataServer {
 		conn = DriverManager.getConnection(url, props);
 	}
 	
-	List<SQLStockHandle> getAllStocks(DatasetHandle d) throws SQLException {
-		int datasetID = d.getId();
-		
-		List<SQLStockHandle> res = null;
-		final String q = "SELECT ticker FROM securities WHERE dataset_id='?'";
-		try (PreparedStatement s = conn.prepareStatement(q)) {
-			s.setInt(1, datasetID);
-			
-			try (ResultSet r = s.executeQuery()) {
-				res = new ArrayList<SQLStockHandle>();
-				
-				while (r.next()) {
-					String ticker = r.getString(1);
-					res.add(new SQLStockHandle(datasetID, ticker));
-				}
-			}
-		}
-		
-		return res;
-	}
-	
+	/** 
+	 * 
+	 * Returns a DatasetHandle object, representing a particular set of test 
+	 * data stored in the database.
+	 * 
+	 * The {@link name} argument should specify the name given to a data set when
+	 * importing it to the database. If no matching data set is found, null
+	 * is returned. 
+	 * 
+	 * @param	 name	human-friendly name of the data set, specified at import	
+	 * @return	 		DatasetHandle representing the data set, if any; otherwise, null
+	 * @throws SQLException
+	 * @see getAllStocks
+	 */
 	public DatasetHandle getDataset(String name) throws SQLException {
 		int datasetID = -1;
 		
@@ -80,9 +86,54 @@ public class TestDataServer {
 		}
 	}
 	
-	public List<Order> getOrders(SQLStockHandle stock, 
+	
+	/**
+	 * Returns a list of StockHandles for all securities in the specified
+	 * dataset, {@link d}. 
+	 *
+	 * @param 	d	Handle of the dataset.
+	 * @return 		List of StockHandles.
+	 * @throws SQLException
+	 */
+	List<SQLStockHandle> getAllStocks(DatasetHandle d) throws SQLException {
+		int datasetID = d.getId();
+		
+		List<SQLStockHandle> res = null;
+		final String q = "SELECT ticker FROM securities WHERE dataset_id='?'";
+		try (PreparedStatement s = conn.prepareStatement(q)) {
+			s.setInt(1, datasetID);
+			
+			try (ResultSet r = s.executeQuery()) {
+				res = new ArrayList<SQLStockHandle>();
+				
+				while (r.next()) {
+					String ticker = r.getString(1);
+					res.add(new SQLStockHandle(datasetID, ticker));
+				}
+			}
+		}
+		
+		return res;
+	}
+	
+	/**
+	 * 
+	 * Returns an Iterator over Order objects, representing all orders that
+	 * were placed in the training data between {@link start} and {@link end}. 
+	 * The Order objects are returned by the iterator in increasing order of
+	 * timestamp. 
+	 * 
+	 * @param	 stock	a StockHandle representing an individual security, in a particular DataSet
+	 * @param 	 start	Timestamp object specifying earliest trades to return; if null, does not impose a minimum
+	 * @param 	 end	Timestamp object specifying latest trades to return; if null, does not impose a maximum
+	 * @return	 iterator over specified ordders
+	 * @throws SQLException
+	 */
+	public Iterator<Order> getOrders(SQLStockHandle stock, 
 								 Timestamp start, Timestamp end) 
 								 throws SQLException {
+		// TODO: construct smart Iterator object which only sends queries
+		// to database as needed
 		if (start == null) {
 			start = new Timestamp(Long.MIN_VALUE);		
 		}
@@ -124,6 +175,6 @@ public class TestDataServer {
 			}
 		} 
 		
-		return res;
+		return res.iterator();
 	}
 }
