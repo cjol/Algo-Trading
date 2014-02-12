@@ -64,8 +64,6 @@ public class DataImporter{
 			e.printStackTrace();
 		}
 
-		/*TODO: Route data from dset_data to SQL*/
-
 		//close dataset
 		try {
 			if (dataset_id >= 0)
@@ -84,6 +82,35 @@ public class DataImporter{
 			e.printStackTrace();
 		}
 
+	}
+
+	/*TODO: Route data from dset_data to SQL*/
+
+	/**Creates a connection to our database, for use in writing data
+	* @throws SQLException If connection could not be established i.e. null database reference
+	*/
+	public Connection getConnection() throws SQLException {
+	    Connection conn = null;
+	    Properties connectionProps = new Properties();
+	    connectionProps.put("user", this.userName);
+	    connectionProps.put("password", this.password);
+
+	    /**TODO: get username and password in secure way*/
+	    if (this.dbms.equals("mysql")) {
+	        conn = DriverManager.getConnection(
+	                   "jdbc:" + this.dbms + "://" +
+	                   this.serverName +
+	                   ":" + this.portNumber + "/",
+	                   connectionProps);
+	    } else if (this.dbms.equals("derby")) {
+	        conn = DriverManager.getConnection(
+	                   "jdbc:" + this.dbms + ":" +
+	                   this.dbName +
+	                   ";create=true",
+	                   connectionProps);
+	    }
+	    System.out.println("Connected to database");
+	    return conn;
 	}
 
 }
