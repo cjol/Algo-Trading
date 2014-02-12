@@ -13,7 +13,7 @@ public class TickData {
 	private final Timestamp dataTimestamp;
 	private final BigDecimal availableFunds;	
 	
-	protected TickData(Timestamp dataTimestamp, Map<StockHandle, Integer> portfolio, List<Order> outstandingOrders, BigDecimal availableFunds) {		
+	public TickData(Timestamp dataTimestamp, Map<StockHandle, Integer> portfolio, List<Order> outstandingOrders, BigDecimal availableFunds) {		
 		this.portfolio = portfolio;
 		this.outstandingOrders = outstandingOrders;
 		this.dataTimestamp = dataTimestamp;
