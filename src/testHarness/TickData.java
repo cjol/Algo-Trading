@@ -35,7 +35,4 @@ public class TickData {
 	public BigDecimal getAvailableFunds() {
 		return availableFunds;
 	}
-
-	
-	
 }

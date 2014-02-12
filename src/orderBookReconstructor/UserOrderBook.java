@@ -1,21 +1,21 @@
 package orderBookReconstructor;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 
-import Iterators.InterleavingIterator;
-import Iterators.PeekableIterator;
-import Iterators.ProtectedIterator;
 import testHarness.OrderBook;
 import testHarness.StockHandle;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
+import Iterators.InterleavingIterator;
+import Iterators.PeekableIterator;
+import Iterators.ProtectedIterator;
 
 /**
  * A decorating order book that keeps track of user orders and filters another order book with them
@@ -44,14 +44,14 @@ public class UserOrderBook extends OrderBook {
 	}
 
 	@Override
-	public BuyOrder buy(int volume, int price, Timestamp time) {
+	public BuyOrder buy(int volume, BigDecimal price, Timestamp time) {
 		BuyOrder bo = new BuyOrder(handle,time, price, volume);
 		outstandingBids.add(bo);
 		return bo;
 	}
 
 	@Override
-	public SellOrder sell(int volume, int price, Timestamp time) {
+	public SellOrder sell(int volume, BigDecimal price, Timestamp time) {
 		SellOrder so = new SellOrder(handle,time, price, volume);
 		outstandingOffers.add(so);
 		return so;
@@ -131,7 +131,9 @@ public class UserOrderBook extends OrderBook {
 			if(canTrade(userOrder, marketOrder)) {
 				int userVolume = userOrder.getVolume();
 				int tradeVolume = (available > userVolume) ? userVolume : available;
-				int price = marketOrder.getPrice() + (marketOrder.getPrice() + userOrder.getPrice()) / 2;
+				BigDecimal price = marketOrder.getPrice().add( 
+						(marketOrder.getPrice().add(userOrder.getPrice()))
+							.divide(BigDecimal.valueOf(2)));
 				
 				userMatches.add(makeMatch(marketOrder, userOrder, tradeVolume, price));
 				available -= tradeVolume;
@@ -170,7 +172,7 @@ public class UserOrderBook extends OrderBook {
 				int marketVolume = marketOrder.getVolume() - (ghost.containsKey(marketOrder) ? ghost.get(marketOrder) : 0);
 				int userVolume = userOrder.getVolume();
 				int tradeVolume = (marketVolume > userVolume) ? userVolume : marketVolume;
-				int price = (marketOrder.getPrice() + userOrder.getPrice()) / 2;
+				BigDecimal price = ( ( marketOrder.getPrice().add(userOrder.getPrice()) ) .divide(BigDecimal.valueOf(2)) );
 					
 				//ghost
 				addGhost(ghost, marketOrder, tradeVolume);
@@ -199,10 +201,10 @@ public class UserOrderBook extends OrderBook {
 		BuyOrder buy = (BuyOrder) ((swap) ? a : b);
 		SellOrder sell = (SellOrder) ((swap) ? b : a);
 		
-		return (buy.getPrice() >= sell.getPrice());
+		return (buy.getPrice().compareTo(sell.getPrice()) >= 0);
 	}
 	
-	private static Match makeMatch(Order a, Order b, int q, int p) {
+	private static Match makeMatch(Order a, Order b, int q, BigDecimal p) {
 		boolean swap = (a instanceof BuyOrder);
 		
 		BuyOrder buy = (BuyOrder) ((swap) ? a : b);

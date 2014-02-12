@@ -3,6 +3,8 @@ package Iterators;
 import java.util.Comparator;
 import java.util.Iterator;
 
+import Iterators.PeekableIterator;
+
 /**
  * An iterator that takes two iterators and interleaves their contents together by a specified ordering
  * @author Lawrence Esswood

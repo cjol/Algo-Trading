@@ -3,7 +3,6 @@ package testHarness;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import orderBookReconstructor.Match;
 import orderBookReconstructor.Order;
 import testHarness.output.Output;
 
@@ -78,9 +78,9 @@ public class MarketView {
 	/**
 	 * Called by the user's algorithm at every iteration. The MarketView then updates its representation of time, 
 	 * and increments the simulation as necessary (updating the user's portfolio and funds).
-	 * @return An iterator over Orders which completed since the user last called tick().
+	 * @return An iterator over Matches which were made since the user last called tick().
 	 */
-	public Iterator<Order> tick() {
+	public Iterator<Match> tick() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
 		numTicks++;
@@ -88,13 +88,52 @@ public class MarketView {
 		Timestamp newTime = new Timestamp(currentTime.getTime() + TICK_SIZE);
 		// probably not needed since nanos are never updated
 		newTime.setNanos(currentTime.getNanos()); 
+		currentTime = newTime;
+		List<Match> allMatches = new ArrayList<Match>();
 		
-		//TODO calls OrderBook.updateTime on OrderBooks for all outstanding trades and returns a list of trades which are still outstanding at this time.
-		for (Order o : outstandingOrders) {
-			
+		// Update simulation state, based on the updated results of every outstanding order
+		for (Order order : outstandingOrders) {
+			// TODO: Would be tidier if there was a straight link from Order to OrderBook!
+			StockHandle stock = order.getStockHandle();
+			OrderBook orderbook = getOrderBook(stock);
+			Iterator<Match> matches = orderbook.updateTime(currentTime);
+			while(matches.hasNext()) {
+				Match match = matches.next();
+				
+				// FIXME Only if Orders are uniquely represented then I can compare references..
+				if (order == match.buyOrder) {
+					// I made the buy order - give me my stock!
+					int amtOwned = match.quantity;
+					if (portfolio.containsKey(stock))
+						amtOwned += portfolio.get(stock);
+					portfolio.put(stock, amtOwned);
+
+					// TODO: Take commission?
+					
+				} else if (order == match.sellOrder) {
+					// I made the sell order - give me monies!
+					availableFunds.add( match.price.multiply(new BigDecimal(match.quantity)) );
+
+					// TODO: Take commission?
+					
+				} else {
+					// This order didn't concern me, so I can just ignore it
+				}
+				
+				// FIXME: Again, reliant on Orders being uniquely represented
+				if (order.getVolume() < 1)
+					outstandingOrders.remove(order);
+				allMatches.add(match);
+			}	
 		}
 		
-		return null;
+		// update Outputs
+		TickData tickdata = new TickData(currentTime, portfolio, outstandingOrders, availableFunds);
+		for (Output output : outputs) {
+			output.evaluateData(tickdata);
+		}
+		
+		return allMatches.iterator();
 	}
 
 	/**
@@ -129,7 +168,7 @@ public class MarketView {
 			return null;
 		return availableFunds;
 	}
-	
+		
 	// TODO: The user needs to be able to cancel an order!
 	
 	/**
@@ -139,11 +178,15 @@ public class MarketView {
 	 * @param volume	The amount of stock the user wants to buy
 	 * @return Whether the offer was successfully posted (may return false if we have insufficient funds)
 	 */
-	public boolean buy(StockHandle stock, int price, int volume) {
+	public boolean buy(StockHandle stock, BigDecimal price, int volume) {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		if (getAvailableFunds().compareTo(new BigDecimal(price * volume)) < 0)
+		
+		if (getAvailableFunds().compareTo(price.multiply(new BigDecimal(volume))) < 0)
 			return false; // we don't have enough funds
+		
+		// subtract available funds now - will be returned if we cancel?
+		availableFunds.add( price.negate().multiply(new BigDecimal(volume)) );
 		
 		Order o = getOrderBook(stock).buy(volume, price, currentTime);
 		allOrders.add(o);
@@ -158,16 +201,19 @@ public class MarketView {
 	 * @param volume	The amount of stock the user wants to sell
 	 * @return Whether the offer was successfully posted (may return false if we have insufficient stock)
 	 */
-	public boolean sell(StockHandle stock, int price, int volume) {
+	public boolean sell(StockHandle stock, BigDecimal price, int volume) {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
 		if (!portfolio.containsKey(stock))
-			return false; // we don't own any of this stock (for now that means no trade (TODO?))
-		
+			return false; // we don't own any of this stock (for now that means no trade)
+
 		int amtOwned = portfolio.get(stock);
-		if (amtOwned < volume)
+		if (amtOwned - volume < 0)
 			return false; // we don't own enough for this sale
 
+		// subtract sold stock now - will be returned if we cancel?
+		portfolio.put(stock, amtOwned - volume);
+		
 		Order o = getOrderBook(stock).sell(volume, price, currentTime);
 		allOrders.add(o);
 		outstandingOrders.add(o);
