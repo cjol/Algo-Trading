@@ -27,7 +27,7 @@ import orderBookReconstructor.SellOrder;
  *
  */
 public class TestDataHandler {
-	private static final String url = "postgresql://127.0.0.1:33333/testenv";
+	private static final String url = "jbdc:postgresql://127.0.0.1:33333/testenv";
 	Connection conn;
 	
 	/**
@@ -165,7 +165,7 @@ public class TestDataHandler {
 						break;
 						default:  throw new AssertionError("Invalid type " + bidOrAskC + " in database.");
 						}
-						results.addFirst(newOrder);
+						results.add(newOrder);
 					}
 				}
 			} catch (SQLException e) {
@@ -179,13 +179,15 @@ public class TestDataHandler {
 			if (results.isEmpty()) {
 				throw new NoSuchElementException();
 			} else {
-				return results.removeFirst();
+				Order o = results.removeFirst();
+				start = o.getTimePlaced();
+				return o;
 			}
 		}
 		
 		public boolean hasNext() {
 			prefetch();
-			return results.isEmpty();
+			return !results.isEmpty();
 		}
 		
 		public void remove() {
