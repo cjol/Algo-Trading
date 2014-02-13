@@ -1,6 +1,7 @@
 package testHarness;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,7 +16,9 @@ import java.util.Set;
 import orderBookReconstructor.Match;
 import orderBookReconstructor.Order;
 import orderBookReconstructor.OrderBookReconstructor;
+import orderBookReconstructor.UserOrderBook;
 import testHarness.output.Output;
+import database.DatasetHandle;
 import database.StockHandle;
 import database.TestDataHandler;
 
@@ -47,7 +50,8 @@ public class MarketView {
 	private int numTicks;
 	private BigDecimal availableFunds;
 	private List<Output> outputs; 
-	private TestDataHandler dataHandler;
+	private final TestDataHandler dataHandler;
+	private final DatasetHandle dataset;
 	private boolean threadShouldBeAborting;
 	
 	/**
@@ -56,10 +60,11 @@ public class MarketView {
 	 * @param outputs		The types of output which this MarketView will log
 	 * @param dataHandler	The source of data which this MarketView will use
 	 */
-	public MarketView(ITradingAlgorithm algo, List<Output> outputs, TestDataHandler dataHandler) {
+	public MarketView(ITradingAlgorithm algo, List<Output> outputs, TestDataHandler dataHandler, DatasetHandle dataset) {
 		this.algo = algo;
 		this.outputs = outputs;
 		this.dataHandler = dataHandler;
+		this.dataset = dataset;
 	}
 	
 	/**
@@ -147,9 +152,13 @@ public class MarketView {
 	public OrderBook getOrderBook(StockHandle stock) {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		if (openedBooks.containsKey(stock))
-			return openedBooks.get(stock);
-		return new OrderBookReconstructor(currentTime, dataHandler);
+		if (openedBooks.containsKey(stock)) {
+			OrderBook market = new OrderBookReconstructor(currentTime, stock, dataHandler);
+			OrderBook user = new UserOrderBook(stock, market);
+			openedBooks.put(stock, user); 	
+		}
+		return openedBooks.get(stock);
+		
 	}
 	
 	/**
@@ -232,7 +241,15 @@ public class MarketView {
 			throw new SimulationAbortedException();
 		// TODO: Does this need cloning HERE before being handed to the user?
 		// probably should determine a policy for where such clones are made so we don't make them a million times
-		return dataHandler.getAllStocks();
+		Iterator<StockHandle> res = null;
+		try {
+			res = dataHandler.getAllStocks(dataset);	
+		} catch (SQLException e) {
+			// TODO: Handle exceptions in consistent manner, + more intelligently
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		return res;
 	}
 	
 	/**

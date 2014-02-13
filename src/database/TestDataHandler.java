@@ -97,7 +97,7 @@ public class TestDataHandler {
 	 * @return 		List of StockHandles.
 	 * @throws SQLException
 	 */
-	List<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
+	public Iterator<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
 		int datasetID = d.getId();
 		
 		List<StockHandle> res = null;
@@ -115,7 +115,7 @@ public class TestDataHandler {
 			}
 		}
 		
-		return res;
+		return res.iterator();
 	}
 	
 	class ResultSetIterator implements Iterator<Order> {
