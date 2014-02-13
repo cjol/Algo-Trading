@@ -4,8 +4,10 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Iterator;
 
+import orderBookReconstructor.BuyOrder;
 import orderBookReconstructor.Match;
 import orderBookReconstructor.OrderBookReconstructor;
+import orderBookReconstructor.SellOrder;
 
 import org.junit.Test;
 
@@ -34,6 +36,21 @@ public class DatabaseToReconstructorTest {
 			System.out.println("MATCH: BUY " + m.buyOrder.getVolume() + " at " + m.buyOrder.getPrice()
 					+ " AND SELL " + m.sellOrder.getVolume() + " at " + m.sellOrder.getPrice() + 
 					" (on " + m.quantity + " items)");
+		}
+		
+		System.out.println("BIDS: ");
+		
+		Iterator<BuyOrder> buyOrders = obr.getAllBids();
+		while (buyOrders.hasNext()) {
+			BuyOrder bo = buyOrders.next();
+			System.out.println(bo.getVolume() + " @ " + bo.getPrice());
+		}
+		
+		System.out.println("OFFERS: ");
+		Iterator<SellOrder> sellOrders = obr.getAllOffers();
+		while (sellOrders.hasNext()) {
+			SellOrder so = sellOrders.next();
+			System.out.println(so.getVolume() + " @ " + so.getPrice());
 		}
 	}
 
