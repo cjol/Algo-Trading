@@ -26,7 +26,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  *
  */
 public class TestDataHandler {
-	private static final String url = "jdbc:postgresql://127.0.0.1:33333/testenv";
+	private static final String url = "postgresql://127.0.0.1:33333/testenv";
 	Connection conn;
 	
 	/**
@@ -38,7 +38,7 @@ public class TestDataHandler {
 	public TestDataHandler() throws SQLException {
 		// TODO: Make parameters configurable
 		Properties props = new Properties();
-		props.setProperty("user", "artjoms");
+		props.setProperty("user", "alpha");
 		props.setProperty("password", "");
 		
 		conn = DriverManager.getConnection(url, props);
@@ -74,7 +74,7 @@ public class TestDataHandler {
 			}
 		}
 		
-		q = "SELECT ts FROM trades WHERE dataset_id='?' ORDER BY ts LIMIT 1";
+		q = "SELECT ts FROM trades WHERE dataset_id=? ORDER BY ts LIMIT 1";
 		try (PreparedStatement s = conn.prepareStatement(q)) {
 			s.setInt(1, datasetID);
 			
@@ -97,13 +97,11 @@ public class TestDataHandler {
 	 * @return 		List of StockHandles.
 	 * @throws SQLException
 	 */
-	
-	//FIXME: changed to public to access the data for testing purposes -- ai280
-	public List<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
+	public Iterator<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
 		int datasetID = d.getId();
 		
 		List<StockHandle> res = null;
-		final String q = "SELECT ticker FROM securities WHERE dataset_id='?'";
+		final String q = "SELECT ticker FROM securities WHERE dataset_id=?";
 		try (PreparedStatement s = conn.prepareStatement(q)) {
 			s.setInt(1, datasetID);
 			
@@ -117,7 +115,7 @@ public class TestDataHandler {
 			}
 		}
 		
-		return res;
+		return res.iterator();
 	}
 	
 	class ResultSetIterator implements Iterator<Order> {
@@ -174,8 +172,8 @@ public class TestDataHandler {
 		List<Order> res = null;
 		
 		final String q = "SELECT ts,bid_or_ask,price,volume FROM trades" +
-						 "WHERE dataset_id='?' AND ticker='?'" +
-						 "AND ts > '?' AND ts < '?'";
+						 "WHERE dataset_id=? AND ticker=?" +
+						 "AND ts > ? AND ts < ?";
 		try (PreparedStatement s = conn.prepareStatement(q)) {
 			s.setInt(1, stock.getDatasetID());
 			s.setString(2, stock.getTicker());
