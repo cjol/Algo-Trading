@@ -2,11 +2,13 @@ package testHarness.clientConnection;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
 import java.util.List;
 
 import testHarness.MarketView;
 import testHarness.clientConnection.TestRequestDescription.LoadClassException;
 import testHarness.output.Output;
+import database.DatasetHandle;
 import database.OutputServer;
 import database.TestDataHandler;
 
@@ -47,14 +49,28 @@ public class TestInstance implements Runnable{
 		{	
 			
 			TestRequestDescription desc = connection.getTest();
+			TestResultDescription result;
 			
-			List<Output> outputs = TestRequestDescription.getOutputs(desc, outputServer);
-			marketView = new MarketView(TestRequestDescription.getAlgo(desc), outputs, dataHandler);
-			startSim(testTimeLimit_mili);
-			
-			TestResultDescription result = (marketView.isFinished()) ?
-											TestRequestDescription.filterOutputs(desc, outputs):
-											new TestResultDescription("Test timed out");
+			// TODO: Retrieve dataset name from users submission
+			String datasetName = "test";
+			DatasetHandle dataset = null;
+			try {
+				dataset = dataHandler.getDataset(datasetName);	
+			} catch (SQLException e) {
+				e.printStackTrace();
+				System.exit(-1); // DB error fatal
+			}
+			if (dataset == null) {
+				result = new TestResultDescription("Dataset " + datasetName + " not found.");
+			} else {
+				List<Output> outputs = TestRequestDescription.getOutputs(desc, outputServer);
+				marketView = new MarketView(TestRequestDescription.getAlgo(desc), outputs, dataHandler, dataset);
+				startSim(testTimeLimit_mili);
+				
+				result = (marketView.isFinished()) ?
+				     	 TestRequestDescription.filterOutputs(desc, outputs):
+						 new TestResultDescription("Test timed out");
+			}
 											
 			connection.sendResults(result);
 		
