@@ -43,6 +43,15 @@ public class UserOrderBook extends OrderBook {
 		ghostOffers = new HashMap<SellOrder, Integer>();
 	}
 
+	/**
+	 * This method indicates whether or not there are any pending trades for the user.
+	 * @return A boolean flag indicating completion.
+	 */
+	public boolean isComplete() {
+		return outstandingBids.isEmpty() && outstandingOffers.isEmpty();
+	}
+	
+	
 	@Override
 	public BuyOrder buy(int volume, BigDecimal price, Timestamp time) {
 		BuyOrder bo = new BuyOrder(handle,time, price, volume);
