@@ -14,7 +14,10 @@ import java.util.Set;
 
 import orderBookReconstructor.Match;
 import orderBookReconstructor.Order;
+import orderBookReconstructor.OrderBookReconstructor;
 import testHarness.output.Output;
+import database.StockHandle;
+import database.TestDataHandler;
 
 /**
  * Thrown at the user when their algorithm tries to access any function after the thread has been told to abort.
@@ -146,7 +149,7 @@ public class MarketView {
 			throw new SimulationAbortedException();
 		if (openedBooks.containsKey(stock))
 			return openedBooks.get(stock);
-		return stock.getOrderBookAtTime(currentTime);
+		return new OrderBookReconstructor(currentTime, dataHandler);
 	}
 	
 	/**
@@ -229,7 +232,7 @@ public class MarketView {
 			throw new SimulationAbortedException();
 		// TODO: Does this need cloning HERE before being handed to the user?
 		// probably should determine a policy for where such clones are made so we don't make them a million times
-		return dataHandler.getStockHandles();
+		return dataHandler.getAllStocks();
 	}
 	
 	/**

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import orderBookReconstructor.Order;
+import database.StockHandle;
 
 public class TickData {	
 	private final Map<StockHandle, Integer> portfolio;

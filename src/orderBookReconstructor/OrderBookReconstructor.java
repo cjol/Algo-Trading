@@ -11,10 +11,10 @@ import java.util.TreeSet;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import testHarness.OrderBook;
-import testHarness.StockHandle;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 import Iterators.ProtectedIterator;
+import database.StockHandle;
 
 /**
  * Given a list of orders on the marketplace, reconstructs the
