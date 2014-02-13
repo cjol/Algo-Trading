@@ -1,7 +1,5 @@
 package valueObjects;
 
-import java.math.BigDecimal;
-
 /**
  * Represents a division of elements of two value objects
  */
@@ -16,8 +14,8 @@ public class Division implements IValued {
 	}
 
 	@Override
-	public BigDecimal getValue(int ticksBack) throws TickOutOfRangeException {
-		return a.getValue(ticksBack).divide(b.getValue(ticksBack));
+	public double getValue(int ticksBack) throws TickOutOfRangeException {
+		return a.getValue(ticksBack) / b.getValue(ticksBack);
 	}
 
 }

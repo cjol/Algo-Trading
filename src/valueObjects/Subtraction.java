@@ -1,7 +1,5 @@
 package valueObjects;
 
-import java.math.BigDecimal;
-
 /**
  * Represents a subtraction of elements of two value objects
  */
@@ -16,8 +14,8 @@ public class Subtraction implements IValued {
 	}
 	
 	@Override
-	public BigDecimal getValue(int ticksBack) throws TickOutOfRangeException {
-		return a.getValue(ticksBack).subtract(b.getValue(ticksBack));
+	public double getValue(int ticksBack) throws TickOutOfRangeException {
+		return a.getValue(ticksBack) - b.getValue(ticksBack);
 	}
 
 }
