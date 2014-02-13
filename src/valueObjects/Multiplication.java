@@ -1,6 +1,5 @@
 package valueObjects;
 
-import java.math.BigDecimal;
 
 /**
  * Represents a multiplication of elements of two value objects
@@ -16,8 +15,8 @@ public class Multiplication implements IValued {
 	}
 
 	@Override
-	public BigDecimal getValue(int ticksBack) throws TickOutOfRangeException {
-		return a.getValue(ticksBack).multiply(b.getValue(ticksBack));
+	public double getValue(int ticksBack) throws TickOutOfRangeException {
+		return a.getValue(ticksBack) * b.getValue(ticksBack);
 	}
 
 }

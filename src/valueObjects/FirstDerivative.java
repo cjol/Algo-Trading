@@ -1,8 +1,5 @@
 package valueObjects;
 
-import java.math.BigDecimal;
-
-
 /**
  * A value object that is the derivative of a time series, i.e. the difference
  * between consecutive terms.
@@ -19,12 +16,12 @@ public class FirstDerivative implements IValued {
 	}
 	
 	@Override
-	public BigDecimal getValue(int ticksBack) throws TickOutOfRangeException {
+	public double getValue(int ticksBack) throws TickOutOfRangeException {
 		//Subtract the current from the previous value
-		BigDecimal curr = underlying.getValue(ticksBack);
-		BigDecimal prev = underlying.getValue(ticksBack + 1);
+		double curr = underlying.getValue(ticksBack);
+		double prev = underlying.getValue(ticksBack + 1);
 		
-		return curr.subtract(prev);
+		return curr - prev;
 	}
 
 }
