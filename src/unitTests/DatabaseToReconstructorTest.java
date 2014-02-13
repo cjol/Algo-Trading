@@ -19,7 +19,7 @@ public class DatabaseToReconstructorTest {
 	public void test() throws SQLException {
 		TestDataHandler dh = new TestDataHandler();
 		DatasetHandle dataset = dh.getDataset("test");
-		StockHandle stockHandle = dh.getAllStocks(dataset).get(0);
+		StockHandle stockHandle = dh.getAllStocks(dataset).next();
 		
 		//NB: timestamp constructor wants the year to be 1900-based,
 		//day to be 1-based and month to be 0-based.
