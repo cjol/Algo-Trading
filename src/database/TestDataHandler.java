@@ -27,7 +27,7 @@ import orderBookReconstructor.SellOrder;
  *
  */
 public class TestDataHandler {
-	private static final String url = "postgresql://127.0.0.1:33333/testenv";
+	private static final String url = "jbdc:postgresql://127.0.0.1:33333/testenv";
 	Connection conn;
 	
 	/**
@@ -39,7 +39,7 @@ public class TestDataHandler {
 	public TestDataHandler() throws SQLException {
 		// TODO: Make parameters configurable
 		Properties props = new Properties();
-		props.setProperty("user", "alpha");
+		props.setProperty("user", "adam");
 		props.setProperty("password", "");
 		
 		conn = DriverManager.getConnection(url, props);
@@ -165,7 +165,7 @@ public class TestDataHandler {
 						break;
 						default:  throw new AssertionError("Invalid type " + bidOrAskC + " in database.");
 						}
-						results.addFirst(newOrder);
+						results.add(newOrder);
 					}
 				}
 			} catch (SQLException e) {
