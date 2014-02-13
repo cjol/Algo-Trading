@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Comparator;
 
-import testHarness.StockHandle;
+import database.StockHandle;
 
 public abstract class Order implements Comparable<Order>, Cloneable {
 	private final StockHandle stock;

@@ -1,5 +1,6 @@
 package database;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -15,6 +16,7 @@ import java.util.Properties;
 import orderBookReconstructor.BuyOrder;
 import orderBookReconstructor.Order;
 import orderBookReconstructor.SellOrder;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * 
@@ -23,7 +25,7 @@ import orderBookReconstructor.SellOrder;
  * including establishing connection, whilst hiding implementation details.
  *
  */
-public class TestDataServer {
+public class TestDataHandler {
 	private static final String url = "postgresql:testenv";
 	Connection conn;
 	
@@ -33,7 +35,7 @@ public class TestDataServer {
 	 * 
 	 * @throws SQLException
 	 */
-	public TestDataServer() throws SQLException {
+	public TestDataHandler() throws SQLException {
 		// TODO: Make parameters configurable
 		Properties props = new Properties();
 		props.setProperty("user", "alpha");
@@ -95,25 +97,51 @@ public class TestDataServer {
 	 * @return 		List of StockHandles.
 	 * @throws SQLException
 	 */
-	List<SQLStockHandle> getAllStocks(DatasetHandle d) throws SQLException {
+	List<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
 		int datasetID = d.getId();
 		
-		List<SQLStockHandle> res = null;
+		List<StockHandle> res = null;
 		final String q = "SELECT ticker FROM securities WHERE dataset_id='?'";
 		try (PreparedStatement s = conn.prepareStatement(q)) {
 			s.setInt(1, datasetID);
 			
 			try (ResultSet r = s.executeQuery()) {
-				res = new ArrayList<SQLStockHandle>();
+				res = new ArrayList<StockHandle>();
 				
 				while (r.next()) {
 					String ticker = r.getString(1);
-					res.add(new SQLStockHandle(datasetID, ticker));
+					res.add(new StockHandle(datasetID, ticker));
 				}
 			}
 		}
 		
 		return res;
+	}
+	
+	class ResultSetIterator implements Iterator<Order> {
+		private final StockHandle stock;
+		private Timestamp start;
+		private final Timestamp end;
+		
+		public ResultSetIterator(StockHandle stock, 
+   								  Timestamp start, Timestamp end) {
+ 			this.stock = stock;
+ 			this.start = start;
+ 			this.end = end;
+		}
+		
+		public Order next() {
+			// TODO
+			return null;
+		}
+		
+		public void remove() {
+			throw new NotImplementedException();
+		}
+		
+		public boolean hasNext() {
+			return false;
+		}
 	}
 	
 	/**
@@ -129,7 +157,7 @@ public class TestDataServer {
 	 * @return	 iterator over specified ordders
 	 * @throws SQLException
 	 */
-	public Iterator<Order> getOrders(SQLStockHandle stock, 
+	public Iterator<Order> getOrders(StockHandle stock, 
 								 Timestamp start, Timestamp end) 
 								 throws SQLException {
 		// TODO: construct smart Iterator object which only sends queries
@@ -164,9 +192,9 @@ public class TestDataServer {
 					
 					Order newOrder = null;
 					switch (bidOrAskC) {
-					case "A": newOrder = new BuyOrder(stock, ts, price, volume);
+					case "A": newOrder = new BuyOrder(stock, ts, new BigDecimal(price), volume);
 							  break;
-					case "B": newOrder = new SellOrder(stock, ts, price, volume);
+					case "B": newOrder = new SellOrder(stock, ts, new BigDecimal(price), volume);
 							  break;
 					default:  throw new AssertionError("Invalid type " + bidOrAskC + " in database.");
 					}

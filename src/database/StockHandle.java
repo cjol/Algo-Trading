@@ -1,12 +1,10 @@
 package database;
 
-import testHarness.StockHandle;
-
 /**
  * Represents a particular security in the database.
  *
  */
-public class SQLStockHandle extends StockHandle {
+public class StockHandle {
 	private final int datasetID;
 	private final String ticker;
 
@@ -16,7 +14,7 @@ public class SQLStockHandle extends StockHandle {
 	 * @param 	datasetID	internal identifier used by database	
 	 * @param	ticker		symbol identifying security
 	 */
-	public SQLStockHandle(int datasetID, String ticker) {
+	public StockHandle(int datasetID, String ticker) {
 		this.datasetID = datasetID;
 		this.ticker = ticker;
 	}

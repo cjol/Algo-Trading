@@ -4,12 +4,9 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.Map;
 
-
-import database.OutputServer;
-
-import testHarness.StockHandle;
 import testHarness.TickData;
-import testHarness.output.Output;
+import database.OutputServer;
+import database.StockHandle;
 
 public class Portfolio extends Output{
 	
