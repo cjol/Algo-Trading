@@ -10,13 +10,14 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import orderBookReconstructor.BuyOrder;
 import orderBookReconstructor.Order;
 import orderBookReconstructor.SellOrder;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * 
@@ -26,7 +27,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  *
  */
 public class TestDataHandler {
-	private static final String url = "jdbc:postgresql://127.0.0.1:33333/testenv";
+	private static final String url = "postgresql://127.0.0.1:33333/testenv";
 	Connection conn;
 	
 	/**
@@ -38,7 +39,7 @@ public class TestDataHandler {
 	public TestDataHandler() throws SQLException {
 		// TODO: Make parameters configurable
 		Properties props = new Properties();
-		props.setProperty("user", "artjoms");
+		props.setProperty("user", "alpha");
 		props.setProperty("password", "");
 		
 		conn = DriverManager.getConnection(url, props);
@@ -74,7 +75,7 @@ public class TestDataHandler {
 			}
 		}
 		
-		q = "SELECT ts FROM trades WHERE dataset_id='?' ORDER BY ts LIMIT 1";
+		q = "SELECT ts FROM trades WHERE dataset_id=? ORDER BY ts LIMIT 1";
 		try (PreparedStatement s = conn.prepareStatement(q)) {
 			s.setInt(1, datasetID);
 			
@@ -97,13 +98,11 @@ public class TestDataHandler {
 	 * @return 		List of StockHandles.
 	 * @throws SQLException
 	 */
-	
-	//FIXME: changed to public to access the data for testing purposes -- ai280
-	public List<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
+	public Iterator<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
 		int datasetID = d.getId();
 		
 		List<StockHandle> res = null;
-		final String q = "SELECT ticker FROM securities WHERE dataset_id='?'";
+		final String q = "SELECT ticker FROM securities WHERE dataset_id=?";
 		try (PreparedStatement s = conn.prepareStatement(q)) {
 			s.setInt(1, datasetID);
 			
@@ -117,32 +116,80 @@ public class TestDataHandler {
 			}
 		}
 		
-		return res;
+		return res.iterator();
 	}
 	
 	class ResultSetIterator implements Iterator<Order> {
+		private static final int CHUNK_SIZE = 1; // for debug, increase
 		private final StockHandle stock;
 		private Timestamp start;
 		private final Timestamp end;
+		private LinkedList<Order> results;
 		
 		public ResultSetIterator(StockHandle stock, 
    								  Timestamp start, Timestamp end) {
  			this.stock = stock;
  			this.start = start;
  			this.end = end;
+ 			this.results = new LinkedList<Order>();
+		}
+		
+		public void prefetch() {
+			if (!results.isEmpty()) {
+				return;
+			}
+			
+			final String q = "SELECT ts,bid_or_ask,price,volume FROM trades " +
+							  "WHERE dataset_id=? AND ticker=? " +
+							  "AND ts > ? AND ts < ? LIMIT ?";
+
+			try (PreparedStatement s = conn.prepareStatement(q)) {
+				s.setInt(1, stock.getDatasetID());
+				s.setString(2, stock.getTicker());
+				s.setTimestamp(3, start);
+				s.setTimestamp(4, end);
+				s.setInt(5, CHUNK_SIZE);
+
+				try (ResultSet r = s.executeQuery()) {
+					while (r.next()) {
+						Timestamp ts = r.getTimestamp(1);
+						String bidOrAskC = r.getString(2);
+						int price = r.getInt(3);
+						int volume = r.getInt(4);
+
+						Order newOrder = null;
+						switch (bidOrAskC) {
+						case "A": newOrder = new SellOrder(stock, ts, new BigDecimal(price), volume);
+						break;
+						case "B": newOrder = new BuyOrder(stock, ts, new BigDecimal(price), volume);
+						break;
+						default:  throw new AssertionError("Invalid type " + bidOrAskC + " in database.");
+						}
+						results.addFirst(newOrder);
+					}
+				}
+			} catch (SQLException e) {
+				throw new RuntimeException(e); // tunnelling
+			}
 		}
 		
 		public Order next() {
-			// TODO
-			return null;
-		}
-		
-		public void remove() {
-			throw new NotImplementedException();
+			prefetch();
+			
+			if (results.isEmpty()) {
+				throw new NoSuchElementException();
+			} else {
+				return results.removeFirst();
+			}
 		}
 		
 		public boolean hasNext() {
-			return false;
+			prefetch();
+			return results.isEmpty();
+		}
+		
+		public void remove() {
+			throw new UnsupportedOperationException();
 		}
 	}
 	
@@ -162,8 +209,6 @@ public class TestDataHandler {
 	public Iterator<Order> getOrders(StockHandle stock, 
 								 Timestamp start, Timestamp end) 
 								 throws SQLException {
-		// TODO: construct smart Iterator object which only sends queries
-		// to database as needed
 		if (start == null) {
 			start = new Timestamp(Long.MIN_VALUE);		
 		}
@@ -171,40 +216,8 @@ public class TestDataHandler {
 			end = new Timestamp(Long.MAX_VALUE);
 		}
 		
-		List<Order> res = null;
+		ResultSetIterator rs = new ResultSetIterator(stock, start, end);
 		
-		final String q = "SELECT ts,bid_or_ask,price,volume FROM trades" +
-						 "WHERE dataset_id='?' AND ticker='?'" +
-						 "AND ts > '?' AND ts < '?'";
-		try (PreparedStatement s = conn.prepareStatement(q)) {
-			s.setInt(1, stock.getDatasetID());
-			s.setString(2, stock.getTicker());
-			s.setTimestamp(3, start);
-			s.setTimestamp(4, start);
-			
-			
-			try (ResultSet r = s.executeQuery()) {
-				res = new ArrayList<Order>();
-				
-				while (r.next()) {
-					Timestamp ts = r.getTimestamp(1);
-					String bidOrAskC = r.getString(2);
-					int price = r.getInt(3);
-					int volume = r.getInt(4);
-					
-					Order newOrder = null;
-					switch (bidOrAskC) {
-					case "A": newOrder = new BuyOrder(stock, ts, new BigDecimal(price), volume);
-							  break;
-					case "B": newOrder = new SellOrder(stock, ts, new BigDecimal(price), volume);
-							  break;
-					default:  throw new AssertionError("Invalid type " + bidOrAskC + " in database.");
-					}
-					res.add(newOrder);
-				}
-			}
-		} 
-		
-		return res.iterator();
+		return rs;
 	}
 }
