@@ -204,13 +204,14 @@ public class UserOrderBook extends OrderBook {
 		return (buy.getPrice().compareTo(sell.getPrice()) >= 0);
 	}
 	
+	//second order is users
 	private static Match makeMatch(Order a, Order b, int q, BigDecimal p) {
 		boolean swap = (a instanceof BuyOrder);
 		
 		BuyOrder buy = (BuyOrder) ((swap) ? a : b);
 		SellOrder sell = (SellOrder) ((swap) ? b : a);
 		
-		return new Match(buy, sell, q, p);
+		return new Match(buy, sell, q, p, swap);
 	}
 	
 	/**
