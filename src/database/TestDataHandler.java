@@ -120,7 +120,7 @@ public class TestDataHandler {
 	}
 	
 	class ResultSetIterator implements Iterator<Order> {
-		private static final int CHUNK_SIZE = 1; // for debug, increase
+		private static final int CHUNK_SIZE = 1024;
 		private final StockHandle stock;
 		private long startID;
 		private final Timestamp end;
