@@ -39,7 +39,7 @@ public class TestDataHandler {
 	public TestDataHandler() throws SQLException {
 		// TODO: Make parameters configurable
 		Properties props = new Properties();
-		props.setProperty("user", "adam");
+		props.setProperty("user", "alpha");
 		props.setProperty("password", "");
 		
 		conn = DriverManager.getConnection(url, props);
@@ -185,7 +185,7 @@ public class TestDataHandler {
 		
 		public boolean hasNext() {
 			prefetch();
-			return results.isEmpty();
+			return !results.isEmpty();
 		}
 		
 		public void remove() {
