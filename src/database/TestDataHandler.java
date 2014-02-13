@@ -179,7 +179,9 @@ public class TestDataHandler {
 			if (results.isEmpty()) {
 				throw new NoSuchElementException();
 			} else {
-				return results.removeFirst();
+				Order o = results.removeFirst();
+				start = o.getTimePlaced();
+				return o;
 			}
 		}
 		
