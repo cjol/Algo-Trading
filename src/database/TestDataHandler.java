@@ -26,7 +26,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  *
  */
 public class TestDataHandler {
-	private static final String url = "postgresql:testenv";
+	private static final String url = "jdbc:postgresql://127.0.0.1:33333/testenv";
 	Connection conn;
 	
 	/**
@@ -38,7 +38,7 @@ public class TestDataHandler {
 	public TestDataHandler() throws SQLException {
 		// TODO: Make parameters configurable
 		Properties props = new Properties();
-		props.setProperty("user", "alpha");
+		props.setProperty("user", "artjoms");
 		props.setProperty("password", "");
 		
 		conn = DriverManager.getConnection(url, props);
@@ -61,7 +61,7 @@ public class TestDataHandler {
 	public DatasetHandle getDataset(String name) throws SQLException {
 		int datasetID = -1;
 		
-		String q = "SELECT dataset_id FROM datasets WHERE name='?'";
+		String q = "SELECT dataset_id FROM datasets WHERE name=?";
 		try (PreparedStatement s = conn.prepareStatement(q)) {
 			s.setString(1, name);
 			
@@ -97,7 +97,9 @@ public class TestDataHandler {
 	 * @return 		List of StockHandles.
 	 * @throws SQLException
 	 */
-	List<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
+	
+	//FIXME: changed to public to access the data for testing purposes -- ai280
+	public List<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
 		int datasetID = d.getId();
 		
 		List<StockHandle> res = null;
