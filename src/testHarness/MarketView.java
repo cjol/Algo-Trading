@@ -101,7 +101,7 @@ public class MarketView {
 				Match match = matches.next();
 				
 				// FIXME Only if Orders are uniquely represented then I can compare references..
-				if (order == match.buyOrder) {
+				if (match.isUserBid) {
 					// I made the buy order - give me my stock!
 					int amtOwned = match.quantity;
 					if (portfolio.containsKey(stock))
@@ -110,7 +110,7 @@ public class MarketView {
 
 					// TODO: Take commission?
 					
-				} else if (order == match.sellOrder) {
+				} else if (match.isUserOffer) {
 					// I made the sell order - give me monies!
 					availableFunds.add( match.price.multiply(new BigDecimal(match.quantity)) );
 
@@ -161,6 +161,7 @@ public class MarketView {
 			throw new SimulationAbortedException();
 		if (openedBooks.containsKey(stock))
 			return openedBooks.get(stock);
+		
 		return stock.getOrderBookAtTime(currentTime);
 	}
 	
