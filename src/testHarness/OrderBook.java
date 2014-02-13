@@ -9,6 +9,7 @@ import orderBookReconstructor.Match;
 import orderBookReconstructor.SellOrder;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
+import database.StockHandle;
 
 
 /**

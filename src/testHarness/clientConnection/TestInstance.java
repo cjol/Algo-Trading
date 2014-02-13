@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import database.OutputServer;
 import testHarness.MarketView;
-import testHarness.TestDataHandler;
 import testHarness.clientConnection.TestRequestDescription.LoadClassException;
 import testHarness.output.Output;
+import database.OutputServer;
+import database.TestDataHandler;
 
 /**
  * Runs a test instance and communicates with a client

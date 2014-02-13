@@ -1,7 +1,5 @@
 package unitTests;
 
-import static org.junit.Assert.*;
-
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -15,11 +13,11 @@ import org.junit.Test;
 
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
-import testHarness.StockHandle;
-import testHarness.TestDataHandler;
 import testHarness.clientConnection.TestRequestDescription;
 import testHarness.output.Output;
 import clientLoaders.FileLoader;
+import database.StockHandle;
+import database.TestDataHandler;
 
 public class SecurityTests {
 

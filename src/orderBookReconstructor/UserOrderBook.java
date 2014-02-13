@@ -10,12 +10,12 @@ import java.util.List;
 import java.util.TreeSet;
 
 import testHarness.OrderBook;
-import testHarness.StockHandle;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 import Iterators.InterleavingIterator;
 import Iterators.PeekableIterator;
 import Iterators.ProtectedIterator;
+import database.StockHandle;
 
 /**
  * A decorating order book that keeps track of user orders and filters another order book with them

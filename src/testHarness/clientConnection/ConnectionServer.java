@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import database.OutputServer;
-import testHarness.TestDataHandler;
+import database.TestDataHandler;
 
 /**
  * A server that listens to communication from clients.
