@@ -1,6 +1,7 @@
 package orderBookReconstructor;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +16,7 @@ import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 import Iterators.ProtectedIterator;
 import database.StockHandle;
+import database.TestDataHandler;
 
 /**
  * Given a list of orders on the marketplace, reconstructs the
@@ -22,17 +24,16 @@ import database.StockHandle;
  * returns a list of matches that have occurred.
  */
 public class OrderBookReconstructor extends OrderBook{
-	private List<Order> marketOrders;
+	private TestDataHandler dataHandler;
 	
-	//Current ID in the orders' list the reconstructor 
-	private int currentId;
+	//Current time the reconstructor is looking at.
+	private Timestamp currentTime;
 	
 	//Sets of bids and asks at the current timestamp.
 	private TreeSet<BuyOrder> stockBids;
 	private TreeSet<SellOrder> stockOffers;
 	
 	private void initialize() {
-		currentId = 0;
 		stockBids = new TreeSet<>();
 		stockOffers = new TreeSet<>();
 	}
@@ -42,9 +43,10 @@ public class OrderBookReconstructor extends OrderBook{
 	 * @param handle The stock the order book is for.
 	 * @param marketOrders A time-ordered collection of market orders.
 	 */
-	public OrderBookReconstructor(StockHandle handle, Collection<Order> marketOrders) {
+	public OrderBookReconstructor(Timestamp startTime, StockHandle handle, TestDataHandler dataHandler) {
 		super(handle);
-		this.marketOrders = new ArrayList<>(marketOrders);
+		this.currentTime = startTime;
+		this.dataHandler = dataHandler;
 		initialize();
 	}
 
@@ -104,15 +106,20 @@ public class OrderBookReconstructor extends OrderBook{
 		//Fast forwards the state of the order book up to the timestamp
 		//and returns all the matching orders that occurred during that time.
 		
-		if (marketOrders.get(currentId).getTimePlaced().compareTo(timestamp) > 0) {
-			throw new AssertionError("Only fast forward is supported for now!");
+		Iterator<? extends Order> marketOrders;
+		try {
+			marketOrders = dataHandler.getOrders(handle, currentTime, timestamp);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
 		
 		LinkedList<Match> matches = new LinkedList<>();
 		
 		//Continue until the required timestamp is reached.
-		for (; currentId < marketOrders.size(); currentId++) {
-			Order currOrder = marketOrders.get(currentId);
+		while(marketOrders.hasNext()) {
+			Order currOrder = marketOrders.next();
 			if (currOrder.getTimePlaced().compareTo(timestamp) > 0) break;
 			
 			//Try to match this order with the market and update the matches' list
