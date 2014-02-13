@@ -10,13 +10,14 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import orderBookReconstructor.BuyOrder;
 import orderBookReconstructor.Order;
 import orderBookReconstructor.SellOrder;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * 
@@ -119,28 +120,76 @@ public class TestDataHandler {
 	}
 	
 	class ResultSetIterator implements Iterator<Order> {
+		private static final int CHUNK_SIZE = 1; // for debug, increase
 		private final StockHandle stock;
 		private Timestamp start;
 		private final Timestamp end;
+		private LinkedList<Order> results;
 		
 		public ResultSetIterator(StockHandle stock, 
    								  Timestamp start, Timestamp end) {
  			this.stock = stock;
  			this.start = start;
  			this.end = end;
+ 			this.results = new LinkedList<Order>();
+		}
+		
+		public void prefetch() {
+			if (!results.isEmpty()) {
+				return;
+			}
+			
+			final String q = "SELECT ts,bid_or_ask,price,volume FROM trades " +
+							  "WHERE dataset_id=? AND ticker=? " +
+							  "AND ts > ? AND ts < ? LIMIT ?";
+
+			try (PreparedStatement s = conn.prepareStatement(q)) {
+				s.setInt(1, stock.getDatasetID());
+				s.setString(2, stock.getTicker());
+				s.setTimestamp(3, start);
+				s.setTimestamp(4, end);
+				s.setInt(5, CHUNK_SIZE);
+
+				try (ResultSet r = s.executeQuery()) {
+					while (r.next()) {
+						Timestamp ts = r.getTimestamp(1);
+						String bidOrAskC = r.getString(2);
+						int price = r.getInt(3);
+						int volume = r.getInt(4);
+
+						Order newOrder = null;
+						switch (bidOrAskC) {
+						case "A": newOrder = new SellOrder(stock, ts, new BigDecimal(price), volume);
+						break;
+						case "B": newOrder = new BuyOrder(stock, ts, new BigDecimal(price), volume);
+						break;
+						default:  throw new AssertionError("Invalid type " + bidOrAskC + " in database.");
+						}
+						results.addFirst(newOrder);
+					}
+				}
+			} catch (SQLException e) {
+				throw new RuntimeException(e); // tunnelling
+			}
 		}
 		
 		public Order next() {
-			// TODO
-			return null;
-		}
-		
-		public void remove() {
-			throw new NotImplementedException();
+			prefetch();
+			
+			if (results.isEmpty()) {
+				throw new NoSuchElementException();
+			} else {
+				return results.removeFirst();
+			}
 		}
 		
 		public boolean hasNext() {
-			return false;
+			prefetch();
+			return results.isEmpty();
+		}
+		
+		public void remove() {
+			throw new UnsupportedOperationException();
 		}
 	}
 	
@@ -160,8 +209,6 @@ public class TestDataHandler {
 	public Iterator<Order> getOrders(StockHandle stock, 
 								 Timestamp start, Timestamp end) 
 								 throws SQLException {
-		// TODO: construct smart Iterator object which only sends queries
-		// to database as needed
 		if (start == null) {
 			start = new Timestamp(Long.MIN_VALUE);		
 		}
@@ -169,40 +216,8 @@ public class TestDataHandler {
 			end = new Timestamp(Long.MAX_VALUE);
 		}
 		
-		List<Order> res = null;
+		ResultSetIterator rs = new ResultSetIterator(stock, start, end);
 		
-		final String q = "SELECT ts,bid_or_ask,price,volume FROM trades" +
-						 "WHERE dataset_id=? AND ticker=?" +
-						 "AND ts > ? AND ts < ?";
-		try (PreparedStatement s = conn.prepareStatement(q)) {
-			s.setInt(1, stock.getDatasetID());
-			s.setString(2, stock.getTicker());
-			s.setTimestamp(3, start);
-			s.setTimestamp(4, start);
-			
-			
-			try (ResultSet r = s.executeQuery()) {
-				res = new ArrayList<Order>();
-				
-				while (r.next()) {
-					Timestamp ts = r.getTimestamp(1);
-					String bidOrAskC = r.getString(2);
-					int price = r.getInt(3);
-					int volume = r.getInt(4);
-					
-					Order newOrder = null;
-					switch (bidOrAskC) {
-					case "A": newOrder = new BuyOrder(stock, ts, new BigDecimal(price), volume);
-							  break;
-					case "B": newOrder = new SellOrder(stock, ts, new BigDecimal(price), volume);
-							  break;
-					default:  throw new AssertionError("Invalid type " + bidOrAskC + " in database.");
-					}
-					res.add(newOrder);
-				}
-			}
-		} 
-		
-		return res.iterator();
+		return rs;
 	}
 }
