@@ -10,6 +10,7 @@ import orderBookReconstructor.SellOrder;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 
+
 /**
  * Abstract class representing an order book.
  * 

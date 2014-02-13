@@ -127,8 +127,23 @@ public class MarketView {
 			}	
 		}
 		
+		List<Order> outstandingOrdersClone = new ArrayList<Order>();
+		for (Order o:outstandingOrders) {
+			try {
+				outstandingOrdersClone.add(o.clone());
+			} catch (CloneNotSupportedException e1) {
+				// Couldn't clone the order for some reason
+			}
+		}
+		Map<StockHandle,Integer> portfolioClone = new HashMap<StockHandle,Integer> ();
+		for (Entry<StockHandle,Integer> e: portfolio.entrySet()) {
+			portfolioClone.put(e.getKey(), e.getValue());
+		}
 		// update Outputs
-		TickData tickdata = new TickData(currentTime, portfolio, outstandingOrders, availableFunds);
+		TickData tickdata = new TickData((Timestamp)currentTime.clone(), 
+				portfolioClone, 
+				outstandingOrdersClone, 
+				availableFunds);
 		for (Output output : outputs) {
 			output.evaluateData(tickdata);
 		}
