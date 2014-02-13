@@ -27,7 +27,7 @@ import orderBookReconstructor.SellOrder;
  *
  */
 public class TestDataHandler {
-	private static final String url = "jbdc:postgresql://127.0.0.1:33333/testenv";
+	private static final String url = "jdbc:postgresql://127.0.0.1:33333/testenv";
 	Connection conn;
 	
 	/**
@@ -122,16 +122,34 @@ public class TestDataHandler {
 	class ResultSetIterator implements Iterator<Order> {
 		private static final int CHUNK_SIZE = 1; // for debug, increase
 		private final StockHandle stock;
-		private Timestamp start;
+		private long startID;
 		private final Timestamp end;
 		private LinkedList<Order> results;
 		
 		public ResultSetIterator(StockHandle stock, 
-   								  Timestamp start, Timestamp end) {
+   								  Timestamp start, Timestamp end)
+   							     throws SQLException {
  			this.stock = stock;
- 			this.start = start;
  			this.end = end;
  			this.results = new LinkedList<Order>();
+ 			
+ 			final String q = "SELECT trade_id FROM trades " +
+ 						      "WHERE dataset_id=? AND ticker=? " + 
+ 						      "AND ts >= ? AND ts < ? LIMIT 1";
+ 			try (PreparedStatement s = conn.prepareStatement(q)) {
+				s.setInt(1, stock.getDatasetID());
+				s.setString(2, stock.getTicker());
+				s.setTimestamp(3, start);
+				s.setTimestamp(4, end);
+				
+				try (ResultSet r = s.executeQuery()) {
+					if (!r.next()) {
+						startID = Long.MAX_VALUE;
+					} else {
+						startID = r.getLong(1)-1;
+					}
+				}
+ 			}
 		}
 		
 		public void prefetch() {
@@ -139,23 +157,26 @@ public class TestDataHandler {
 				return;
 			}
 			
-			final String q = "SELECT ts,bid_or_ask,price,volume FROM trades " +
+			final String q = "SELECT trade_id,ts,bid_or_ask,price,volume FROM trades " +
 							  "WHERE dataset_id=? AND ticker=? " +
-							  "AND ts > ? AND ts < ? LIMIT ?";
+							  "AND trade_id > ? AND ts < ? LIMIT ?";
 
 			try (PreparedStatement s = conn.prepareStatement(q)) {
 				s.setInt(1, stock.getDatasetID());
 				s.setString(2, stock.getTicker());
-				s.setTimestamp(3, start);
+				s.setLong(3, startID);
 				s.setTimestamp(4, end);
 				s.setInt(5, CHUNK_SIZE);
 
 				try (ResultSet r = s.executeQuery()) {
 					while (r.next()) {
-						Timestamp ts = r.getTimestamp(1);
-						String bidOrAskC = r.getString(2);
-						int price = r.getInt(3);
-						int volume = r.getInt(4);
+						// only fetch thing after this
+						startID = r.getLong(1);
+						
+						Timestamp ts = r.getTimestamp(2);
+						String bidOrAskC = r.getString(3);
+						int price = r.getInt(4);
+						int volume = r.getInt(5);
 
 						Order newOrder = null;
 						switch (bidOrAskC) {
@@ -179,9 +200,7 @@ public class TestDataHandler {
 			if (results.isEmpty()) {
 				throw new NoSuchElementException();
 			} else {
-				Order o = results.removeFirst();
-				start = o.getTimePlaced();
-				return o;
+				return results.removeFirst();
 			}
 		}
 		
