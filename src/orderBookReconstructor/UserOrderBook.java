@@ -140,9 +140,8 @@ public class UserOrderBook extends OrderBook {
 			if(canTrade(userOrder, marketOrder)) {
 				int userVolume = userOrder.getVolume();
 				int tradeVolume = (available > userVolume) ? userVolume : available;
-				BigDecimal price = marketOrder.getPrice().add( 
-						(marketOrder.getPrice().add(userOrder.getPrice()))
-							.divide(BigDecimal.valueOf(2)));
+				BigDecimal price = marketOrder.getPrice().add(userOrder.getPrice())
+					.divide(BigDecimal.valueOf(2));
 				
 				userMatches.add(makeMatch(marketOrder, userOrder, tradeVolume, price));
 				available -= tradeVolume;
@@ -150,7 +149,7 @@ public class UserOrderBook extends OrderBook {
 				
 				if(userVolume == tradeVolume) userOrders.remove(userOrder);
 				else userOrder.decrementVolume(tradeVolume);
-			}
+			} else break;
 		}
 		
 		//update ghosting
@@ -294,7 +293,7 @@ public class UserOrderBook extends OrderBook {
 		
 		@Override
 		public boolean hasNext() {
-			return next == null;
+			return next != null;
 		}
 
 		@Override

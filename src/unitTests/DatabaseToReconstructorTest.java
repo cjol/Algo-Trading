@@ -1,5 +1,6 @@
 package unitTests;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Iterator;
@@ -8,14 +9,42 @@ import orderBookReconstructor.BuyOrder;
 import orderBookReconstructor.Match;
 import orderBookReconstructor.OrderBookReconstructor;
 import orderBookReconstructor.SellOrder;
+import orderBookReconstructor.UserOrderBook;
 
 import org.junit.Test;
+
+import testHarness.OrderBook;
 
 import database.DatasetHandle;
 import database.StockHandle;
 import database.TestDataHandler;
 
 public class DatabaseToReconstructorTest {
+	
+	private void printAllOrders(Iterator<BuyOrder> buyOrders, Iterator<SellOrder> sellOrders) {
+		System.out.println("BIDS: ");
+		
+		while (buyOrders.hasNext()) {
+			BuyOrder bo = buyOrders.next();
+			System.out.println(bo.getVolume() + " @ " + bo.getPrice());
+		}
+		
+		System.out.println("OFFERS: ");
+		while (sellOrders.hasNext()) {
+			SellOrder so = sellOrders.next();
+			System.out.println(so.getVolume() + " @ " + so.getPrice());
+		}
+	}
+	
+	private void printMatches(Iterator<Match> matches) {
+		while (matches.hasNext()) {
+			Match m = matches.next();
+			
+			System.out.println("MATCH: BUY " + m.buyOrder.getVolume() + " at " + m.buyOrder.getPrice()
+					+ " AND SELL " + m.sellOrder.getVolume() + " at " + m.sellOrder.getPrice() + 
+					" (on " + m.quantity + " items, price " + m.price + ")");
+		}		
+	}
 
 	@Test
 	public void test() throws SQLException {
@@ -28,30 +57,15 @@ public class DatabaseToReconstructorTest {
 		OrderBookReconstructor obr = new OrderBookReconstructor(
 				new Timestamp(114, 0, 1, 0, 0, 0, 0), stockHandle, dh);
 		
-		Iterator<Match> matches = obr.updateTime(new Timestamp(114, 0, 1, 0, 0, 5, 0));
+		UserOrderBook userBook = new UserOrderBook(stockHandle, obr);
 		
-		while (matches.hasNext()) {
-			Match m = matches.next();
-			
-			System.out.println("MATCH: BUY " + m.buyOrder.getVolume() + " at " + m.buyOrder.getPrice()
-					+ " AND SELL " + m.sellOrder.getVolume() + " at " + m.sellOrder.getPrice() + 
-					" (on " + m.quantity + " items)");
-		}
+		userBook.buy(2014, new BigDecimal(1), new Timestamp(114, 0, 1, 0, 0, 1, 500));
+		Iterator<Match> matches = userBook.updateTime(new Timestamp(114, 0, 1, 0, 0, 5, 0));
+		//Iterator<Match> matches = obr.updateTime(new Timestamp(114, 0, 1, 0, 0, 5, 0));
 		
-		System.out.println("BIDS: ");
+		printAllOrders(userBook.getAllBids(), userBook.getAllOffers());
+		printMatches(matches);
 		
-		Iterator<BuyOrder> buyOrders = obr.getAllBids();
-		while (buyOrders.hasNext()) {
-			BuyOrder bo = buyOrders.next();
-			System.out.println(bo.getVolume() + " @ " + bo.getPrice());
-		}
-		
-		System.out.println("OFFERS: ");
-		Iterator<SellOrder> sellOrders = obr.getAllOffers();
-		while (sellOrders.hasNext()) {
-			SellOrder so = sellOrders.next();
-			System.out.println(so.getVolume() + " @ " + so.getPrice());
-		}
 	}
 
 }
