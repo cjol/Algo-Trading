@@ -20,6 +20,7 @@ import database.TestDataHandler;
 public class TestInstance implements Runnable{
 
 	private static final long testTimeLimit_mili = 60000;
+	private static final String defaultTestString = "test";
 	
 	private ConnectionHandler connection;
 	private TestDataHandler dataHandler;
@@ -52,7 +53,7 @@ public class TestInstance implements Runnable{
 			TestResultDescription result;
 			
 			// TODO: Retrieve dataset name from users submission
-			String datasetName = "test";
+			String datasetName = (desc.datasetName == null) ? defaultTestString : desc.datasetName;
 			DatasetHandle dataset = null;
 			try {
 				dataset = dataHandler.getDataset(datasetName);	

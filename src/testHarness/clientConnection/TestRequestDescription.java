@@ -27,6 +27,8 @@ public class TestRequestDescription implements Serializable {
 	protected List<ClassDescription> classFiles;
 	protected List<OutputRequest>  outputsRequested;
 	
+	public final String datasetName;
+	
 	/**
 	 * 
 	 * @param classFiles The class files the client wrote.
@@ -35,6 +37,19 @@ public class TestRequestDescription implements Serializable {
 	public TestRequestDescription(List<ClassDescription> classFiles, List<OutputRequest> outputsRequested) {
 		this.classFiles = classFiles;
 		this. outputsRequested = outputsRequested;
+		this.datasetName = null;
+	}
+	
+	/**
+	 * 
+	 * @param classFiles The class files the client wrote.
+	 * @param outputsRequested The outputs the client would like to be given.
+	 * @param dataset The string ID for the dataset to be tested with
+	 */
+	public TestRequestDescription(List<ClassDescription> classFiles, List<OutputRequest> outputsRequested, String dataset) {
+		this.classFiles = classFiles;
+		this. outputsRequested = outputsRequested;
+		this.datasetName = dataset;
 	}
 	
 	/**
