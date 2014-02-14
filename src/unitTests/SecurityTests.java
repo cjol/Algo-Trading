@@ -1,5 +1,7 @@
 package unitTests;
 
+import static org.junit.Assert.fail;
+
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -74,7 +76,7 @@ public class SecurityTests {
 
 		public FakeMarket(ITradingAlgorithm algo, List<Output> outputs,
 				TestDataHandler dataHandler) {
-			super(algo, outputs, dataHandler);
+			super(algo, outputs, dataHandler,null);
 			// TODO Auto-generated constructor stub
 		}
 		
