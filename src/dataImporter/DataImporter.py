@@ -6,7 +6,7 @@ import getpass
 
 
 #setting up hdf5 variables
-hdf5_file_name = './ADS.h5'
+hdf5_file_name = 'Algo-Trading/src/RawData/ADS.h5'
 dataset_name = 'RetailStates'
 event_number = 0
 
