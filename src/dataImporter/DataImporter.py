@@ -2,9 +2,6 @@
 import h5py
 import pandas as pd
 import MySQLdb
-from sql import *
-from sql.aggregate import *
-from sql.conditionals import *
 import getpass
 
 
