@@ -1,6 +1,6 @@
 package unitTests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -15,11 +15,11 @@ import org.junit.Test;
 
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
-import testHarness.StockHandle;
-import testHarness.TestDataHandler;
 import testHarness.clientConnection.TestRequestDescription;
 import testHarness.output.Output;
 import clientLoaders.FileLoader;
+import database.StockHandle;
+import database.TestDataHandler;
 
 public class SecurityTests {
 
@@ -76,7 +76,7 @@ public class SecurityTests {
 
 		public FakeMarket(ITradingAlgorithm algo, List<Output> outputs,
 				TestDataHandler dataHandler) {
-			super(algo, outputs, dataHandler);
+			super(algo, outputs, dataHandler,null);
 			// TODO Auto-generated constructor stub
 		}
 		

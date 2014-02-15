@@ -1,5 +1,6 @@
 package valueObjects;
 
+
 /**
  * Represents an addition of elements of two value objects
  */
@@ -14,7 +15,7 @@ public class Addition implements IValued {
 	}
 
 	@Override
-	public int getValue(int ticksBack) throws TickOutOfRangeException {
+	public double getValue(int ticksBack) throws TickOutOfRangeException {
 		return a.getValue(ticksBack) + b.getValue(ticksBack);
 	}
 

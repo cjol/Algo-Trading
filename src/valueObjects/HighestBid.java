@@ -1,5 +1,6 @@
 package valueObjects;
 
+
 import orderBookReconstructor.BuyOrder;
 
 public class HighestBid implements IValued {
@@ -13,9 +14,9 @@ public class HighestBid implements IValued {
 	public BuyOrder getUnderlyingBid() {return underlyingBid;}
 
 	@Override
-	public int getValue(int ticksBack) throws TickOutOfRangeException {
+	public double getValue(int ticksBack) throws TickOutOfRangeException {
 		// TODO Auto-generated method stub
-		return 0;
+		return 0.0;
 	}
 
 }

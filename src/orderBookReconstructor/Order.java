@@ -1,21 +1,22 @@
 package orderBookReconstructor;
 
-import testHarness.StockHandle;
-
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Comparator;
 
+import database.StockHandle;
+
 public abstract class Order implements Comparable<Order>, Cloneable {
 	private final StockHandle stock;
-	private final int price;
+	private final BigDecimal price;
 	private int volume;
 	private final Timestamp timePlaced;
 	
-	public Order(StockHandle stock, Timestamp timePlaced, int price, int volume) {
+	public Order(StockHandle stock, Timestamp timePlaced, BigDecimal price, int volume) {
 		this.stock = stock;
 		this.price = price;
 		this.volume = volume;
-		if (this.price <= 0) {
+		if (this.price.compareTo(BigDecimal.ZERO) <= 0) {
 			throw new AssertionError("Invalid price");
 		}
 		if (this.volume <= 0) {
@@ -28,7 +29,7 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 		return stock;
 	}
 
-	public int getPrice() {
+	public BigDecimal getPrice() {
 		return price;
 	}
 
@@ -57,27 +58,27 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 		return (Order) super.clone();
 	}
 	
-	static class BuyOrderComparitor<T extends Order> implements Comparator<T> {
+	static class BuyOrderComparator<T extends Order> implements Comparator<T> {
 
 		@Override
 		public int compare(Order o1, Order that) {
-			int com = Integer.compare(o1.getPrice(), that.getPrice());
+			int com = o1.getPrice().compareTo(that.getPrice());
 			return (com == 0) ? that.getTimePlaced().compareTo(o1.getTimePlaced()) : com;
 		}
 	}
 	
-	static class SellOrderComparitor<T extends Order> implements Comparator<T> {
+	static class SellOrderComparator<T extends Order> implements Comparator<T> {
 
 		@Override
 		public int compare(Order o1, Order o2) {
-			int com = Integer.compare(o2.getPrice(), o1.getPrice());
+			int com = o2.getPrice().compareTo(o1.getPrice());
 			return (com == 0) ? o2.getTimePlaced().compareTo(o1.getTimePlaced()) : com;
 		}
 	}
 	
-	public static final Comparator<Order> buyOrderComparitor = new BuyOrderComparitor<Order>();
-	public static final Comparator<Order> sellOrderComparitor = new SellOrderComparitor<Order>();
+	public static final Comparator<Order> buyOrderComparitor = new BuyOrderComparator<Order>();
+	public static final Comparator<Order> sellOrderComparitor = new SellOrderComparator<Order>();
 	
-	public static final Comparator<BuyOrder> buyOrderOnlyComparitor = new BuyOrderComparitor<BuyOrder>();
-	public static final Comparator<SellOrder> sellOrderOnlyComparitor = new SellOrderComparitor<SellOrder>();
+	public static final Comparator<BuyOrder> buyOrderOnlyComparator = new BuyOrderComparator<BuyOrder>();
+	public static final Comparator<SellOrder> sellOrderOnlyComparator = new SellOrderComparator<SellOrder>();
 }

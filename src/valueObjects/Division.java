@@ -14,9 +14,8 @@ public class Division implements IValued {
 	}
 
 	@Override
-	public int getValue(int ticksBack) throws TickOutOfRangeException {
-		//TODO: change int to BigDecimal (for all objects?)
-		return (int)(a.getValue(ticksBack) / b.getValue(ticksBack));
+	public double getValue(int ticksBack) throws TickOutOfRangeException {
+		return a.getValue(ticksBack) / b.getValue(ticksBack);
 	}
 
 }

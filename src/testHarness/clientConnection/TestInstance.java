@@ -2,13 +2,15 @@ package testHarness.clientConnection;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
 import java.util.List;
 
-import database.OutputServer;
 import testHarness.MarketView;
-import testHarness.TestDataHandler;
 import testHarness.clientConnection.TestRequestDescription.LoadClassException;
 import testHarness.output.Output;
+import database.DatasetHandle;
+import database.OutputServer;
+import database.TestDataHandler;
 
 /**
  * Runs a test instance and communicates with a client
@@ -18,6 +20,7 @@ import testHarness.output.Output;
 public class TestInstance implements Runnable{
 
 	private static final long testTimeLimit_mili = 60000;
+	private static final String defaultTestString = "test";
 	
 	private ConnectionHandler connection;
 	private TestDataHandler dataHandler;
@@ -47,14 +50,28 @@ public class TestInstance implements Runnable{
 		{	
 			
 			TestRequestDescription desc = connection.getTest();
+			TestResultDescription result;
 			
-			List<Output> outputs = TestRequestDescription.getOutputs(desc, outputServer);
-			marketView = new MarketView(TestRequestDescription.getAlgo(desc), outputs, dataHandler);
-			startSim(testTimeLimit_mili);
-			
-			TestResultDescription result = (marketView.isFinished()) ?
-											TestRequestDescription.filterOutputs(desc, outputs):
-											new TestResultDescription("Test timed out");
+			// TODO: Retrieve dataset name from users submission
+			String datasetName = (desc.datasetName == null) ? defaultTestString : desc.datasetName;
+			DatasetHandle dataset = null;
+			try {
+				dataset = dataHandler.getDataset(datasetName);	
+			} catch (SQLException e) {
+				e.printStackTrace();
+				System.exit(-1); // DB error fatal
+			}
+			if (dataset == null) {
+				result = new TestResultDescription("Dataset " + datasetName + " not found.");
+			} else {
+				List<Output> outputs = TestRequestDescription.getOutputs(desc, outputServer);
+				marketView = new MarketView(TestRequestDescription.getAlgo(desc), outputs, dataHandler, dataset);
+				startSim(testTimeLimit_mili);
+				
+				result = (marketView.isFinished()) ?
+				     	 TestRequestDescription.filterOutputs(desc, outputs):
+						 new TestResultDescription("Test timed out");
+			}
 											
 			connection.sendResults(result);
 		

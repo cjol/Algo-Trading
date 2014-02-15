@@ -1,21 +1,21 @@
 package orderBookReconstructor;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 
+import testHarness.OrderBook;
+import valueObjects.HighestBid;
+import valueObjects.LowestOffer;
 import Iterators.InterleavingIterator;
 import Iterators.PeekableIterator;
 import Iterators.ProtectedIterator;
-import testHarness.OrderBook;
-import testHarness.StockHandle;
-import valueObjects.HighestBid;
-import valueObjects.LowestOffer;
+import database.StockHandle;
 
 /**
  * A decorating order book that keeps track of user orders and filters another order book with them
@@ -43,15 +43,24 @@ public class UserOrderBook extends OrderBook {
 		ghostOffers = new HashMap<SellOrder, Integer>();
 	}
 
+	/**
+	 * This method indicates whether or not there are any pending trades for the user.
+	 * @return A boolean flag indicating completion.
+	 */
+	public boolean isComplete() {
+		return outstandingBids.isEmpty() && outstandingOffers.isEmpty();
+	}
+	
+	
 	@Override
-	public BuyOrder buy(int volume, int price, Timestamp time) {
+	public BuyOrder buy(int volume, BigDecimal price, Timestamp time) {
 		BuyOrder bo = new BuyOrder(handle,time, price, volume);
 		outstandingBids.add(bo);
 		return bo;
 	}
 
 	@Override
-	public SellOrder sell(int volume, int price, Timestamp time) {
+	public SellOrder sell(int volume, BigDecimal price, Timestamp time) {
 		SellOrder so = new SellOrder(handle,time, price, volume);
 		outstandingOffers.add(so);
 		return so;
@@ -59,7 +68,7 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<BuyOrder> getAllBids() {
-		Comparator<BuyOrder> comp = Order.buyOrderOnlyComparitor;
+		Comparator<BuyOrder> comp = Order.buyOrderOnlyComparator;
 		PeekableIterator<BuyOrder> a = new PeekableIterator<>(getGhostedBids());
 		PeekableIterator<BuyOrder> b = new PeekableIterator<>(outstandingBids.iterator());
 		return new InterleavingIterator<>(a, b, comp);
@@ -67,7 +76,7 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<SellOrder> getAllOffers() {
-		Comparator<SellOrder> comp = Order.sellOrderOnlyComparitor;
+		Comparator<SellOrder> comp = Order.sellOrderOnlyComparator;
 		PeekableIterator<SellOrder> a = new PeekableIterator<>(getGhostedOffers());
 		PeekableIterator<SellOrder> b = new PeekableIterator<>(outstandingOffers.iterator());
 		return new InterleavingIterator<>(a, b, comp);
@@ -131,7 +140,8 @@ public class UserOrderBook extends OrderBook {
 			if(canTrade(userOrder, marketOrder)) {
 				int userVolume = userOrder.getVolume();
 				int tradeVolume = (available > userVolume) ? userVolume : available;
-				int price = marketOrder.getPrice() + (marketOrder.getPrice() + userOrder.getPrice()) / 2;
+				BigDecimal price = marketOrder.getPrice().add(userOrder.getPrice())
+					.divide(BigDecimal.valueOf(2));
 				
 				userMatches.add(makeMatch(marketOrder, userOrder, tradeVolume, price));
 				available -= tradeVolume;
@@ -139,7 +149,7 @@ public class UserOrderBook extends OrderBook {
 				
 				if(userVolume == tradeVolume) userOrders.remove(userOrder);
 				else userOrder.decrementVolume(tradeVolume);
-			}
+			} else break;
 		}
 		
 		//update ghosting
@@ -170,7 +180,7 @@ public class UserOrderBook extends OrderBook {
 				int marketVolume = marketOrder.getVolume() - (ghost.containsKey(marketOrder) ? ghost.get(marketOrder) : 0);
 				int userVolume = userOrder.getVolume();
 				int tradeVolume = (marketVolume > userVolume) ? userVolume : marketVolume;
-				int price = (marketOrder.getPrice() + userOrder.getPrice()) / 2;
+				BigDecimal price = ( ( marketOrder.getPrice().add(userOrder.getPrice()) ) .divide(BigDecimal.valueOf(2)) );
 					
 				//ghost
 				addGhost(ghost, marketOrder, tradeVolume);
@@ -199,16 +209,17 @@ public class UserOrderBook extends OrderBook {
 		BuyOrder buy = (BuyOrder) ((swap) ? a : b);
 		SellOrder sell = (SellOrder) ((swap) ? b : a);
 		
-		return (buy.getPrice() >= sell.getPrice());
+		return (buy.getPrice().compareTo(sell.getPrice()) >= 0);
 	}
 	
-	private static Match makeMatch(Order a, Order b, int q, int p) {
+	//second order is users
+	private static Match makeMatch(Order a, Order b, int q, BigDecimal p) {
 		boolean swap = (a instanceof BuyOrder);
 		
 		BuyOrder buy = (BuyOrder) ((swap) ? a : b);
 		SellOrder sell = (SellOrder) ((swap) ? b : a);
 		
-		return new Match(buy, sell, q, p);
+		return new Match(buy, sell, q, p, swap);
 	}
 	
 	/**
@@ -282,7 +293,7 @@ public class UserOrderBook extends OrderBook {
 		
 		@Override
 		public boolean hasNext() {
-			return next == null;
+			return next != null;
 		}
 
 		@Override

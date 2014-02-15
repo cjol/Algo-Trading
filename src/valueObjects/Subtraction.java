@@ -14,7 +14,7 @@ public class Subtraction implements IValued {
 	}
 	
 	@Override
-	public int getValue(int ticksBack) throws TickOutOfRangeException {
+	public double getValue(int ticksBack) throws TickOutOfRangeException {
 		return a.getValue(ticksBack) - b.getValue(ticksBack);
 	}
 
