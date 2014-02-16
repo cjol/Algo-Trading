@@ -33,11 +33,11 @@ for file in rawFiles:
     hdf5file = h5py.File(mypath+"/"+file, 'r')   # 'r' means that hdf5 file is open in read-only mode
     dataset = hdf5file['RetailStates']
     numberOfData = dataset.len()
-    #TODO:formattedDataset = <Array of tuples of form (int,String,timestamp(String?),ask/buy,int,int)>
     #TODO:Transform dataset to formattedDataset
     #Creating sub lists by parameter, ready to zip together to form formattedDataset
     DataSetIDs = [0 for i in range((numberOfData)*10)]  # TODO: should increment per security
     ListOfTickers = [ticker for i in range((numberOfData)*10)]  # Presuming ticker is the security identifier thing
+
     ListOfTimestamps = ["PlaceHolderString" for i in range((numberOfData)*10)]
     timeStampIterator = 0
     offsetAccumulator = 0  # need to only advance to next Raw Order after filling in 10 formatted orders
@@ -47,9 +47,26 @@ for file in rawFiles:
         offsetAccumulator += 1
         if offsetAccumulator > 9:
             timeStampIterator += 1
-            
-    #TODO: ListOfAsk/Buy
+            offsetAccumulator = 0
+
+    ListOfAskBuy = ["PlaceHolderString" for i in range((numberOfData)*10)]
+
+    #Should create a List of size numberOfData in the form (B,B,B,B,B,A,A,A,A,A), to match with the 10 order pattern
+    askbuyAccumulator = 0
+    askbuyString = "B"
+    for askbuy in ListOfAskBuy:
+        if askbuyAccumulator > 4:
+            askbuyString = "A"
+        askbuy = askbuyString
+        askbuyAccumulator += 1
+        if askbuyAccumulator > 9:
+            askbuyString = "B"
+            askbuyAccumulator = 0
+
+
     #TODO: ListOfPrice
+
+    ListOfPrices = [-1 for i in range((numberOfData)*10)]  # placeholder list, now fill in actual prices
     #TODO: ListOfVolume
     #TODO: ZIP FIELDS TOGETHER
     #populating trades table
