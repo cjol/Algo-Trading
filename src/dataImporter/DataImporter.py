@@ -8,7 +8,6 @@ from os.path import isfile, join
 
 #setting up hdf5 variables
 hdf5_file_name = '../RawData/ADS.h5'
-dataset_name = 'RetailStates'
 event_number = 0
 
 #grabbing all .m5 files
@@ -31,33 +30,33 @@ for file in rawFiles:
     print 'Importing ', file
     ticker = os.path.splitext(os.path.basename(file))[0]  # Removing extension from filename to get ticker
     cursor.execute('INSERT INTO securities(dataset_id,ticker) VALUES (0,%s);', ticker)
+    hdf5file = h5py.File(mypath+"/"+file, 'r')   # 'r' means that hdf5 file is open in read-only mode
+    dataset = hdf5file['RetailStates']
+    numberOfData = dataset.len()
+    #TODO:formattedDataset = <Array of tuples of form (int,String,timestamp(String?),ask/buy,int,int)>
+    #TODO:Transform dataset to formattedDataset
+    #Creating sub lists by parameter, ready to zip together to form formattedDataset
+    DataSetIDs = [0 for i in range((numberOfData)*10)]  # TODO: should increment per security
+    ListOfTickers = [ticker for i in range((numberOfData)*10)]  # Presuming ticker is the security identifier thing
+    ListOfTimestamps = ["PlaceHolderString" for i in range((numberOfData)*10)]
+    timeStampIterator = 0
+    offsetAccumulator = 0  # need to only advance to next Raw Order after filling in 10 formatted orders
+                           # This is due to there being 10 formatted orders worth of data in each raw order
+    for timeStamp in ListOfTimestamps:
+        timeStamp = dataset[timeStampIterator][2]
+        offsetAccumulator += 1
+        if offsetAccumulator > 9:
+            timeStampIterator += 1
+            
+    #TODO: ListOfAsk/Buy
+    #TODO: ListOfPrice
+    #TODO: ListOfVolume
+    #TODO: ZIP FIELDS TOGETHER
+    #populating trades table
+    for data in dataset:
+        #TODO: insert into database
+    hdf5file.close()
 
-
-#TODO:Change this to iterate over all files instead of a single test file
-file = h5py.File(hdf5_file_name, 'r')   # 'r' means that hdf5 file is open in read-only mode
-dataset = file[dataset_name]
-numberOfData = dataset.len()
-#TODO:formattedDataset = <Array of tuples of form (int,String,timestamp(String?),ask/buy,int,int)>
-#TODO:Transform dataset to formattedDataset
-#Creating sub lists by parameter, ready to zip together to form formattedDataset
-ListOfSecuritiesCodes = [0 for i in range(numberOfData-1)]  # TODO: should increment per security
-ListOfTickers = ["FOO" for i in range(numberOfData-1)]  # Not entirely sure what the ticker part is
-ListOfTimestamps = ["PlaceHolderString" for i in range(numberOfData-1)]
-timeStampIterator = 0
-for timeStamp in ListOfTimestamps:
-    timeStamp = dataset[timeStampIterator][2]
-    timeStampIterator += 1
-#TODO: ListOfAsk/Buy
-#TODO: ListOfPrice
-#TODO: ListOfVolume
-#TODO: ZIP FIELDS TOGETHER
-
-
-for data in dataset:
-    print data
-    #TODO: insert into database
-
-file.close()
 db.close()
 
 
