@@ -3,11 +3,17 @@ import h5py
 import pandas as pd
 import MySQLdb
 import getpass
+from os import listdir
+from os.path import isfile, join
 
 #setting up hdf5 variables
-hdf5_file_name = 'Algo-Trading/src/RawData/ADS.h5'
+hdf5_file_name = '../RawData/ADS.h5'
 dataset_name = 'RetailStates'
 event_number = 0
+
+#grabbing all .m5 files
+mypath = '../RawData'
+rawFiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
 #setting up database connection
 databaseURL = raw_input("Database URL: ")
@@ -16,8 +22,16 @@ databasePassword = getpass.getpass()
 databaseName = raw_input("Database Name: ")
 db = MySQLdb.connect(databaseURL, databaseUser, databasePassword, databaseName)
 cursor = db.cursor()
-cursor.execute('INSERT INTO datasets(dataset_id,name) VALUES (0,"ADS");')
 
+#populating securities table
+securityIDIterator = 0
+for file in rawFiles:
+    print 'Importing ',file
+    cursor.execute('INSERT INTO datasets(dataset_id,name) VALUES (%s,%s);'
+                   , securityIDIterator, rawFiles[securityIDIterator])
+    securityIDIterator += 1
+
+#TODO:Change this to iterate over all files instead of a single test file
 file = h5py.File(hdf5_file_name, 'r')   # 'r' means that hdf5 file is open in read-only mode
 dataset = file[dataset_name]
 numberOfData = dataset.len()
