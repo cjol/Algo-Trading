@@ -23,13 +23,15 @@ databaseName = raw_input("Database Name: ")
 db = MySQLdb.connect(databaseURL, databaseUser, databasePassword, databaseName)
 cursor = db.cursor()
 
+#populating dataset table
+cursor.execute('INSERT INTO datasets(dataset_id,name) VALUES (0,"Default Data"')
+
 #populating securities table
-securityIDIterator = 0
 for file in rawFiles:
-    print 'Importing ',file
-    cursor.execute('INSERT INTO datasets(dataset_id,name) VALUES (%s,%s);'
-                   , securityIDIterator, rawFiles[securityIDIterator])
-    securityIDIterator += 1
+    print 'Importing ', file
+    ticker = os.path.splitext(os.path.basename(file))[0]  # Removing extension from filename to get ticker
+    cursor.execute('INSERT INTO securities(dataset_id,ticker) VALUES (0,%s);', ticker)
+
 
 #TODO:Change this to iterate over all files instead of a single test file
 file = h5py.File(hdf5_file_name, 'r')   # 'r' means that hdf5 file is open in read-only mode
