@@ -314,6 +314,7 @@ public class MarketView {
 	 */
 	public void tryCleanAbort(Thread runningThread) {
 		threadShouldBeAborting = true;
+		runningThread.interrupt();
 		// TODO: Anything else?
 	}
 }
