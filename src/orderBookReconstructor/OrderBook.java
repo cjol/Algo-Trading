@@ -1,12 +1,9 @@
-package testHarness;
+package orderBookReconstructor;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 
-import orderBookReconstructor.BuyOrder;
-import orderBookReconstructor.Match;
-import orderBookReconstructor.SellOrder;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 import database.StockHandle;

@@ -15,6 +15,7 @@ import java.util.Set;
 
 import orderBookReconstructor.Match;
 import orderBookReconstructor.Order;
+import orderBookReconstructor.OrderBook;
 import orderBookReconstructor.OrderBookReconstructor;
 import orderBookReconstructor.UserOrderBook;
 import testHarness.output.Output;

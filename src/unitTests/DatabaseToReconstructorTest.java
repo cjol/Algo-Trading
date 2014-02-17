@@ -7,13 +7,13 @@ import java.util.Iterator;
 
 import orderBookReconstructor.BuyOrder;
 import orderBookReconstructor.Match;
+import orderBookReconstructor.OrderBook;
 import orderBookReconstructor.OrderBookReconstructor;
 import orderBookReconstructor.SellOrder;
 import orderBookReconstructor.UserOrderBook;
 
 import org.junit.Test;
 
-import testHarness.OrderBook;
 
 import database.DatasetHandle;
 import database.StockHandle;
@@ -60,8 +60,8 @@ public class DatabaseToReconstructorTest {
 		UserOrderBook userBook = new UserOrderBook(stockHandle, obr);
 		
 		userBook.buy(2014, new BigDecimal(1), new Timestamp(114, 0, 1, 0, 0, 1, 500));
-		Iterator<Match> matches = userBook.updateTime(new Timestamp(114, 0, 1, 0, 0, 5, 0));
-		//Iterator<Match> matches = obr.updateTime(new Timestamp(114, 0, 1, 0, 0, 5, 0));
+		userBook.softSetTime(new Timestamp(114, 0, 1, 0, 0, 5, 0));
+		Iterator<Match> matches = userBook.updateTime();
 		
 		printAllOrders(userBook.getAllBids(), userBook.getAllOffers());
 		printMatches(matches);

@@ -4,18 +4,17 @@ import java.math.BigDecimal;
 import java.util.Iterator;
 
 import orderBookReconstructor.Order;
+import orderBookReconstructor.OrderBook;
 
 import database.StockHandle;
 
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
-import testHarness.OrderBook;
 
 public class Beast implements ITradingAlgorithm {
 
 	@Override
 	public void run(MarketView marketView) {
-		// TODO Auto-generated method stub
 		Iterator<StockHandle> stocks = marketView.getAllStocks();
 		StockHandle bestStockEver = stocks.next();
 		OrderBook book = marketView.getOrderBook(bestStockEver);

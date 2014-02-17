@@ -9,7 +9,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 
-import testHarness.OrderBook;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 import Iterators.InterleavingIterator;
@@ -107,7 +106,7 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<Match> updateTime() {
-		if(currentTime.equals(softTime)) return null;
+		if(parent.currentTime.equals(softTime)) return null;
 		
 		List<Match> userMatches = new LinkedList<>();
 		
@@ -125,6 +124,12 @@ public class UserOrderBook extends OrderBook {
 		match(ghostOffers,parent.getAllOffers(),outstandingBids.iterator(), userMatches);
 		
 		return userMatches.iterator();
+	}
+	
+	@Override
+	public void softSetTime(Timestamp t) {
+		parent.softSetTime(t);
+		super.softSetTime(t);
 	}
 	
 	

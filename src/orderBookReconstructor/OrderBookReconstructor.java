@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.TreeSet;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-import testHarness.OrderBook;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 import Iterators.ProtectedIterator;
