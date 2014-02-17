@@ -19,7 +19,7 @@ import database.TestDataHandler;
  */
 public class TestInstance implements Runnable{
 
-	private static final long testTimeLimit_mili = 60000;
+	private static final long testTimeLimit_mili = 600000;
 	private static final String defaultTestString = "test";
 	
 	private ConnectionHandler connection;
