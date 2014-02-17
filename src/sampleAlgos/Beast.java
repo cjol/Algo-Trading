@@ -21,6 +21,7 @@ public class Beast implements ITradingAlgorithm {
 		OrderBook book = marketView.getOrderBook(bestStockEver);
 		double woot = 4;
 		while(!marketView.isFinished()) {
+			marketView.tick();
 			woot += Math.random()-0.5;
 			if(woot < 5) {
 				//BUY BUY BUY
@@ -35,6 +36,7 @@ public class Beast implements ITradingAlgorithm {
 				BigDecimal bd = iter.next().getPrice();
 				marketView.sell(bestStockEver, bd, 1);
 			}
+			
 		}
 	}
 
