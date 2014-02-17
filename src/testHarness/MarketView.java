@@ -35,11 +35,11 @@ class SimulationAbortedException extends RuntimeException{}
 public class MarketView {
 	private final BigDecimal STARTING_FUNDS = new BigDecimal(10000);
 	// TODO: What is a useful starting time?
-	private final Timestamp STARTING_TIME = new Timestamp(0);
+	private final Timestamp STARTING_TIME = new Timestamp(114, 0, 1, 0, 0, 0, 0);
 	// TICK_SIZE is in milliseconds
-	private final int TICK_SIZE = 10;
+	private final int TICK_SIZE = 500;
 	// TODO: What is a useful ending time?
-	private final Date ENDING_TIME = new Timestamp(0);
+	private final Date ENDING_TIME = new Timestamp(114, 0, 1, 0, 0, 5, 0);
 
 	private ITradingAlgorithm algo;
 	private Map<StockHandle, Integer> portfolio;
@@ -78,6 +78,7 @@ public class MarketView {
 		allOrders = new ArrayList<Order>();
 		outstandingOrders = new ArrayList<Order>();
 		portfolio = new HashMap<StockHandle, Integer>();
+		openedBooks = new HashMap<>();
 		threadShouldBeAborting = false;
 		
 		algo.run(this);
@@ -95,9 +96,10 @@ public class MarketView {
 
 		Timestamp newTime = new Timestamp(currentTime.getTime() + TICK_SIZE);
 		// probably not needed since nanos are never updated
-		newTime.setNanos(currentTime.getNanos()); 
+		//newTime.setNanos(currentTime.getNanos()); 
 		currentTime = newTime;
 		List<Match> allMatches = new ArrayList<Match>();
+		
 		
 		// Update simulation state, based on the updated results of every outstanding order
 		for (Order order : outstandingOrders) {
@@ -152,7 +154,7 @@ public class MarketView {
 	public OrderBook getOrderBook(StockHandle stock) {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		if (openedBooks.containsKey(stock)) {
+		if (!openedBooks.containsKey(stock)) {
 			OrderBook market = new OrderBookReconstructor(currentTime, stock, dataHandler);
 			OrderBook user = new UserOrderBook(stock, market);
 			openedBooks.put(stock, user); 	

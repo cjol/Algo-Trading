@@ -51,7 +51,7 @@ public class ConnectionServer {
 				ConnectionHandler connectionHandler = new ConnectionHandler(clientSocket);
 				TestInstance testInstance = new TestInstance(connectionHandler, dataHandler, outputServer);
 				testInstances.add(testInstance);
-				testInstance.run();
+				new Thread(testInstance).start();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

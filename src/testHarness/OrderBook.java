@@ -18,7 +18,9 @@ import database.StockHandle;
 public abstract class OrderBook {
 		
 	public final StockHandle handle;
-		
+	protected Timestamp softTime = new Timestamp(Long.MIN_VALUE);
+	protected Timestamp currentTime;
+	
 	public OrderBook(StockHandle handle) {
 		this.handle = handle;
 	}
@@ -57,17 +59,34 @@ public abstract class OrderBook {
 	 * Must be larger than the current time the book is at.
 	 * @return An iterator of all matches that occurred in the book during the fast-forwarding.
 	 */
-	public abstract Iterator<Match> updateTime(Timestamp t);
+	public abstract Iterator<Match> updateTime();
 	
 	/**
 	 * @return An iterator of the offers placed by the user.
 	 */
+	
+	public void softSetTime(Timestamp t) {
+		this.softTime = t;
+	}
+	
 	public abstract Iterator<SellOrder> getMyOffers();
 	
 	/**
 	 * @return An iterator of the bids placed by the user.
 	 */
 	public abstract Iterator<BuyOrder> getMyBids();
+	
+	/**
+	 * 
+	 * @return An iterator of the bids placed by others.
+	 */
+	public abstract Iterator<BuyOrder> getOtherBids();
+	
+	/**
+	 * 
+	 * @return An Iterator of the bids placed by others.
+	 */
+	public abstract Iterator<SellOrder> getOtherOffers();
 	
 	//TODO: might not work. We don't keep track of the price history in the book,
 	//and value objects need that for calculations.

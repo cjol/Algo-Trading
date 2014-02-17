@@ -48,12 +48,14 @@ public class UserOrderBook extends OrderBook {
 	 * @return A boolean flag indicating completion.
 	 */
 	public boolean isComplete() {
+		updateTime();
 		return outstandingBids.isEmpty() && outstandingOffers.isEmpty();
 	}
 	
 	
 	@Override
 	public BuyOrder buy(int volume, BigDecimal price, Timestamp time) {
+		updateTime();
 		BuyOrder bo = new BuyOrder(handle,time, price, volume);
 		outstandingBids.add(bo);
 		return bo;
@@ -61,6 +63,7 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public SellOrder sell(int volume, BigDecimal price, Timestamp time) {
+		updateTime();
 		SellOrder so = new SellOrder(handle,time, price, volume);
 		outstandingOffers.add(so);
 		return so;
@@ -68,6 +71,7 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<BuyOrder> getAllBids() {
+		updateTime();
 		Comparator<BuyOrder> comp = Order.buyOrderOnlyComparator;
 		PeekableIterator<BuyOrder> a = new PeekableIterator<>(getGhostedBids());
 		PeekableIterator<BuyOrder> b = new PeekableIterator<>(outstandingBids.iterator());
@@ -76,6 +80,7 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<SellOrder> getAllOffers() {
+		updateTime();
 		Comparator<SellOrder> comp = Order.sellOrderOnlyComparator;
 		PeekableIterator<SellOrder> a = new PeekableIterator<>(getGhostedOffers());
 		PeekableIterator<SellOrder> b = new PeekableIterator<>(outstandingOffers.iterator());
@@ -87,6 +92,7 @@ public class UserOrderBook extends OrderBook {
 	 * @return Bids as the user should see them.
 	 */
 	private Iterator<BuyOrder> getGhostedBids() {
+		updateTime();
 		return new GhostingIterator<>(parent.getAllBids(),ghostBids);
 	}
 	
@@ -95,14 +101,17 @@ public class UserOrderBook extends OrderBook {
 	 * @return Offers as the user should see them.
 	 */
 	private Iterator<SellOrder> getGhostedOffers() {
+		updateTime();
 		return new GhostingIterator<>(parent.getAllOffers(),ghostOffers);
 	}
 
 	@Override
-	public Iterator<Match> updateTime(Timestamp t) {
+	public Iterator<Match> updateTime() {
+		if(currentTime.equals(softTime)) return null;
+		
 		List<Match> userMatches = new LinkedList<>();
 		
-		Iterator<Match> matches = parent.updateTime(t);
+		Iterator<Match> matches = parent.updateTime();
 		
 		//for all the market matches we can also have a match
 		while(matches.hasNext()){
@@ -228,6 +237,7 @@ public class UserOrderBook extends OrderBook {
 	 * @param offer The order to change.
 	 * @param q the amount to decrement by.
 	 */
+	@SuppressWarnings("unused")
 	private static <T> void removeGhost(HashMap<T, Integer> ghost,T offer, int q) {
 		if(ghost.containsKey(offer)) {
 			int left = ghost.get(offer) - q;
@@ -249,22 +259,36 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<SellOrder> getMyOffers() {
+		updateTime();
 		return new ProtectedIterator<>(outstandingOffers.iterator());
 	}
 
 	@Override
 	public Iterator<BuyOrder> getMyBids() {
+		updateTime();
 		return new ProtectedIterator<>(outstandingBids.iterator());
 	}
 
 	@Override
 	public HighestBid getHighestBid() {
+		//FIXME not what this means
 		return new HighestBid(outstandingBids.first());
 	}
 
 	@Override
 	public LowestOffer getLowestOffer() {
+		//FIXME not what this means either
 		return new LowestOffer(outstandingOffers.first());
+	}
+
+	@Override
+	public Iterator<BuyOrder> getOtherBids() {
+		return getGhostedBids();
+	}
+
+	@Override
+	public Iterator<SellOrder> getOtherOffers() {
+		return getGhostedOffers();
 	}
 	
 	/**

@@ -26,9 +26,6 @@ import database.TestDataHandler;
 public class OrderBookReconstructor extends OrderBook{
 	private TestDataHandler dataHandler;
 	
-	//Current time the reconstructor is looking at.
-	private Timestamp currentTime;
-	
 	//Sets of bids and asks at the current timestamp.
 	private TreeSet<BuyOrder> stockBids;
 	private TreeSet<SellOrder> stockOffers;
@@ -102,25 +99,29 @@ public class OrderBookReconstructor extends OrderBook{
 	}
 	
 	@Override
-	public Iterator<Match> updateTime(Timestamp timestamp) {
+	public Iterator<Match> updateTime() {
 		//Fast forwards the state of the order book up to the timestamp
 		//and returns all the matching orders that occurred during that time.
+		if(currentTime.equals(softTime)) return null;
 		
 		Iterator<? extends Order> marketOrders;
 		try {
-			marketOrders = dataHandler.getOrders(handle, currentTime, timestamp);
+			marketOrders = dataHandler.getOrders(handle, currentTime, softTime);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
 		
+		//I think this was missing
+		currentTime = softTime;
+		
 		LinkedList<Match> matches = new LinkedList<>();
 		
 		//Continue until the required timestamp is reached.
 		while(marketOrders.hasNext()) {
 			Order currOrder = marketOrders.next();
-			if (currOrder.getTimePlaced().compareTo(timestamp) > 0) break;
+			if (currOrder.getTimePlaced().compareTo(currentTime) > 0) break;
 			
 			//Try to match this order with the market and update the matches' list
 			matchOneOrder(currOrder, matches);
@@ -170,5 +171,15 @@ public class OrderBookReconstructor extends OrderBook{
 	@Override
 	public Iterator<BuyOrder> getMyBids() {
 		throw new NotImplementedException();
+	}
+
+	@Override
+	public Iterator<BuyOrder> getOtherBids() {
+		return getAllBids();
+	}
+
+	@Override
+	public Iterator<SellOrder> getOtherOffers() {
+		return getAllOffers();
 	}
 }

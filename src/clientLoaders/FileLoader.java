@@ -13,6 +13,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import testHarness.clientConnection.ClassDescription;
+import testHarness.clientConnection.OutputRequest;
 import testHarness.clientConnection.TestRequestDescription;
 import testHarness.clientConnection.TestResultDescription;
 
@@ -50,13 +51,14 @@ public class FileLoader {
 			if(read != entry.getSize()) throw new IOException("Error reading " + entry.getName());
 			
 			//name without .class extension
-			String name = entry.getName().substring(0, entry.getName().length() - 6);
+			String name = entry.getName().substring(0, entry.getName().length() - 6).replaceAll("/", ".");
 			classFiles.add(new ClassDescription(name, classFile));
 		}
 		
 		jar.close();
-		
-		return new TestRequestDescription(classFiles, null);
+		List<OutputRequest> outs =  new LinkedList<OutputRequest>();
+		outs.add(new OutputRequest(true, false,"testHarness.output.AvailableFunds"));
+		return new TestRequestDescription(classFiles,outs);
 	}
 	
 	/**
@@ -97,7 +99,7 @@ public class FileLoader {
 	public static void main(String[] args) {
 		//TODO add options to arguments
 		
-		if(args.length != 4) showUsage();
+		if(args.length != 3) showUsage();
 		String file = args[0];
 		String address = args[1];
 		int port = 0;
@@ -124,6 +126,7 @@ public class FileLoader {
 			System.err.println("Response from test server was of unknown type");
 			System.exit(4);
 		} catch (IOException e) {
+			e.printStackTrace();
 			System.err.println("Socket error");
 			System.exit(5);
 		} catch (WrongResponseException e) {
