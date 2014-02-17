@@ -78,6 +78,7 @@ public class MarketView {
 		allOrders = new ArrayList<Order>();
 		outstandingOrders = new ArrayList<Order>();
 		portfolio = new HashMap<StockHandle, Integer>();
+		openedBooks = new HashMap<>();
 		threadShouldBeAborting = false;
 		
 		algo.run(this);
