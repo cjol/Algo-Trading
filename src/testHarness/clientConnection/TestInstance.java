@@ -97,7 +97,7 @@ public class TestInstance implements Runnable{
 	{
 		marketViewThread = new TestThread(marketView);
 		
-		marketViewThread.run();
+		marketViewThread.start();
 		try
 		{
 			marketViewThread.join(timeout);
