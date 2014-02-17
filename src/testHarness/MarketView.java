@@ -100,13 +100,16 @@ public class MarketView {
 		currentTime = newTime;
 		List<Match> allMatches = new ArrayList<Match>();
 		
+		for (OrderBook orderBook : openedBooks.values()) {
+			orderBook.softSetTime(currentTime);
+		}
 		
 		// Update simulation state, based on the updated results of every outstanding order
 		for (Order order : outstandingOrders) {
 			// TODO: Would be tidier if there was a straight link from Order to OrderBook!
 			StockHandle stock = order.getStockHandle();
 			OrderBook orderbook = getOrderBook(stock);
-			Iterator<Match> matches = orderbook.updateTime(currentTime);
+			Iterator<Match> matches = orderbook.updateTime();
 			while(matches.hasNext()) {
 				Match match = matches.next();
 				
