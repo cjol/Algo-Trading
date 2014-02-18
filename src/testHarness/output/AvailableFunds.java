@@ -20,8 +20,10 @@ public class AvailableFunds extends Output{
 	}
 
 	@Override
-	public Serializable getOutput() {
-		return (Serializable)availableFundsList;
+	public Result getOutput() {
+		ListDataResult result = new ListDataResult(availableFundsList);
+		if(outputServer != null) outputServer.store(result);
+		return result;
 	}
 
 	@Override
@@ -33,3 +35,4 @@ public class AvailableFunds extends Output{
 	
 
 }
+

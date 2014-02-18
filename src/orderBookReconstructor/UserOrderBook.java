@@ -34,6 +34,8 @@ public class UserOrderBook extends OrderBook {
 	public UserOrderBook(StockHandle handle, OrderBook parent) {
 		super(handle);
 		this.parent = parent;
+		this.softTime = parent.softTime;
+		this.currentTime = parent.currentTime;
 		
 		outstandingBids = new TreeSet<BuyOrder>();
 		outstandingOffers = new TreeSet<SellOrder>();
@@ -276,14 +278,13 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public HighestBid getHighestBid() {
-		//FIXME not what this means
-		return new HighestBid(outstandingBids.first());
+		//TODO: just the market HB or include the user's?
+		return parent.getHighestBid();
 	}
 
 	@Override
 	public LowestOffer getLowestOffer() {
-		//FIXME not what this means either
-		return new LowestOffer(outstandingOffers.first());
+		return parent.getLowestOffer();
 	}
 
 	@Override

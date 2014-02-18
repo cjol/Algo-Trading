@@ -7,7 +7,7 @@ import database.StockHandle;
 
 public class BuyOrder extends Order {
 	public BuyOrder(StockHandle stock, Timestamp timePlaced, BigDecimal price, int volume) {
-		super(stock, timePlaced, price, volume);
+		super(stock, price, volume);
 	}
 
 	@Override
