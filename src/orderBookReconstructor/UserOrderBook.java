@@ -34,6 +34,8 @@ public class UserOrderBook extends OrderBook {
 	public UserOrderBook(StockHandle handle, OrderBook parent) {
 		super(handle);
 		this.parent = parent;
+		this.softTime = parent.softTime;
+		this.currentTime = parent.currentTime;
 		
 		outstandingBids = new TreeSet<BuyOrder>();
 		outstandingOffers = new TreeSet<SellOrder>();

@@ -120,8 +120,7 @@ public class OrderBookReconstructor extends OrderBook{
 		//Continue until the required timestamp is reached.
 		while(marketOrders.hasNext()) {
 			Order currOrder = marketOrders.next();
-			if (currOrder.getTimePlaced().compareTo(currentTime) > 0) break;
-			
+			//TODO check this still works (it should).
 			//Try to match this order with the market and update the matches' list
 			matchOneOrder(currOrder, matches);
 		}
