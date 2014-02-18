@@ -1,16 +1,16 @@
 package orderBookReconstructor;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
 import Iterators.ProtectedIterator;
-
+import database.Pair;
 import database.StockHandle;
 import database.TestDataHandler;
-
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
@@ -53,12 +53,21 @@ public class MarketOrderBook extends OrderBook {
 	@Override
 	public Iterator<Match> updateTime() {
 		if(currentTime.equals(softTime)) return null;
-		bids =
-		offers = 
-		
-		Iterator<Match> matches = 
-		this.currentTime = softTime;
-		return matches;
+		try
+		{
+			//get order state
+			Pair<List<BuyOrder>, List<SellOrder>> pair = dataHandler.getLastOrderSnapshot(handle, softTime);
+			bids = pair.first;
+			offers = pair.second;
+			
+			//return matches
+			Iterator<Match> matches = dataHandler.getMatches(handle, currentTime, softTime);
+			this.currentTime = softTime;
+			return matches;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override
@@ -86,7 +95,7 @@ public class MarketOrderBook extends OrderBook {
 	@Override
 	public HighestBid getHighestBid() {
 		updateTime();
-		//FIXME wtf?
+		//FIXME not sure about the constructor here...
 		return new HighestBid(null);
 	}
 
