@@ -24,8 +24,8 @@ cursor = db.cursor()
 
 #populating dataset table
 cursor.execute('INSERT INTO datasets(dataset_id,name) VALUES (0,"Default Data"')
-#populating securities table
 
+#populating securities table
 rawFiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 truncatedRawFiles = rawFiles[0:2]
 
@@ -36,11 +36,16 @@ for file in truncatedRawFiles:
     dataset = hdf5file['RetailStates']
     numberOfData = dataset.len()
 
+    #Idea being that we make a list of every aspect of an order, and the zip the lists into a tuple (polytuple?)
     ListOfTimestamps = ["PlaceHolderString" for i in range(numberOfData*2)]
     ListOfIDs = [0 for i in range(numberOfData*2)]
     timeStampIterator = 0
-    offsetAccumulator = 0  # need to only advance to next Raw Order after filling in 10 formatted orders
-                           # This is due to there being 10 formatted orders worth of data in each raw order
+    offsetAccumulator = 0  
+
+    #hop back and forth between orders within a single raw data row.
+    #in its current form this just forms a list of the form
+    #[ts1,ts1,ts2,ts2,.....,tsn,tsn] (as the goal for the current code is to
+    #    just import top bid and top ask from each snapshot)
     for i in range(len(ListOfTimestamps)):
         ListOfTimestamps[i] = dataset[timeStampIterator][0]
         offsetAccumulator += 1
@@ -48,8 +53,10 @@ for file in truncatedRawFiles:
             timeStampIterator += 1
             offsetAccumulator = 0
 
+    #note the *2 on the range as for each raw row, we are making 2 orders
     ListOfTickers = [ticker for i in range(numberOfData*2)]
 
+    #hopping between columns one and eleven to extract prices
     ListOfPrices = [-1 for i in range(numberOfData*2)]
     priceIterator = 0
     offsetAccumulator = 0
@@ -65,6 +72,7 @@ for file in truncatedRawFiles:
         else:
             oneEleven = 1
 
+    #hopping between columns two and twelve to extract volumes
     ListOfVolumes = [-1 for i in range(numberOfData*2)]
     volumeIterator = 0
     offsetAccumulator = 0
@@ -80,6 +88,7 @@ for file in truncatedRawFiles:
         else:
             twoTwelve = 2
 
+    #build a list of form ("B","A","B","A"...) to line up with B/A of imported orders
     ListOfBidOrAsk = ["B" for i in range(numberOfData*2)]
     askIterator = 1
     for i in range(len(ListOfBidOrAsk)):
@@ -87,7 +96,10 @@ for file in truncatedRawFiles:
             bidOrAsk = "A"
         askIterator += 1
 
+    #zip all our lists together
     ListOfOrders = zip(ListOfIDs, ListOfTickers, ListOfTimestamps, ListOfBidOrAsk, ListOfPrices, ListOfVolumes)
+
+    #throw into sql
     for order in ListOfOrders:
         cursor.execute('INSERT INTO trades(dataset_id,ticker,ts,bid_or_ask,price,volume) VALUES (%i,%s,%s,%s,%i,%i);',
                        order[0],order[1],order[2],order[3],order[4],order[5])
