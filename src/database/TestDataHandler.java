@@ -16,6 +16,7 @@ import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import orderBookReconstructor.BuyOrder;
+import orderBookReconstructor.Match;
 import orderBookReconstructor.Order;
 import orderBookReconstructor.SellOrder;
 
@@ -117,6 +118,17 @@ public class TestDataHandler {
 		}
 		
 		return res.iterator();
+	}
+	
+	public Pair<List<BuyOrder>, List<SellOrder>> getLastOrderSnapshot(
+				StockHandle handle, Timestamp t) throws SQLException {
+		throw new UnsupportedOperationException();
+	}
+	
+	public Iterator<Match> getMatches(
+			StockHandle stock, Timestamp start, Timestamp end)
+			throws SQLException {
+		throw new UnsupportedOperationException();
 	}
 	
 	class ResultSetIterator implements Iterator<Order> {
