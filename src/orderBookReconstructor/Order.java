@@ -42,6 +42,10 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 		this.volume -= match;
 	}
 	
+	protected void incrementVolume(int amount) {
+		this.volume += amount;
+	}
+	
 	//No ordering makes sense here, much better to define the ordering lower down
 	@Override
 	public abstract int compareTo(Order that);

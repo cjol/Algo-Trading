@@ -78,8 +78,7 @@ public class OrderBookReconstructor extends OrderBook{
 			//Make a trade on the average price: if the bid is greater than the ask, the
 			//buyer and the seller will split the difference.
 			BigDecimal avgPrice = (buyOrder.getPrice() .add( sellOrder.getPrice() )) . divide(BigDecimal.valueOf(2));
-			matches.add(new Match(buyOrder, sellOrder, 
-					order.getVolume(), avgPrice));
+			matches.add(new Match(order.getVolume(), avgPrice));
 			
 			if (buyOrder.getVolume() > sellOrder.getVolume()) {
 				//Sell order completely filled, buy order partially filled.

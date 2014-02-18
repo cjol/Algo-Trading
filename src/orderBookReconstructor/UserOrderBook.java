@@ -1,6 +1,7 @@
 package orderBookReconstructor;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -28,8 +29,8 @@ public class UserOrderBook extends OrderBook {
 	private final TreeSet<BuyOrder> outstandingBids;
 	private TreeSet<SellOrder> outstandingOffers;
 	
-	private HashMap<BuyOrder, Integer> ghostBids;
-	private HashMap<SellOrder, Integer> ghostOffers;
+	private HashMap<Integer, Integer> ghostBids;
+	private HashMap<Integer, Integer> ghostOffers;
 	
 	public UserOrderBook(StockHandle handle, OrderBook parent) {
 		super(handle);
@@ -40,8 +41,8 @@ public class UserOrderBook extends OrderBook {
 		outstandingBids = new TreeSet<BuyOrder>();
 		outstandingOffers = new TreeSet<SellOrder>();
 		
-		ghostBids = new HashMap<BuyOrder, Integer>();
-		ghostOffers = new HashMap<SellOrder, Integer>();
+		ghostBids = new HashMap<Integer, Integer>();
+		ghostOffers = new HashMap<Integer, Integer>();
 	}
 
 	/**
@@ -57,6 +58,12 @@ public class UserOrderBook extends OrderBook {
 	@Override
 	public BuyOrder buy(int volume, BigDecimal price, Timestamp time) {
 		updateTime();
+		for(BuyOrder bo: outstandingBids) {
+			if(bo.getPrice().equals(price)) {
+				bo.incrementVolume(volume);
+				return bo;
+			}
+		}
 		BuyOrder bo = new BuyOrder(handle,time, price, volume);
 		outstandingBids.add(bo);
 		return bo;
@@ -65,6 +72,12 @@ public class UserOrderBook extends OrderBook {
 	@Override
 	public SellOrder sell(int volume, BigDecimal price, Timestamp time) {
 		updateTime();
+		for(SellOrder so: outstandingOffers) {
+			if(so.getPrice().equals(price)) {
+				so.incrementVolume(volume);
+				return so;
+			}
+		}
 		SellOrder so = new SellOrder(handle,time, price, volume);
 		outstandingOffers.add(so);
 		return so;
@@ -108,6 +121,8 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<Match> updateTime() {
+		//FIXME
+		
 		if(parent.currentTime.equals(softTime)) return null;
 		
 		List<Match> userMatches = new LinkedList<>();
@@ -117,13 +132,13 @@ public class UserOrderBook extends OrderBook {
 		//for all the market matches we can also have a match
 		while(matches.hasNext()){
 			Match match = matches.next();
-			coverMatch(match.buyOrder, match.quantity, ghostBids, outstandingOffers, userMatches);
-			coverMatch(match.sellOrder, match.quantity, ghostOffers, outstandingBids, userMatches);
+			coverMatch(match.price, match.quantity, ghostBids, outstandingOffers, true, userMatches);
+			coverMatch(match.price, match.quantity, ghostOffers, outstandingBids, false, userMatches);
 		}
 		
 		//match things the market did not.
-		match(ghostBids,parent.getAllBids(),outstandingOffers.iterator(), userMatches);
-		match(ghostOffers,parent.getAllOffers(),outstandingBids.iterator(), userMatches);
+		match(ghostBids,parent.getAllBids(),outstandingOffers.iterator(), userMatches, true);
+		match(ghostOffers,parent.getAllOffers(),outstandingBids.iterator(), userMatches, false);
 		
 		return userMatches.iterator();
 	}
@@ -143,9 +158,10 @@ public class UserOrderBook extends OrderBook {
 	 * @param userOrders The outstanding orders for the user.
 	 * @param userMatches The matches list to append matches to.
 	 */
-	private static <Market extends Order, User extends Order> 
-	void coverMatch(Market marketOrder, int q, HashMap<Market, Integer> marketGhost, TreeSet<User> userOrders, List<Match> userMatches) {
-		int exisitingGhosting = (marketGhost.containsKey(marketOrder)) ? marketGhost.get(marketOrder) : 0;
+	private static <User extends Order> 
+	void coverMatch(BigDecimal marketPrice, int q, HashMap<Integer, Integer> marketGhost, TreeSet<User> userOrders, boolean isUserOffer, List<Match> userMatches) {
+		//FIXME 
+		int exisitingGhosting = (marketGhost.containsKey(marketPrice)) ? marketGhost.get(marketPrice) : 0;
 		
 		int available = q - exisitingGhosting;
 		int userIntercepted = 0;
@@ -153,13 +169,14 @@ public class UserOrderBook extends OrderBook {
 		//buy anything the market did in this tick
 		while(available > 0 && !userOrders.isEmpty()) {
 			User userOrder = userOrders.first();
-			if(canTrade(userOrder, marketOrder)) {
+			if(canTrade(userOrder.getPrice(), marketPrice, isUserOffer)) {
 				int userVolume = userOrder.getVolume();
 				int tradeVolume = (available > userVolume) ? userVolume : available;
-				BigDecimal price = marketOrder.getPrice().add(userOrder.getPrice())
+				//FIXME go in favour of the market.
+				BigDecimal price = marketPrice.add(userOrder.getPrice())
 					.divide(BigDecimal.valueOf(2));
 				
-				userMatches.add(makeMatch(marketOrder, userOrder, tradeVolume, price));
+				userMatches.add(new Match(tradeVolume, price, isUserOffer));
 				available -= tradeVolume;
 				userIntercepted += tradeVolume;
 				
@@ -171,8 +188,8 @@ public class UserOrderBook extends OrderBook {
 		//update ghosting
 		int newGhosting = exisitingGhosting + userIntercepted - q;
 		if(newGhosting < 0) newGhosting = 0;
-		if(exisitingGhosting != 0 && newGhosting == 0) marketGhost.remove(marketOrder);
-		else if(newGhosting != 0) marketGhost.put(marketOrder, (Integer)newGhosting);
+		if(exisitingGhosting != 0 && newGhosting == 0) marketGhost.remove(marketPrice);
+		else if(newGhosting != 0) marketGhost.put((Integer)marketPrice, (Integer)newGhosting);
 	}
 	
 	/**
@@ -183,14 +200,15 @@ public class UserOrderBook extends OrderBook {
 	 * @param userMatches A list to append the output matches to.
 	 */
 	private static <Market extends Order, User extends Order> 
-	void match(HashMap<Market, Integer> ghost, Iterator<Market> marketIter, Iterator<User> userIter, List<Match> userMatches) {
+	void match(HashMap<Integer, Integer> ghost, Iterator<Market> marketIter, Iterator<User> userIter, List<Match> userMatches, boolean isUserOrder) {
+		//FIXME 
 		if( marketIter.hasNext() && userIter.hasNext()) {
 			
 			Market marketOrder = marketIter.next();	
 			User userOrder = userIter.next();
 			
 			//break totally, no more matches
-			while(canTrade(marketOrder, userOrder)) {
+			while(canTrade(marketOrder.getPrice(), userOrder.getPrice(), isUserOrder)) {
 					
 				//how much we can buy
 				int marketVolume = marketOrder.getVolume() - (ghost.containsKey(marketOrder) ? ghost.get(marketOrder) : 0);
@@ -199,10 +217,10 @@ public class UserOrderBook extends OrderBook {
 				BigDecimal price = ( ( marketOrder.getPrice().add(userOrder.getPrice()) ) .divide(BigDecimal.valueOf(2)) );
 					
 				//ghost
-				addGhost(ghost, marketOrder, tradeVolume);
+				addGhost(ghost, marketOrder.getPrice(), tradeVolume);
 					
 				//create match
-				userMatches.add(makeMatch(marketOrder, userOrder, tradeVolume, price));
+				userMatches.add(new Match(tradeVolume, price, isUserOrder));
 				
 				//update out outstanding
 				if(tradeVolume == userVolume) {
@@ -218,24 +236,12 @@ public class UserOrderBook extends OrderBook {
 		}
 	}
 	
-	//FIXME hacky way of losing track of types due to generics...
-	private static boolean canTrade(Order a, Order b) {
-		boolean swap = (a instanceof BuyOrder);
+	private static boolean canTrade(BigDecimal a, BigDecimal b, boolean isUserOrder) {
 		
-		BuyOrder buy = (BuyOrder) ((swap) ? a : b);
-		SellOrder sell = (SellOrder) ((swap) ? b : a);
+		BigDecimal buy = ((isUserOrder) ? a : b);
+		BigDecimal sell = ((isUserOrder) ? b : a);
 		
-		return (buy.getPrice().compareTo(sell.getPrice()) >= 0);
-	}
-	
-	//second order is users
-	private static Match makeMatch(Order a, Order b, int q, BigDecimal p) {
-		boolean swap = (a instanceof BuyOrder);
-		
-		BuyOrder buy = (BuyOrder) ((swap) ? a : b);
-		SellOrder sell = (SellOrder) ((swap) ? b : a);
-		
-		return new Match(buy, sell, q, p, swap);
+		return (buy.compareTo(sell) >= 0);
 	}
 	
 	/**
@@ -245,11 +251,13 @@ public class UserOrderBook extends OrderBook {
 	 * @param q the amount to decrement by.
 	 */
 	@SuppressWarnings("unused")
-	private static <T> void removeGhost(HashMap<T, Integer> ghost,T offer, int q) {
+	private static void removeGhost(HashMap<Integer, Integer> ghost,BigDecimal offer, int q) {
+		//FIXME
+		
 		if(ghost.containsKey(offer)) {
 			int left = ghost.get(offer) - q;
 			if(left <= 0) ghost.remove(offer);
-			else ghost.put(offer, (Integer)left);
+			else ghost.put(((Integer)offer, (Integer)left);
 		}
 	}
 	
@@ -259,13 +267,16 @@ public class UserOrderBook extends OrderBook {
 	 * @param offer The order to change.
 	 * @param q the amount to increment by.
 	 */
-	private static <T> void addGhost(HashMap<T, Integer> ghost,T offer, int q) {
+	private static void addGhost(HashMap<Integer, Integer> ghost,BigDecimal offer, int q) {
+		//FIXME
+		
 		int val = ((ghost.containsKey(offer)) ? ghost.get(offer) : 0) + q;
-		ghost.put(offer, val);
+		ghost.put((Integer)offer, val);
 	}
 
 	@Override
 	public Iterator<SellOrder> getMyOffers() {
+		
 		updateTime();
 		return new ProtectedIterator<>(outstandingOffers.iterator());
 	}
@@ -305,8 +316,9 @@ public class UserOrderBook extends OrderBook {
 	 */
 	private static class GhostingIterator<T extends Order> implements Iterator<T> 
 	{
+		//FIXME
 		private final Iterator<T> parent;
-		private final HashMap<T, Integer> ghost;
+		private final HashMap<Integer, Integer> ghost;
 		
 		private T next;
 		
@@ -315,7 +327,7 @@ public class UserOrderBook extends OrderBook {
 		 * @param parent The unfiltered Iterator.
 		 * @param ghostSet The ghost filter.
 		 */
-		public GhostingIterator(Iterator<T> parent, HashMap<T, Integer> ghostSet) {
+		public GhostingIterator(Iterator<T> parent, HashMap<Integer, Integer> ghostSet) {
 			this.parent = parent;
 			this.ghost = ghostSet;
 			next = calculateNext();
@@ -339,7 +351,7 @@ public class UserOrderBook extends OrderBook {
 					return null;
 				}
 				T pnext = parent.next();
-				if(!ghost.containsKey(pnext)) return pnext;
+				if(!ghost.containsKey(pnext.getPrice())) return pnext;
 				
 				try {
 					T clone = (T)pnext.clone();
