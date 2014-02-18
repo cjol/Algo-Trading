@@ -10,9 +10,8 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 	private final StockHandle stock;
 	private final BigDecimal price;
 	private int volume;
-	private final Timestamp timePlaced;
 	
-	public Order(StockHandle stock, Timestamp timePlaced, BigDecimal price, int volume) {
+	public Order(StockHandle stock, BigDecimal price, int volume) {
 		this.stock = stock;
 		this.price = price;
 		this.volume = volume;
@@ -22,7 +21,6 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 		if (this.volume <= 0) {
 			throw new AssertionError("Invalid volume");
 		}
-		this.timePlaced = timePlaced;
 	}
 	
 	public StockHandle getStockHandle() {
@@ -43,11 +41,6 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 		}
 		this.volume -= match;
 	}
-
-	public Timestamp getTimePlaced() {
-		// Timestamp's are mutable, so return a copy
-		return (Timestamp)timePlaced.clone();
-	}
 	
 	//No ordering makes sense here, much better to define the ordering lower down
 	@Override
@@ -62,8 +55,7 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 
 		@Override
 		public int compare(Order o1, Order that) {
-			int com = o1.getPrice().compareTo(that.getPrice());
-			return (com == 0) ? that.getTimePlaced().compareTo(o1.getTimePlaced()) : com;
+			return o1.getPrice().compareTo(that.getPrice());
 		}
 	}
 	
@@ -71,8 +63,7 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 
 		@Override
 		public int compare(Order o1, Order o2) {
-			int com = o2.getPrice().compareTo(o1.getPrice());
-			return (com == 0) ? o2.getTimePlaced().compareTo(o1.getTimePlaced()) : com;
+			return o2.getPrice().compareTo(o1.getPrice());
 		}
 	}
 	

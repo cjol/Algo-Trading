@@ -33,8 +33,7 @@ public class TestDataHandlerTest {
 		// attributes but represent different trades in the market
 		return (a.getStockHandle() == b.getStockHandle()) &&
 				(a.getPrice() == b.getPrice()) &&
-				(a.getVolume() == b.getVolume()) &&
-				(a.getTimePlaced().equals(b.getTimePlaced()));
+				(a.getVolume() == b.getVolume());
 		
 	}
 	@Test
