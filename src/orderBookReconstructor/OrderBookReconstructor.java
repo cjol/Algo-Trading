@@ -139,16 +139,17 @@ public class OrderBookReconstructor extends OrderBook{
 		return new ProtectedIterator<>(stockOffers.descendingIterator());
 	}
 	
+	//getHighestBid/LowestOffer return value objects that, when poked,
+	//will go back to this book and get the best bid/offer from it.
+	//So far they don't support looking back into history.
 	@Override
 	public HighestBid getHighestBid() {
-		//TODO: discuss about how we don't keep the history of the book
-		//and so we can't get a value object representing the highest bid.
-		throw new NotImplementedException();
+		return new HighestBid(this);
 	}
 
 	@Override
 	public LowestOffer getLowestOffer() {
-		throw new NotImplementedException();
+		return new LowestOffer(this);
 	}
 	
 	//The remaining methods are not supposed to be implemented by the matcher.

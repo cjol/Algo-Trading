@@ -1,22 +1,23 @@
 package valueObjects;
 
-
-import orderBookReconstructor.SellOrder;
+import orderBookReconstructor.OrderBookReconstructor;
 
 public class LowestOffer implements IValued {
-	//TODO: lowest offer taken from the current book.
-	private SellOrder underlyingOffer;
+	private OrderBookReconstructor orderBook;
 	
-	public LowestOffer(SellOrder underlyingOffer) {
-		this.underlyingOffer = underlyingOffer;
+	public LowestOffer(OrderBookReconstructor orderBook) {
+		this.orderBook = orderBook;
 	}
 	
-	public SellOrder getUnderlyingOffer() {return underlyingOffer;}
-
 	@Override
+	//FIXME: so far only gets the current best offer, could fix easily
+	//when the OrderBookReconstructor is changed since we would simply
+	//take order book snapshots now.
 	public double getValue(int ticksBack) throws TickOutOfRangeException {
-		// TODO Auto-generated method stub
-		return 0.0;
+		//Take all bids from the order book since it's the reconstructor and only
+		//has market bids.
+		if (ticksBack > 0 || !orderBook.getAllOffers().hasNext()) throw new TickOutOfRangeException();
+		
+		return orderBook.getAllOffers().next().getPrice().doubleValue();
 	}
-
 }
