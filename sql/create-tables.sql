@@ -47,3 +47,4 @@ CREATE table matches (
 );
 
 CREATE INDEX orderbook_idx ON order_books (ts);
+CREATE INDEX matches_idx ON matches (ts);
