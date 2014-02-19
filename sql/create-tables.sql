@@ -10,7 +10,7 @@ CREATE TABLE securities (
 	PRIMARY KEY (dataset_id, ticker)
 );
 
-CREATE table order_books {
+CREATE table order_books (
   dataset_id serial REFERENCES datasets(dataset_id),
   ticker varchar(10),
  	ts timestamp,
@@ -35,7 +35,7 @@ CREATE table order_books {
  	ask5_price integer,
  	ask5_volume integer NOT NULL,
  	PRIMARY KEY (datset_id, ticker, ts)
-}
+);
 	
 CREATE table matches (
 	trade_id bigserial PRIMARY KEY,
