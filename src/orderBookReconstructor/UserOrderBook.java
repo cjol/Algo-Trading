@@ -1,7 +1,5 @@
 package orderBookReconstructor;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -56,10 +54,10 @@ public class UserOrderBook extends OrderBook {
 	
 	
 	@Override
-	public BuyOrder buy(int volume, BigDecimal price, Timestamp time) {
+	public BuyOrder buy(int volume, int price, Timestamp time) {
 		updateTime();
 		for(BuyOrder bo: outstandingBids) {
-			if(bo.getPrice().equals(price)) {
+			if(bo.getPrice() == price) {
 				bo.incrementVolume(volume);
 				return bo;
 			}
@@ -70,10 +68,10 @@ public class UserOrderBook extends OrderBook {
 	}
 
 	@Override
-	public SellOrder sell(int volume, BigDecimal price, Timestamp time) {
+	public SellOrder sell(int volume, int price, Timestamp time) {
 		updateTime();
 		for(SellOrder so: outstandingOffers) {
-			if(so.getPrice().equals(price)) {
+			if(so.getPrice() == price) {
 				so.incrementVolume(volume);
 				return so;
 			}
@@ -159,7 +157,7 @@ public class UserOrderBook extends OrderBook {
 	 * @param userMatches The matches list to append matches to.
 	 */
 	private static <User extends Order> 
-	void coverMatch(BigDecimal marketPrice, int q, HashMap<Integer, Integer> marketGhost, TreeSet<User> userOrders, boolean isUserOffer, List<Match> userMatches) {
+	void coverMatch(int marketPrice, int q, HashMap<Integer, Integer> marketGhost, TreeSet<User> userOrders, boolean isUserOffer, List<Match> userMatches) {
 		//FIXME 
 		int exisitingGhosting = (marketGhost.containsKey(marketPrice)) ? marketGhost.get(marketPrice) : 0;
 		
@@ -172,9 +170,9 @@ public class UserOrderBook extends OrderBook {
 			if(canTrade(userOrder.getPrice(), marketPrice, isUserOffer)) {
 				int userVolume = userOrder.getVolume();
 				int tradeVolume = (available > userVolume) ? userVolume : available;
-				//FIXME go in favour of the market.
-				BigDecimal price = marketPrice.add(userOrder.getPrice())
-					.divide(BigDecimal.valueOf(2));
+				
+				
+				int price = userOrder.getPrice();
 				
 				userMatches.add(new Match(tradeVolume, price, isUserOffer));
 				available -= tradeVolume;
@@ -211,10 +209,12 @@ public class UserOrderBook extends OrderBook {
 			while(canTrade(marketOrder.getPrice(), userOrder.getPrice(), isUserOrder)) {
 					
 				//how much we can buy
-				int marketVolume = marketOrder.getVolume() - (ghost.containsKey(marketOrder) ? ghost.get(marketOrder) : 0);
+				int marketVolume = marketOrder.getVolume() - (ghost.containsKey(marketOrder.getPrice()) ? ghost.get(marketOrder.getPrice()) : 0);
 				int userVolume = userOrder.getVolume();
 				int tradeVolume = (marketVolume > userVolume) ? userVolume : marketVolume;
-				BigDecimal price = ( ( marketOrder.getPrice().add(userOrder.getPrice()) ) .divide(BigDecimal.valueOf(2)) );
+				
+				//The correct price, the user knows about the marker. The market did not know about the user and would have adjusted its price.
+				int price = userOrder.getPrice();
 					
 				//ghost
 				addGhost(ghost, marketOrder.getPrice(), tradeVolume);
@@ -236,42 +236,38 @@ public class UserOrderBook extends OrderBook {
 		}
 	}
 	
-	private static boolean canTrade(BigDecimal a, BigDecimal b, boolean isUserOrder) {
-		
-		BigDecimal buy = ((isUserOrder) ? a : b);
-		BigDecimal sell = ((isUserOrder) ? b : a);
-		
-		return (buy.compareTo(sell) >= 0);
+	private static boolean canTrade(int market, int user, boolean isUserOffer) {
+		return ((market == user) || (isUserOffer ^ (market < user)));
 	}
 	
 	/**
 	 * Removes ghosting for an order.
 	 * @param ghost The ghost map for the given type.
-	 * @param offer The order to change.
+	 * @param priceLevel The order to change.
 	 * @param q the amount to decrement by.
 	 */
 	@SuppressWarnings("unused")
-	private static void removeGhost(HashMap<Integer, Integer> ghost,BigDecimal offer, int q) {
+	private static void removeGhost(HashMap<Integer, Integer> ghost,int priceLevel, int q) {
 		//FIXME
 		
-		if(ghost.containsKey(offer)) {
-			int left = ghost.get(offer) - q;
-			if(left <= 0) ghost.remove(offer);
-			else ghost.put(((Integer)offer, (Integer)left);
+		if(ghost.containsKey(priceLevel)) {
+			int left = ghost.get(priceLevel) - q;
+			if(left <= 0) ghost.remove(priceLevel);
+			else ghost.put(priceLevel, left);
 		}
 	}
 	
 	/**
 	 * Add ghosting for a type.
 	 * @param ghost The ghost map for the given type.
-	 * @param offer The order to change.
+	 * @param priceLevel The order to change.
 	 * @param q the amount to increment by.
 	 */
-	private static void addGhost(HashMap<Integer, Integer> ghost,BigDecimal offer, int q) {
+	private static void addGhost(HashMap<Integer, Integer> ghost,int priceLevel, int q) {
 		//FIXME
 		
-		int val = ((ghost.containsKey(offer)) ? ghost.get(offer) : 0) + q;
-		ghost.put((Integer)offer, val);
+		int val = ((ghost.containsKey(priceLevel)) ? ghost.get(priceLevel) : 0) + q;
+		ghost.put(priceLevel, val);
 	}
 
 	@Override
@@ -351,14 +347,16 @@ public class UserOrderBook extends OrderBook {
 					return null;
 				}
 				T pnext = parent.next();
-				if(!ghost.containsKey(pnext.getPrice())) return pnext;
+				int priceLevel = pnext.getPrice();
+				
+				if(!ghost.containsKey(priceLevel)) return pnext;
 				
 				try {
-					T clone = (T)pnext.clone();
-					int ghostAmount = ghost.get(pnext);
+					pnext = (T)pnext.clone();
+					int ghostAmount = ghost.get(priceLevel);
 					if(ghostAmount < pnext.getVolume()) {
-						clone.decrementVolume(ghostAmount);
-						return clone;
+						pnext.decrementVolume(ghostAmount);
+						return pnext;
 					}
 					
 				} catch (CloneNotSupportedException e) {

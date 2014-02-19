@@ -192,9 +192,9 @@ public class TestDataHandler {
 
 						Order newOrder = null;
 						switch (bidOrAskC) {
-						case "A": newOrder = new SellOrder(stock, ts, new BigDecimal(price), volume);
+						case "A": newOrder = new SellOrder(stock, ts, price, volume);
 						break;
-						case "B": newOrder = new BuyOrder(stock, ts, new BigDecimal(price), volume);
+						case "B": newOrder = new BuyOrder(stock, ts, price, volume);
 						break;
 						default:  throw new AssertionError("Invalid type " + bidOrAskC + " in database.");
 						}

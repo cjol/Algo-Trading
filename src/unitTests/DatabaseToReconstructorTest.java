@@ -59,7 +59,7 @@ public class DatabaseToReconstructorTest {
 		
 		UserOrderBook userBook = new UserOrderBook(stockHandle, obr);
 		
-		userBook.buy(2014, new BigDecimal(1), new Timestamp(114, 0, 1, 0, 0, 1, 500));
+		userBook.buy(2014, 1, new Timestamp(114, 0, 1, 0, 0, 1, 500));
 		userBook.softSetTime(new Timestamp(114, 0, 1, 0, 0, 5, 0));
 		Iterator<Match> matches = userBook.updateTime();
 		

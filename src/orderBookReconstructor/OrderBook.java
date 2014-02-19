@@ -1,6 +1,5 @@
 package orderBookReconstructor;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 
@@ -29,7 +28,7 @@ public abstract class OrderBook {
 	 * @param time Time at which the order was placed.
 	 * @return A reference to the buy order.
 	 */
-	public abstract BuyOrder buy(int volume, BigDecimal price, Timestamp time);
+	public abstract BuyOrder buy(int volume, int price, Timestamp time);
 	
 	/**
 	 * Places an ask (sell) order into the order book.
@@ -38,7 +37,7 @@ public abstract class OrderBook {
 	 * @param time Time at which the order was placed.
 	 * @return A reference to the sell order.
 	 */
-	public abstract SellOrder sell(int volume, BigDecimal price, Timestamp time);
+	public abstract SellOrder sell(int volume, int price, Timestamp time);
 	
 	/**
 	 * @return An iterator of all the bids in the order book.

@@ -1,13 +1,10 @@
 package orderBookReconstructor;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.TreeSet;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -72,12 +69,11 @@ public class OrderBookReconstructor extends OrderBook{
 			SellOrder sellOrder = stockOffers.last();
 			
 			//Break if we can't match the orders anymore.
-			if (buyOrder.getPrice().compareTo(sellOrder.getPrice()) < 0) break;
+			if (buyOrder.getPrice() < sellOrder.getPrice()) break;
 			
 			//We've got a match!
-			//Make a trade on the average price: if the bid is greater than the ask, the
-			//buyer and the seller will split the difference.
-			BigDecimal avgPrice = (buyOrder.getPrice() .add( sellOrder.getPrice() )) . divide(BigDecimal.valueOf(2));
+			//Make a trade on the average price: //TODO if we ever need this again this should be resolved 
+			int avgPrice = buyOrder.getPrice();
 			matches.add(new Match(order.getVolume(), avgPrice));
 			
 			if (buyOrder.getVolume() > sellOrder.getVolume()) {
@@ -152,12 +148,12 @@ public class OrderBookReconstructor extends OrderBook{
 	
 	//The remaining methods are not supposed to be implemented by the matcher.
 	@Override
-	public BuyOrder buy(int volume, BigDecimal price, Timestamp timestamp) {
+	public BuyOrder buy(int volume, int price, Timestamp timestamp) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public SellOrder sell(int volume, BigDecimal price, Timestamp timestamp) {
+	public SellOrder sell(int volume, int price, Timestamp timestamp) {
 		throw new NotImplementedException();
 	}
 

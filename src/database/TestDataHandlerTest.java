@@ -63,9 +63,9 @@ public class TestDataHandlerTest {
 				orders.add(orderIt.next());
 			}
 			Order[] expectedOrders = {
-									   new BuyOrder(s, new Timestamp(114,0,1,0,0,0,0), new BigDecimal(9), 200),
-									   new BuyOrder(s, new Timestamp(114,0,1,0,0,0,0), new BigDecimal(10), 100),
-									   new SellOrder(s, new Timestamp(114,0,1,0,0,1,0), new BigDecimal(11), 100)
+									   new BuyOrder(s, new Timestamp(114,0,1,0,0,0,0), 9, 200),
+									   new BuyOrder(s, new Timestamp(114,0,1,0,0,0,0), 10, 100),
+									   new SellOrder(s, new Timestamp(114,0,1,0,0,1,0), 11, 100)
 									   /*new BuyOrder(s, new Timestamp(114,0,1,0,0,2,0), new BigDecimal(11), 10),
 									   new SellOrder(s, new Timestamp(114,0,1,0,0,3,0), new BigDecimal(10), 100)*/
 									  };

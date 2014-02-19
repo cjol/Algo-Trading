@@ -1,11 +1,9 @@
 package orderBookReconstructor;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeSet;
 
 import Iterators.ProtectedIterator;
 import database.Pair;
@@ -31,12 +29,12 @@ public class MarketOrderBook extends OrderBook {
 	}
 
 	@Override
-	public BuyOrder buy(int volume, BigDecimal price, Timestamp time) {
+	public BuyOrder buy(int volume, int price, Timestamp time) {
 		throw new NotImplementedException();
 	}
 
 	@Override
-	public SellOrder sell(int volume, BigDecimal price, Timestamp time) {
+	public SellOrder sell(int volume, int price, Timestamp time) {
 		throw new NotImplementedException();
 	}
 

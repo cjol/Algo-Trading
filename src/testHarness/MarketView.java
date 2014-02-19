@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,12 +45,15 @@ public class MarketView {
 
 	private ITradingAlgorithm algo;
 	private Map<StockHandle, Integer> portfolio;
-	private List<Order> outstandingOrders;
+	private Map<StockHandle, Integer> reservedPortfolio;
 	private Map<StockHandle,OrderBook> openedBooks;
-	private List<Order> allOrders;
+	private HashSet<UserOrderBook> booksWithPosition;
 	private Timestamp currentTime;
 	private int numTicks;
+	
 	private BigDecimal availableFunds;
+	private BigDecimal reservedFunds;
+	
 	private List<Output> outputs; 
 	private final TestDataHandler dataHandler;
 	private final DatasetHandle dataset;
@@ -74,11 +78,12 @@ public class MarketView {
 	public void startSimulation() {
 		// TODO STARTING_FUNDS and *_TIME should be simulation parameters
 		availableFunds = STARTING_FUNDS;
+		reservedFunds = new BigDecimal(0);
 		currentTime = (Timestamp) STARTING_TIME.clone();
 		numTicks = 0;
-		allOrders = new ArrayList<Order>();
-		outstandingOrders = new ArrayList<Order>();
 		portfolio = new HashMap<StockHandle, Integer>();
+		reservedPortfolio = new HashMap<StockHandle, Integer>();
+		booksWithPosition = new HashSet<>();
 		openedBooks = new HashMap<>();
 		threadShouldBeAborting = false;
 		
@@ -105,42 +110,18 @@ public class MarketView {
 			orderBook.softSetTime(currentTime);
 		}
 		
-		// Update simulation state, based on the updated results of every outstanding order
-		for (Order order : outstandingOrders) {
-			// TODO: Would be tidier if there was a straight link from Order to OrderBook!
-			StockHandle stock = order.getStockHandle();
-			OrderBook orderbook = getOrderBook(stock);
-			Iterator<Match> matches = orderbook.updateTime();
-			while(matches.hasNext()) {
-				Match match = matches.next();
-				
-				// FIXME Only if Orders are uniquely represented then I can compare references..
-				if (order == match.buyOrder) {
-					// I made the buy order - give me my stock!
-					int amtOwned = match.quantity;
-					if (portfolio.containsKey(stock))
-						amtOwned += portfolio.get(stock);
-					portfolio.put(stock, amtOwned);
-
-					// TODO: Take commission?
-					
-				} else if (order == match.sellOrder) {
-					// I made the sell order - give me monies!
-					availableFunds.add( match.price.multiply(new BigDecimal(match.quantity)) );
-
-					// TODO: Take commission?
-					
-				} else {
-					// This order didn't concern me, so I can just ignore it
-				}
-				
-				// FIXME: Again, reliant on Orders being uniquely represented
-				if (order.getVolume() < 1)
-					outstandingOrders.remove(order);
-				allMatches.add(match);
-			}	
+		Iterator<UserOrderBook> bookIter = booksWithPosition.iterator();
+		List<Match> matches = new LinkedList<>();
+		while(bookIter.hasNext()) {
+			UserOrderBook book = bookIter.next();
+			
+			Iterator<Match> matcheIter = book.updateTime();
+			//TODO work what we get from the matches
+			
+			if(book.isComplete()) bookIter.remove();
 		}
 		
+		//FIXME 
 		// update Outputs
 		TickData tickdata = new TickData(currentTime, portfolio, outstandingOrders, availableFunds);
 		for (Output output : outputs) {
@@ -196,19 +177,19 @@ public class MarketView {
 	 * @param volume	The amount of stock the user wants to buy
 	 * @return Whether the offer was successfully posted (may return false if we have insufficient funds)
 	 */
-	public boolean buy(StockHandle stock, BigDecimal price, int volume) {
+	public boolean buy(StockHandle stock, int price, int volume) {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
 		
-		if (getAvailableFunds().compareTo(price.multiply(new BigDecimal(volume))) < 0)
+		int totalPrice = price * volume;
+		BigDecimal totalBig = (new BigDecimal(totalPrice));
+		if (getAvailableFunds().compareTo(totalBig) < 0)
 			return false; // we don't have enough funds
 		
-		// subtract available funds now - will be returned if we cancel?
-		availableFunds.add( price.negate().multiply(new BigDecimal(volume)) );
+		availableFunds = availableFunds.subtract(totalBig);
+		reservedFunds = reservedFunds.add(totalBig);
 		
 		Order o = getOrderBook(stock).buy(volume, price, currentTime);
-		allOrders.add(o);
-		outstandingOrders.add(o);
 		return true;
 	}
 
@@ -219,22 +200,23 @@ public class MarketView {
 	 * @param volume	The amount of stock the user wants to sell
 	 * @return Whether the offer was successfully posted (may return false if we have insufficient stock)
 	 */
-	public boolean sell(StockHandle stock, BigDecimal price, int volume) {
+	public boolean sell(StockHandle stock, int price, int volume) {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
 		if (!portfolio.containsKey(stock))
 			return false; // we don't own any of this stock (for now that means no trade)
 
 		int amtOwned = portfolio.get(stock);
-		if (amtOwned - volume < 0)
+		if (amtOwned < volume)
 			return false; // we don't own enough for this sale
 
 		// subtract sold stock now - will be returned if we cancel?
 		portfolio.put(stock, amtOwned - volume);
 		
+		int alreadyReserved = reservedPortfolio.containsKey(stock) ? reservedPortfolio.get(stock) : 0;
+		reservedPortfolio.put(stock, alreadyReserved + volume);
+		
 		Order o = getOrderBook(stock).sell(volume, price, currentTime);
-		allOrders.add(o);
-		outstandingOrders.add(o);
 		return true;
 	}
 	
@@ -263,6 +245,7 @@ public class MarketView {
 	 * @return A new iterator over orders which are still outstanding
 	 */
 	public Iterator<Order> getOutstandingOrders() {
+		//FIXME
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
 		List<Order> cloned = new ArrayList<Order>();
@@ -279,6 +262,7 @@ public class MarketView {
 	public Iterator<Entry<StockHandle, Integer>> getPortfolio() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
+		//FIXME why the manual deep clone? users don't need to delete from this.
 		Set<Entry<StockHandle, Integer>> cloned = new HashSet<Entry<StockHandle, Integer>>();
 		for (Entry<StockHandle, Integer> e : portfolio.entrySet()) {
 			cloned.add(e);
@@ -293,9 +277,9 @@ public class MarketView {
 	public Iterator<StockHandle> getStocksWithOutstanding() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		Set<StockHandle> out = new HashSet<StockHandle>();
-		for (Order o : outstandingOrders) {
-			out.add(o.getStockHandle());
+		List<StockHandle> out = new LinkedList<StockHandle>();
+		for (UserOrderBook o : booksWithPosition) {
+			out.add(o.handle);
 		}
 		return out.iterator();
 	}

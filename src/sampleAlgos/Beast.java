@@ -1,6 +1,5 @@
 package sampleAlgos;
 
-import java.math.BigDecimal;
 import java.util.Iterator;
 
 import orderBookReconstructor.Order;
@@ -26,13 +25,13 @@ public class Beast implements ITradingAlgorithm {
 				//BUY BUY BUY
 				Iterator<? extends Order> iter = book.getAllOffers();
 				if(!iter.hasNext()) continue;
-				BigDecimal bd = iter.next().getPrice();
+				int bd = iter.next().getPrice();
 				marketView.buy(bestStockEver, bd, 1);
 			} else {
 				//SELL SELL SELL
 				Iterator<? extends Order> iter = book.getAllBids();
 				if(!iter.hasNext()) continue;
-				BigDecimal bd = iter.next().getPrice();
+				int bd = iter.next().getPrice();
 				marketView.sell(bestStockEver, bd, 1);
 			}
 			

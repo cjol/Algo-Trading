@@ -18,6 +18,6 @@ public class LowestOffer implements IValued {
 		//has market bids.
 		if (ticksBack > 0 || !orderBook.getAllOffers().hasNext()) throw new TickOutOfRangeException();
 		
-		return orderBook.getAllOffers().next().getPrice().doubleValue();
+		return (double)orderBook.getAllOffers().next().getPrice();
 	}
 }

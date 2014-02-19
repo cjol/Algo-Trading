@@ -1,22 +1,20 @@
 package orderBookReconstructor;
 
-import java.math.BigDecimal;
-
 public class Match {
 	public final int quantity;
-	public final BigDecimal price;
+	public final int price;
 	
 	public final boolean isUserOffer;
 	public final boolean isUserBid;
 	
-	public Match(int quantity, BigDecimal price) {
+	public Match(int quantity, int price) {
 		this.quantity = quantity;
 		this.price = price;
 		this.isUserBid = false;
 		this.isUserOffer = false;
 	}
 	
-	public Match(int quantity, BigDecimal price, boolean isUserOffer) {
+	public Match(int quantity, int price, boolean isUserOffer) {
 		this.quantity = quantity;
 		this.price = price;
 		this.isUserOffer = isUserOffer;

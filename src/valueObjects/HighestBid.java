@@ -18,7 +18,7 @@ public class HighestBid implements IValued {
 		//has market bids.
 		if (ticksBack > 0 || !orderBook.getAllBids().hasNext()) throw new TickOutOfRangeException();
 		
-		return orderBook.getAllBids().next().getPrice().doubleValue();
+		return (double)orderBook.getAllBids().next().getPrice();
 	}
 
 }

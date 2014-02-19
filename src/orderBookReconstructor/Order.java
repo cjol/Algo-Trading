@@ -1,24 +1,22 @@
 package orderBookReconstructor;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Comparator;
 
 import database.StockHandle;
 
 public abstract class Order implements Comparable<Order>, Cloneable {
 	private final StockHandle stock;
-	private final BigDecimal price;
+	private final int price;
 	private int volume;
 	
-	public Order(StockHandle stock, BigDecimal price, int volume) {
+	public Order(StockHandle stock, int price, int volume) {
 		this.stock = stock;
 		this.price = price;
 		this.volume = volume;
-		if (this.price.compareTo(BigDecimal.ZERO) <= 0) {
+		if (price < 0) {
 			throw new AssertionError("Invalid price");
 		}
-		if (this.volume <= 0) {
+		if (volume < 0) {
 			throw new AssertionError("Invalid volume");
 		}
 	}
@@ -27,7 +25,7 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 		return stock;
 	}
 
-	public BigDecimal getPrice() {
+	public int getPrice() {
 		return price;
 	}
 
@@ -59,7 +57,7 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 
 		@Override
 		public int compare(Order o1, Order that) {
-			return o1.getPrice().compareTo(that.getPrice());
+			return Integer.compare(o1.getPrice(),that.getPrice());
 		}
 	}
 	
@@ -67,7 +65,7 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 
 		@Override
 		public int compare(Order o1, Order o2) {
-			return o2.getPrice().compareTo(o1.getPrice());
+			return Integer.compare(o2.getPrice(),o1.getPrice());
 		}
 	}
 	
