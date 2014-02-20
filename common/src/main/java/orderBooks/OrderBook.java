@@ -7,7 +7,6 @@ import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 import database.StockHandle;
 
-
 /**
  * Abstract class representing an order book.
  * 

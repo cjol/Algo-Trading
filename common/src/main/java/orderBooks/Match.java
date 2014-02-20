@@ -1,20 +1,26 @@
 package orderBooks;
 
+import database.StockHandle;
+
 public class Match {
+	public final StockHandle stockHandle;
+	
 	public final int quantity;
 	public final int price;
 	
 	public final boolean isUserOffer;
 	public final boolean isUserBid;
 	
-	public Match(int quantity, int price) {
+	public Match(StockHandle stock,int quantity, int price) {
+		this.stockHandle = stock;
 		this.quantity = quantity;
 		this.price = price;
 		this.isUserBid = false;
 		this.isUserOffer = false;
 	}
 	
-	public Match(int quantity, int price, boolean isUserOffer) {
+	public Match(StockHandle stock, int quantity, int price, boolean isUserOffer) {
+		this.stockHandle = stock;
 		this.quantity = quantity;
 		this.price = price;
 		this.isUserOffer = isUserOffer;
