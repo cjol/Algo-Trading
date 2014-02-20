@@ -93,15 +93,13 @@ public class MarketOrderBook extends OrderBook {
 	@Override
 	public HighestBid getHighestBid() {
 		updateTime();
-		//FIXME not sure about the constructor here...
-		return new HighestBid(null);
+		return new HighestBid(this);
 	}
 
 	@Override
 	public LowestOffer getLowestOffer() {
 		updateTime();
-		//FIXME
-		return new LowestOffer(null);
+		return new LowestOffer(this);
 	}
 
 }
