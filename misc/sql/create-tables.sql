@@ -1,6 +1,6 @@
 CREATE TABLE datasets (
 	dataset_id serial PRIMARY KEY,
-	name text NOT NULL UNIQUE,
+	name text NOT NULL UNIQUE
 );
 
 CREATE TABLE securities (
@@ -10,9 +10,9 @@ CREATE TABLE securities (
 );
 
 CREATE table order_books (
-	dataset_id serial
+	dataset_id serial,
 	ticker varchar(10),
- 	ts timestamp,
+	ts timestamp,
  	bid1_price integer,
  	bid1_volume integer NOT NULL,
  	bid2_price integer,
@@ -33,7 +33,7 @@ CREATE table order_books (
  	ask4_volume integer NOT NULL,
  	ask5_price integer,
  	ask5_volume integer NOT NULL,
- 	PRIMARY KEY (datset_id, ticker, ts),
+ 	PRIMARY KEY (dataset_id, ticker, ts),
  	FOREIGN KEY (dataset_id, ticker) REFERENCES securities (dataset_id, ticker)
 );
 	
