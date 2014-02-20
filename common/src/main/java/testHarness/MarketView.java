@@ -51,6 +51,9 @@ public class MarketView {
 	private Timestamp currentTime;
 	private int numTicks;
 	
+	//FIXME: added to temporarily avoid build errors --ai280
+	private List<Order> outstandingOrders = null;
+	
 	private BigDecimal availableFunds;
 	private BigDecimal reservedFunds;
 	

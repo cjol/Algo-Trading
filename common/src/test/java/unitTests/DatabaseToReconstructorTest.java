@@ -36,15 +36,15 @@ public class DatabaseToReconstructorTest {
 		}
 	}
 	
-	private void printMatches(Iterator<Match> matches) {
-		while (matches.hasNext()) {
-			Match m = matches.next();
-			
-			System.out.println("MATCH: BUY " + m.buyOrder.getVolume() + " at " + m.buyOrder.getPrice()
-					+ " AND SELL " + m.sellOrder.getVolume() + " at " + m.sellOrder.getPrice() + 
-					" (on " + m.quantity + " items, price " + m.price + ")");
-		}		
-	}
+//	private void printMatches(Iterator<Match> matches) {
+//		while (matches.hasNext()) {
+//			Match m = matches.next();
+//			
+//			System.out.println("MATCH: BUY " + m.buyOrder.getVolume() + " at " + m.buyOrder.getPrice()
+//					+ " AND SELL " + m.sellOrder.getVolume() + " at " + m.sellOrder.getPrice() + 
+//					" (on " + m.quantity + " items, price " + m.price + ")");
+//		}		
+//	}
 
 	@Test
 	public void test() throws SQLException {
@@ -64,7 +64,7 @@ public class DatabaseToReconstructorTest {
 		Iterator<Match> matches = userBook.updateTime();
 		
 		printAllOrders(userBook.getAllBids(), userBook.getAllOffers());
-		printMatches(matches);
+		//printMatches(matches);
 		
 	}
 
