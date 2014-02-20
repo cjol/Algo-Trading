@@ -112,7 +112,6 @@ datasetID = insertData(datasetName)
 print "Inserted %s into dataset table with ID %d" % (datasetName, datasetID)
 
 #populating securities table
-dataFiles = dataFiles[0:2]  # TODO: Currently only imports first 2 files in path
 for fname in dataFiles:
     ticker = extractTicker(fname)
     insertSecurity(datasetID, ticker)
