@@ -161,7 +161,6 @@ public class MarketView {
 			openedBooks.put(stock, user); 	
 		}
 		return openedBooks.get(stock);
-		
 	}
 	
 	/**
