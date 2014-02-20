@@ -5,6 +5,7 @@ import java.io.Serializable;
 import database.OutputServer;
 import testHarness.TickData;
 import testHarness.output.Output;
+import testHarness.output.Result;
 
 public class TestOutput extends Output {
 
@@ -14,8 +15,8 @@ public class TestOutput extends Output {
 
 	int i = 0;
 	@Override
-	public Serializable getOutput() {
-		return new SomeData(i);
+	public Result getResult() {
+		return null;
 	}
 
 	@Override
@@ -23,6 +24,7 @@ public class TestOutput extends Output {
 		i++;
 	}
 
+	@SuppressWarnings("unused")
 	private static class SomeData implements Serializable {
 		
 		private static final long serialVersionUID = 1L;

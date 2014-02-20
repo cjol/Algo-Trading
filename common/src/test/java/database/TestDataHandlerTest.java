@@ -14,7 +14,6 @@ import java.util.List;
 
 import orderBooks.BuyOrder;
 import orderBooks.Match;
-import orderBooks.Order;
 import orderBooks.SellOrder;
 
 import org.junit.Before;
