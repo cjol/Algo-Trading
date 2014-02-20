@@ -14,6 +14,7 @@ import java.util.Set;
 import database.OutputServer;
 import testHarness.ITradingAlgorithm;
 import testHarness.output.Output;
+import testHarness.output.Result;
 
 /**
  *	A communication object between the server and client that describes a test request. 
@@ -68,10 +69,10 @@ public class TestRequestDescription implements Serializable {
 			}
 		}
 		
-		List<OutputResult> results = new LinkedList<OutputResult>();
+		List<Result> results = new LinkedList<Result>();
 		for(Output output : outputs) {
 			if(requested.contains(output.getClass().getName())) {
-				results.add(new OutputResult(output));
+				results.add(output.getResult());
 			}
 		}
 		
