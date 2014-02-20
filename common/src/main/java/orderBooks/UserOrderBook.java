@@ -62,7 +62,7 @@ public class UserOrderBook extends OrderBook {
 				return bo;
 			}
 		}
-		BuyOrder bo = new BuyOrder(handle,time, price, volume);
+		BuyOrder bo = new BuyOrder(handle, price, volume);
 		outstandingBids.add(bo);
 		return bo;
 	}
@@ -76,7 +76,7 @@ public class UserOrderBook extends OrderBook {
 				return so;
 			}
 		}
-		SellOrder so = new SellOrder(handle,time, price, volume);
+		SellOrder so = new SellOrder(handle, price, volume);
 		outstandingOffers.add(so);
 		return so;
 	}
