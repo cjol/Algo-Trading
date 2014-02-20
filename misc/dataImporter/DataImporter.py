@@ -129,7 +129,7 @@ for fname in dataFiles:
     importOrderBooks(hdf5file, datasetID, ticker)
     print "and matches"
     sys.stdout.flush()
-    importMatches(hd5file, datasetID, ticker)
+    importMatches(hdf5file, datasetID, ticker)
     print "Done!"
 
     hdf5file.close()
