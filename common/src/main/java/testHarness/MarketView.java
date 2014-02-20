@@ -33,24 +33,23 @@ import database.TestDataHandler;
 public class MarketView {
 	private final BigDecimal STARTING_FUNDS = new BigDecimal(10000);
 	// TICK_SIZE is in milliseconds
-	private final int TICK_SIZE = 500; //
+	private final int TICK_SIZE = 500;
 
 	private final ITradingAlgorithm algo;
 	private final List<Output> outputs; 
 	private final TestDataHandler dataHandler;
 	private final DatasetHandle dataset;
 	
-	private final Map<StockHandle, Integer> portfolio = new HashMap<StockHandle, Integer>(); //
-	private final Map<StockHandle, Integer> reservedPortfolio = new HashMap<StockHandle, Integer>(); //
+	private final Map<StockHandle, Integer> portfolio = new HashMap<StockHandle, Integer>();
+	private final Map<StockHandle, Integer> reservedPortfolio = new HashMap<StockHandle, Integer>();
 	private final Map<StockHandle,OrderBook> openedBooks = new HashMap<>();
-	private final HashSet<UserOrderBook> booksWithPosition = new HashSet<>(); //
+	private final HashSet<UserOrderBook> booksWithPosition = new HashSet<>();
 	
-	private Timestamp currentTime; //
+	private Timestamp currentTime;
 	private Timestamp endTime; 
-	private int numTicks = 0;
 	
-	private BigDecimal availableFunds; //
-	private BigDecimal reservedFunds = new BigDecimal(0); //
+	private BigDecimal availableFunds;
+	private BigDecimal reservedFunds = new BigDecimal(0);
 
 	private boolean threadShouldBeAborting = false;
 	
@@ -92,7 +91,6 @@ public class MarketView {
 		{
 			//FIXME another exception
 			if (!currentTime.before(endTime)) throw new RuntimeException("Simulation over");
-			numTicks++;
 	
 			Timestamp newTime = new Timestamp(currentTime.getTime() + TICK_SIZE);
 	

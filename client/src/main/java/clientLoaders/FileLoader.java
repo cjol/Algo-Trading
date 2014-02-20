@@ -139,5 +139,6 @@ public class FileLoader {
 		System.exit(0);
 	}
 	
-	private static class WrongResponseException extends Exception {}
+	private static class WrongResponseException extends Exception {
+		private static final long serialVersionUID = 1L;}
 }
