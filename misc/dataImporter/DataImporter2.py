@@ -1,17 +1,15 @@
 __author__ = 'nick'
 import h5py
 import pandas as pd
-import MySQLdb
+import psycopg2
 import getpass
 import subprocess
+from paramiko import SSHClient
+import sys
 from os import listdir
 from os.path import isfile, join
 
 #!/usr/bin/python
-
-#opening SSH
-serverUserName = raw_input("Server userName: ")
-subprocess.Popen("ssh -L 33333:127.0.0.1:5432 %s@128.232.110.217", serverUserName, shell=True, close_fds=True)
 
 #grabbing all .m5 files
 #TODO: IMPLEMENT SSH TUNNEL TO DB CORRECTLY
@@ -19,11 +17,8 @@ rawDataPath = raw_input("Path to Raw Data Folder: ")
 rawFiles = [f for f in listdir(rawDataPath) if isfile(join(rawDataPath, f))]
 
 #setting up database connection
-databaseURL = raw_input("Database URL: ")
-databaseUser = raw_input("Username: ")
-databasePassword = getpass.getpass()
 databaseName = raw_input("Database Name: ")
-db = MySQLdb.connect(databaseURL, databaseUser, databasePassword, databaseName)
+db = psycopg2.connect("dbname=testenv user=postgres")
 cursor = db.cursor()
 
 #populating dataset table
