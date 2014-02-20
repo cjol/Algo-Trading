@@ -33,13 +33,15 @@ public class TestDataHandlerTest {
 		// attributes but represent different trades in the market
 		return (a.stockHandle.equals(b.stockHandle)) &&
 				(a.price == b.price) &&
-				(a.quantity == b.quantity);
+				(a.quantity == b.quantity) &&
+				(a.isUserBid == b.isUserBid) &&
+				(a.isUserOffer == b.isUserOffer);
 		
 	}
 	@Test
 	public void test() {
 		try {
-			DatasetHandle dataset = dataHandler.getDataset("test");
+			DatasetHandle dataset = dataHandler.getDataset("unittests");
 			assertNotNull(dataset);
 			assertNull(dataHandler.getDataset("foo"));
 			assertNull(dataHandler.getDataset(""));
@@ -55,26 +57,48 @@ public class TestDataHandlerTest {
 			assertEquals(Arrays.asList(expectedTickers), tickers);
 			
 			// test data for both stocks is identical: just check the last one
-			Iterator<Order> orderIt = dataHandler.getOrders(s,
+			
+			// check order book snapshot
+			Pair<List<BuyOrder>, List<SellOrder>> snapshot;
+			// far too early
+			snapshot = dataHandler.getLastOrderSnapshot(s, new Timestamp(113,0,1,0,0,0,0));
+			assertNull(snapshot);
+			// ever so slightly early
+			snapshot = dataHandler.getLastOrderSnapshot(s, new Timestamp(113,11,31,23,59,59,0));
+			assertNull(snapshot);
+			// first order snapshot
+			snapshot = dataHandler.getLastOrderSnapshot(s, new Timestamp(114,0,1,0,0,0,0));
+			assertNotNull(snapshot);
+			// interesting order snapshot
+			snapshot = dataHandler.getLastOrderSnapshot(s, new Timestamp(114,0,1,0,0,2,0));
+			BuyOrder[] expectedBids = {
+					new BuyOrder(s, 9, 200),
+					new BuyOrder(s, 10, 100)
+			};
+			SellOrder[] expectedAsks = {
+					new SellOrder(s, 11, 90)
+			};
+			assertEquals(Arrays.asList(expectedBids), snapshot.getFirst());
+			assertEquals(Arrays.asList(expectedAsks), snapshot.getSecond());
+			
+			// check matches iterator
+			Iterator<Match> matchIt = dataHandler.getMatches(s,
 									 new Timestamp(114,0,1,0,0,0,0), 
-									 new Timestamp(114,0,1,0,0,1,1000));
-			List<Order> orders = new ArrayList<Order>();
-			while (orderIt.hasNext()) {
-				orders.add(orderIt.next());
+									 new Timestamp(114,0,1,0,0,2,1000));
+			List<Match> matches = new ArrayList<Match>();
+			while (matchIt.hasNext()) {
+				matches.add(matchIt.next());
 			}
-			Order[] expectedOrders = {
-									   new BuyOrder(s, new Timestamp(114,0,1,0,0,0,0), 9, 200),
-									   new BuyOrder(s, new Timestamp(114,0,1,0,0,0,0), 10, 100),
-									   new SellOrder(s, new Timestamp(114,0,1,0,0,1,0), 11, 100)
-									   /*new BuyOrder(s, new Timestamp(114,0,1,0,0,2,0), new BigDecimal(11), 10),
-									   new SellOrder(s, new Timestamp(114,0,1,0,0,3,0), new BigDecimal(10), 100)*/
+			
+			Match[] expectedMatches = {
+										new Match(s, 11, 10)
 									  };
-			assertEquals(expectedOrders.length, orders.size());
-			for (int i = 0; i < expectedOrders.length; i++) {
-				Order expected = expectedOrders[i];
-				Order actual = orders.get(i);
+			assertEquals(expectedMatches.length, matches.size());
+			for (int i = 0; i < expectedMatches.length; i++) {
+				Match expected = expectedMatches[i];
+				Match actual = matches.get(i);
 				
-				assert(orderEqual(expected, actual));
+				assert(matchEqual(expected, actual));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

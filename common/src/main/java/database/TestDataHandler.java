@@ -75,7 +75,7 @@ public class TestDataHandler {
 			}
 		}
 		
-		q = "SELECT ts FROM trades WHERE dataset_id=? ORDER BY ts LIMIT 1";
+		q = "SELECT ts FROM order_books WHERE dataset_id=? ORDER BY ts LIMIT 1";
 		try (PreparedStatement s = conn.prepareStatement(q)) {
 			s.setInt(1, datasetID);
 			

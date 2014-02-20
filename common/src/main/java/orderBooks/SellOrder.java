@@ -11,4 +11,9 @@ public class SellOrder extends Order {
 	public int compareTo(Order that) {
 		return Order.sellOrderComparitor.compare(this, that);
 	}
+	
+	@Override
+	public String toString() {
+		return "Sell" + super.toString();
+	}
 }
