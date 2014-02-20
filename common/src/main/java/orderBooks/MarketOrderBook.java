@@ -9,7 +9,6 @@ import Iterators.ProtectedIterator;
 import database.Pair;
 import database.StockHandle;
 import database.TestDataHandler;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 
@@ -30,12 +29,12 @@ public class MarketOrderBook extends OrderBook {
 
 	@Override
 	public BuyOrder buy(int volume, int price, Timestamp time) {
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public SellOrder sell(int volume, int price, Timestamp time) {
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -70,12 +69,12 @@ public class MarketOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<SellOrder> getMyOffers() {
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Iterator<BuyOrder> getMyBids() {
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
