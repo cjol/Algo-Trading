@@ -41,10 +41,13 @@ public class TestDataHandlerTest {
 	@Test
 	public void test() {
 		try {
-			DatasetHandle dataset = dataHandler.getDataset("unittests");
-			assertNotNull(dataset);
 			assertNull(dataHandler.getDataset("foo"));
 			assertNull(dataHandler.getDataset(""));
+			DatasetHandle dataset = dataHandler.getDataset("unittests");
+			assertNotNull(dataset);
+			assertEquals(new Timestamp(114,0,1,0,0,0,0), dataset.getStartTime());
+			assertEquals(new Timestamp(114,0,1,0,0,3,0), dataset.getEndTime());
+			
 			
 			Iterator<StockHandle> stocks = dataHandler.getAllStocks(dataset);
 			List<String> tickers = new ArrayList<String>();
