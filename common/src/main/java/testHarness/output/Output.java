@@ -2,6 +2,7 @@ package testHarness.output;
 
 import testHarness.MarketView;
 import testHarness.TickData;
+import testHarness.output.result.Result;
 import database.OutputServer;
 
 /**

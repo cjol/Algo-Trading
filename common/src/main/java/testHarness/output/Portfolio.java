@@ -1,35 +1,48 @@
 package testHarness.output;
 
+import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import testHarness.TickData;
+import testHarness.output.result.Result;
+import testHarness.output.result.SingletonResult;
 import database.OutputServer;
 import database.StockHandle;
 
-public class Portfolio extends Output{
+public class Portfolio extends Output {
 	
-	private List<Map<StockHandle, Integer>> portfolioList;
+	private Map<Timestamp, Map<StockHandle, Integer>> portfolioList;
 	
 	public Portfolio(OutputServer outputServer) {
 		super(outputServer);	
-		portfolioList = new LinkedList<Map<StockHandle, Integer>>();
+		portfolioList = new HashMap<Timestamp,Map<StockHandle, Integer>>();
 	}
 
 	@Override
 	public Result getResult() {
-		ListDataResult result = new ListDataResult(portfolioList);
+		Map<String, Result> portfolioMap = new HashMap<String,Result>();
+		
+		for (Entry<Timestamp, Map<StockHandle,Integer>> portfolio : portfolioList.entrySet()) {
+
+			Map<String, Result> portfolioItems = new HashMap<String,Result>();
+			for (Entry<StockHandle,Integer> portfolioItem : portfolio.getValue().entrySet()) {
+				portfolioItems.put(portfolioItem.getKey().getTicker(), 
+						new SingletonResult(portfolioItem.getValue()));
+			}
+			Result portfolioResult = new Result(portfolioItems);
+			portfolioMap.put(portfolio.getKey().toString(), portfolioResult);
+		}
+		Result result = new Result(portfolioMap);
 		if(outputServer != null) outputServer.store(result);
 		return result;
 	}
 
 	@Override
 	public void evaluateData(TickData data) {
-		portfolioList.add(data.getPortfolio());
+		portfolioList.put(data.getDataTimestamp(), data.getPortfolio());
 		
 	}
-
-	
-
 }

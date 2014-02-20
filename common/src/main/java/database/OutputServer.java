@@ -1,6 +1,6 @@
 package database;
 
-import testHarness.output.Result;
+import testHarness.output.result.Result;
 
 public class OutputServer {
 	//TODO interface! Not sure what this should be. Probably something like storeOutput(IOutput out, some kind of user/algo id)

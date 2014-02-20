@@ -14,7 +14,7 @@ import java.util.Set;
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
 import testHarness.output.Output;
-import testHarness.output.Result;
+import testHarness.output.result.Result;
 import database.OutputServer;
 
 /**

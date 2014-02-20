@@ -3,7 +3,7 @@ package testHarness.clientConnection;
 import java.io.Serializable;
 import java.util.List;
 
-import testHarness.output.Result;
+import testHarness.output.result.Result;
 
 /**
  * A communication object between the server and client that describes a test result. 
