@@ -11,10 +11,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import database.OutputServer;
 import testHarness.ITradingAlgorithm;
+import testHarness.MarketView;
 import testHarness.output.Output;
 import testHarness.output.Result;
+import database.OutputServer;
 
 /**
  *	A communication object between the server and client that describes a test request. 

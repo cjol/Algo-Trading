@@ -1,9 +1,8 @@
 package testHarness.output;
 
-import java.io.Serializable;
-
-import database.OutputServer;
+import testHarness.MarketView;
 import testHarness.TickData;
+import database.OutputServer;
 
 /**
  * Abstract class representing an output
@@ -13,6 +12,7 @@ import testHarness.TickData;
 public abstract class Output {
 	
 	protected OutputServer outputServer;
+	protected MarketView market;
 	
 	public abstract Result getResult();
 	
@@ -28,5 +28,9 @@ public abstract class Output {
 	 */
 	public Output(OutputServer outputServer) {
 		this.outputServer = outputServer;
+	}
+	
+	public void attachMarketView(MarketView marketView) {
+		market = marketView;
 	}
 }
