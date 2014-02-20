@@ -1,6 +1,6 @@
 package valueObjects;
 
-import orderBookReconstructor.OrderBookReconstructor;
+import orderBooks.OrderBookReconstructor;
 
 public class LowestOffer implements IValued {
 	private OrderBookReconstructor orderBook;

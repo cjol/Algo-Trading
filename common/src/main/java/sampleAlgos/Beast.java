@@ -2,8 +2,8 @@ package sampleAlgos;
 
 import java.util.Iterator;
 
-import orderBookReconstructor.Order;
-import orderBookReconstructor.OrderBook;
+import orderBooks.Order;
+import orderBooks.OrderBook;
 
 import database.StockHandle;
 
