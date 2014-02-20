@@ -1,6 +1,5 @@
 package database;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -125,27 +124,21 @@ public class TestDataHandler {
 		throw new UnsupportedOperationException();
 	}
 	
-	public Iterator<Match> getMatches(
-			StockHandle stock, Timestamp start, Timestamp end)
-			throws SQLException {
-		throw new UnsupportedOperationException();
-	}
-	
-	class ResultSetIterator implements Iterator<Order> {
+	class ResultSetIterator implements Iterator<Match> {
 		private static final int CHUNK_SIZE = 1024;
 		private final StockHandle stock;
 		private long startID;
 		private final Timestamp end;
-		private LinkedList<Order> results;
+		private LinkedList<Match> results;
 		
 		public ResultSetIterator(StockHandle stock, 
    								  Timestamp start, Timestamp end)
    							     throws SQLException {
  			this.stock = stock;
  			this.end = end;
- 			this.results = new LinkedList<Order>();
+ 			this.results = new LinkedList<Match>();
  			
- 			final String q = "SELECT trade_id FROM trades " +
+ 			final String q = "SELECT match_id FROM matches " +
  						      "WHERE dataset_id=? AND ticker=? " + 
  						      "AND ts >= ? AND ts < ? LIMIT 1";
  			try (PreparedStatement s = conn.prepareStatement(q)) {
@@ -169,9 +162,9 @@ public class TestDataHandler {
 				return;
 			}
 			
-			final String q = "SELECT trade_id,ts,bid_or_ask,price,volume FROM trades " +
+			final String q = "SELECT match_id,ts,price,volume FROM matches " +
 							  "WHERE dataset_id=? AND ticker=? " +
-							  "AND trade_id > ? AND ts < ? LIMIT ?";
+							  "AND match_id > ? AND ts < ? LIMIT ?";
 
 			try (PreparedStatement s = conn.prepareStatement(q)) {
 				s.setInt(1, stock.getDatasetID());
@@ -185,20 +178,11 @@ public class TestDataHandler {
 						// only fetch thing after this
 						startID = r.getLong(1);
 						
-						Timestamp ts = r.getTimestamp(2);
-						String bidOrAskC = r.getString(3);
-						int price = r.getInt(4);
-						int volume = r.getInt(5);
+						int price = r.getInt(3);
+						int volume = r.getInt(4);
 
-						Order newOrder = null;
-						switch (bidOrAskC) {
-						case "A": newOrder = new SellOrder(stock, ts, price, volume);
-						break;
-						case "B": newOrder = new BuyOrder(stock, ts, price, volume);
-						break;
-						default:  throw new AssertionError("Invalid type " + bidOrAskC + " in database.");
-						}
-						results.add(newOrder);
+						Match newMatch = new Match(stock, volume, price);
+						results.add(newMatch);
 					}
 				}
 			} catch (SQLException e) {
@@ -206,7 +190,7 @@ public class TestDataHandler {
 			}
 		}
 		
-		public Order next() {
+		public Match next() {
 			prefetch();
 			
 			if (results.isEmpty()) {
@@ -228,18 +212,17 @@ public class TestDataHandler {
 	
 	/**
 	 * 
-	 * Returns an Iterator over Order objects, representing all orders that
-	 * were placed in the training data between {@link start} and {@link end}. 
-	 * The Order objects are returned by the iterator in increasing order of
-	 * timestamp. 
-	 * 
+	 * Returns an Iterator over Match objects, representing all trades that
+	 * executed between start and end. The Match objects are returned by the
+	 * iterator in increasing order of time.
+	 *  
 	 * @param	 stock	a StockHandle representing an individual security, in a particular DataSet
 	 * @param 	 start	Timestamp object specifying earliest trades to return; if null, does not impose a minimum
 	 * @param 	 end	Timestamp object specifying latest trades to return; if null, does not impose a maximum
-	 * @return	 iterator over specified ordders
+	 * @return	 iterator over specified orders
 	 * @throws SQLException
 	 */
-	public Iterator<Order> getOrders(StockHandle stock, 
+	public Iterator<Match> getMatches(StockHandle stock, 
 								 Timestamp start, Timestamp end) 
 								 throws SQLException {
 		if (start == null) {
