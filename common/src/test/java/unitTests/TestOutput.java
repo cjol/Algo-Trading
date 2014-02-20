@@ -5,7 +5,7 @@ import java.io.Serializable;
 import database.OutputServer;
 import testHarness.TickData;
 import testHarness.output.Output;
-import testHarness.output.Result;
+import testHarness.output.result.Result;
 
 public class TestOutput extends Output {
 
