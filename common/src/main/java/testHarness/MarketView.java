@@ -16,10 +16,10 @@ import java.util.Set;
 
 import Iterators.ProtectedIterator;
 
+import orderBooks.MarketOrderBook;
 import orderBooks.Match;
 import orderBooks.Order;
 import orderBooks.OrderBook;
-import orderBooks.OrderBookReconstructor;
 import orderBooks.UserOrderBook;
 import testHarness.output.Output;
 import database.DatasetHandle;
@@ -39,24 +39,26 @@ class SimulationAbortedException extends RuntimeException{}
 public class MarketView {
 	private final BigDecimal STARTING_FUNDS = new BigDecimal(10000);
 	// TICK_SIZE is in milliseconds
-	private final int TICK_SIZE = 500;
+	private final int TICK_SIZE = 500; //
 
-	private ITradingAlgorithm algo;
-	private Map<StockHandle, Integer> portfolio;
-	private Map<StockHandle, Integer> reservedPortfolio;
-	private Map<StockHandle,OrderBook> openedBooks;
-	private HashSet<UserOrderBook> booksWithPosition;
-	private Timestamp currentTime;
-	private Timestamp endTime;
-	private int numTicks;
-	
-	private BigDecimal availableFunds;
-	private BigDecimal reservedFunds;
-	
-	private List<Output> outputs; 
+	private final ITradingAlgorithm algo;
+	private final List<Output> outputs; 
 	private final TestDataHandler dataHandler;
 	private final DatasetHandle dataset;
-	private boolean threadShouldBeAborting;
+	
+	private final Map<StockHandle, Integer> portfolio = new HashMap<StockHandle, Integer>(); //
+	private final Map<StockHandle, Integer> reservedPortfolio = new HashMap<StockHandle, Integer>(); //
+	private final Map<StockHandle,OrderBook> openedBooks = new HashMap<>();
+	private final HashSet<UserOrderBook> booksWithPosition = new HashSet<>(); //
+	
+	private Timestamp currentTime; //
+	private Timestamp endTime; 
+	private int numTicks = 0;
+	
+	private BigDecimal availableFunds; //
+	private BigDecimal reservedFunds = new BigDecimal(0); //
+
+	private boolean threadShouldBeAborting = false;
 	
 	/**
 	 * Creates a new MarketView instance for a given algorithm to use
@@ -77,18 +79,9 @@ public class MarketView {
 	public void startSimulation() {
 		// TODO STARTING_FUNDS and *_TIME should be simulation parameters
 		availableFunds = STARTING_FUNDS;
-		reservedFunds = new BigDecimal(0);
 		
 		currentTime = dataset.getStartTime();
 		endTime = dataset.getEndTime();
-		
-		numTicks = 0;
-		portfolio = new HashMap<StockHandle, Integer>();
-		reservedPortfolio = new HashMap<StockHandle, Integer>();
-		booksWithPosition = new HashSet<>();
-		openedBooks = new HashMap<>();
-		threadShouldBeAborting = false;
-		
 		
 		algo.run(this);
 	}
@@ -120,7 +113,7 @@ public class MarketView {
 			UserOrderBook book = bookIter.next();
 			
 			Iterator<Match> matcheIter = book.updateTime();
-			//TODO commision
+			//TODO commission
 			while(matcheIter.hasNext()) {
 				Match m = matcheIter.next();
 				matches.add(m);
@@ -137,9 +130,8 @@ public class MarketView {
 			if(book.isComplete()) bookIter.remove();
 		}
 		
-		//FIXME 
 		// update Outputs
-		TickData tickdata = new TickData(currentTime, portfolio, null, availableFunds);
+		TickData tickdata = new TickData(this.TICK_SIZE, this.portfolio, this.reservedPortfolio, this.booksWithPosition, this.currentTime, this.availableFunds, this.reservedFunds, matches);
 		for (Output output : outputs) {
 			output.evaluateData(tickdata);
 		}
@@ -156,7 +148,7 @@ public class MarketView {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
 		if (!openedBooks.containsKey(stock)) {
-			OrderBook market = new OrderBookReconstructor(currentTime, stock, dataHandler);
+			OrderBook market = new MarketOrderBook(currentTime, stock, dataHandler);
 			OrderBook user = new UserOrderBook(stock, market);
 			openedBooks.put(stock, user); 	
 		}
