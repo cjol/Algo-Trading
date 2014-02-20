@@ -1,4 +1,4 @@
-package orderBookReconstructor;
+package orderBooks;
 
 import java.sql.Timestamp;
 import java.util.Comparator;
@@ -156,7 +156,7 @@ public class UserOrderBook extends OrderBook {
 	 * @param userOrders The outstanding orders for the user.
 	 * @param userMatches The matches list to append matches to.
 	 */
-	private static <User extends Order> 
+	private <User extends Order> 
 	void coverMatch(int marketPrice, int q, HashMap<Integer, Integer> marketGhost, TreeSet<User> userOrders, boolean isUserOffer, List<Match> userMatches) {
 		//FIXME 
 		int exisitingGhosting = (marketGhost.containsKey(marketPrice)) ? marketGhost.get(marketPrice) : 0;
@@ -174,7 +174,7 @@ public class UserOrderBook extends OrderBook {
 				
 				int price = userOrder.getPrice();
 				
-				userMatches.add(new Match(tradeVolume, price, isUserOffer));
+				userMatches.add(new Match(this.handle, tradeVolume, price, isUserOffer));
 				available -= tradeVolume;
 				userIntercepted += tradeVolume;
 				
@@ -197,7 +197,7 @@ public class UserOrderBook extends OrderBook {
 	 * @param userIter An iterator for the users orders.
 	 * @param userMatches A list to append the output matches to.
 	 */
-	private static <Market extends Order, User extends Order> 
+	private <Market extends Order, User extends Order> 
 	void match(HashMap<Integer, Integer> ghost, Iterator<Market> marketIter, Iterator<User> userIter, List<Match> userMatches, boolean isUserOrder) {
 		//FIXME 
 		if( marketIter.hasNext() && userIter.hasNext()) {
@@ -220,7 +220,7 @@ public class UserOrderBook extends OrderBook {
 				addGhost(ghost, marketOrder.getPrice(), tradeVolume);
 					
 				//create match
-				userMatches.add(new Match(tradeVolume, price, isUserOrder));
+				userMatches.add(new Match(this.handle, tradeVolume, price, isUserOrder));
 				
 				//update out outstanding
 				if(tradeVolume == userVolume) {

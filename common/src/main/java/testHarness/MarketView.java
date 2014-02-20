@@ -14,11 +14,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import orderBookReconstructor.Match;
-import orderBookReconstructor.Order;
-import orderBookReconstructor.OrderBook;
-import orderBookReconstructor.OrderBookReconstructor;
-import orderBookReconstructor.UserOrderBook;
+import Iterators.ProtectedIterator;
+
+import orderBooks.Match;
+import orderBooks.Order;
+import orderBooks.OrderBook;
+import orderBooks.OrderBookReconstructor;
+import orderBooks.UserOrderBook;
 import testHarness.output.Output;
 import database.DatasetHandle;
 import database.StockHandle;
@@ -36,12 +38,8 @@ class SimulationAbortedException extends RuntimeException{}
  */
 public class MarketView {
 	private final BigDecimal STARTING_FUNDS = new BigDecimal(10000);
-	// TODO: What is a useful starting time?
-	private final Timestamp STARTING_TIME = new Timestamp(114, 0, 1, 0, 0, 0, 0);
 	// TICK_SIZE is in milliseconds
 	private final int TICK_SIZE = 500;
-	// TODO: What is a useful ending time?
-	private final Date ENDING_TIME = new Timestamp(114, 0, 1, 0, 0, 5, 0);
 
 	private ITradingAlgorithm algo;
 	private Map<StockHandle, Integer> portfolio;
@@ -49,10 +47,8 @@ public class MarketView {
 	private Map<StockHandle,OrderBook> openedBooks;
 	private HashSet<UserOrderBook> booksWithPosition;
 	private Timestamp currentTime;
+	private Timestamp endTime;
 	private int numTicks;
-	
-	//FIXME: added to temporarily avoid build errors --ai280
-	private List<Order> outstandingOrders = null;
 	
 	private BigDecimal availableFunds;
 	private BigDecimal reservedFunds;
@@ -82,13 +78,17 @@ public class MarketView {
 		// TODO STARTING_FUNDS and *_TIME should be simulation parameters
 		availableFunds = STARTING_FUNDS;
 		reservedFunds = new BigDecimal(0);
-		currentTime = (Timestamp) STARTING_TIME.clone();
+		
+		currentTime = dataset.getStartTime();
+		endTime = dataset.getEndTime();
+		
 		numTicks = 0;
 		portfolio = new HashMap<StockHandle, Integer>();
 		reservedPortfolio = new HashMap<StockHandle, Integer>();
 		booksWithPosition = new HashSet<>();
 		openedBooks = new HashMap<>();
 		threadShouldBeAborting = false;
+		
 		
 		algo.run(this);
 	}
@@ -101,13 +101,14 @@ public class MarketView {
 	public Iterator<Match> tick() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
+		//FIXME another exception
+		if (!currentTime.before(endTime)) throw new RuntimeException("Simulation over");
 		numTicks++;
 
 		Timestamp newTime = new Timestamp(currentTime.getTime() + TICK_SIZE);
 		// probably not needed since nanos are never updated
 		//newTime.setNanos(currentTime.getNanos()); 
 		currentTime = newTime;
-		List<Match> allMatches = new ArrayList<Match>();
 		
 		for (OrderBook orderBook : openedBooks.values()) {
 			orderBook.softSetTime(currentTime);
@@ -119,19 +120,31 @@ public class MarketView {
 			UserOrderBook book = bookIter.next();
 			
 			Iterator<Match> matcheIter = book.updateTime();
-			//TODO work what we get from the matches
+			//TODO commision
+			while(matcheIter.hasNext()) {
+				Match m = matcheIter.next();
+				matches.add(m);
+				
+				if(m.isUserBid) {
+					addStockToPortfolio(m.stockHandle, m.quantity);
+					reservedFunds.subtract(new BigDecimal(m.price * m.quantity));
+				} else if(m.isUserOffer) {
+					removeReserveStock(m.stockHandle, m.quantity);
+					availableFunds.add(new BigDecimal(m.price * m.quantity));
+				}
+			}
 			
 			if(book.isComplete()) bookIter.remove();
 		}
 		
 		//FIXME 
 		// update Outputs
-		TickData tickdata = new TickData(currentTime, portfolio, outstandingOrders, availableFunds);
+		TickData tickdata = new TickData(currentTime, portfolio, null, availableFunds);
 		for (Output output : outputs) {
 			output.evaluateData(tickdata);
 		}
 		
-		return allMatches.iterator();
+		return matches.iterator();
 	}
 
 	/**
@@ -148,7 +161,6 @@ public class MarketView {
 			openedBooks.put(stock, user); 	
 		}
 		return openedBooks.get(stock);
-		
 	}
 	
 	/**
@@ -158,7 +170,7 @@ public class MarketView {
 	public boolean isFinished() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		return (!currentTime.before(ENDING_TIME));
+		return (!currentTime.before(endTime));
 	}
 	
 	/**
@@ -189,10 +201,9 @@ public class MarketView {
 		if (getAvailableFunds().compareTo(totalBig) < 0)
 			return false; // we don't have enough funds
 		
-		availableFunds = availableFunds.subtract(totalBig);
-		reservedFunds = reservedFunds.add(totalBig);
+		reserveFunds(totalBig);
 		
-		Order o = getOrderBook(stock).buy(volume, price, currentTime);
+		getOrderBook(stock).buy(volume, price, currentTime);
 		return true;
 	}
 
@@ -206,9 +217,22 @@ public class MarketView {
 	public boolean sell(StockHandle stock, int price, int volume) {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
+
+		if(!reserveStocks(stock, volume)) return false;
+		
+		getOrderBook(stock).sell(volume, price, currentTime);
+		return true;
+	}
+	
+	private void reserveFunds(BigDecimal amount) {
+		availableFunds = availableFunds.subtract(amount);
+		reservedFunds = reservedFunds.add(amount);
+	}
+	
+	private boolean reserveStocks(StockHandle stock, int volume) {
 		if (!portfolio.containsKey(stock))
 			return false; // we don't own any of this stock (for now that means no trade)
-
+		
 		int amtOwned = portfolio.get(stock);
 		if (amtOwned < volume)
 			return false; // we don't own enough for this sale
@@ -219,8 +243,20 @@ public class MarketView {
 		int alreadyReserved = reservedPortfolio.containsKey(stock) ? reservedPortfolio.get(stock) : 0;
 		reservedPortfolio.put(stock, alreadyReserved + volume);
 		
-		Order o = getOrderBook(stock).sell(volume, price, currentTime);
 		return true;
+	}
+	
+	private void removeReserveStock(StockHandle stock, int volume) {
+		int alreadyReserved = reservedPortfolio.containsKey(stock) ? reservedPortfolio.get(stock) : 0;
+		alreadyReserved -= volume;
+		assert(alreadyReserved >= 0);
+		reservedPortfolio.put(stock, alreadyReserved);
+	}
+	
+	private void addStockToPortfolio(StockHandle stock, int volume) {
+		int hasAlready = portfolio.containsKey(stock) ? portfolio.get(stock) : 0;
+		hasAlready += volume;
+		portfolio.put(stock, hasAlready);
 	}
 	
 	/**
@@ -236,7 +272,7 @@ public class MarketView {
 		try {
 			res = dataHandler.getAllStocks(dataset);	
 		} catch (SQLException e) {
-			// TODO: Handle exceptions in consistent manner, + more intelligently
+			// TODO: Handle exceptions in consistent manner, + more intelligently //FIXME
 			e.printStackTrace();
 			System.exit(-1);
 		}
@@ -251,11 +287,7 @@ public class MarketView {
 		//FIXME
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		List<Order> cloned = new ArrayList<Order>();
-		for (Order o : outstandingOrders) {
-			cloned.add(o);
-		}
-		return cloned.iterator();
+		return null;
 	}
 
 	/**
@@ -265,12 +297,7 @@ public class MarketView {
 	public Iterator<Entry<StockHandle, Integer>> getPortfolio() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		//FIXME why the manual deep clone? users don't need to delete from this.
-		Set<Entry<StockHandle, Integer>> cloned = new HashSet<Entry<StockHandle, Integer>>();
-		for (Entry<StockHandle, Integer> e : portfolio.entrySet()) {
-			cloned.add(e);
-		}
-		return cloned.iterator();
+		return new ProtectedIterator<>(portfolio.entrySet().iterator());
 	}
 
 	/**
@@ -294,7 +321,7 @@ public class MarketView {
 	public Iterator<StockHandle> getOwnedStocks() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		Set<StockHandle> out = new HashSet<StockHandle>();
+		List<StockHandle> out = new LinkedList<StockHandle>();
 		for (Entry<StockHandle, Integer> e : portfolio.entrySet()) {
 			out.add(e.getKey());
 		}
