@@ -29,7 +29,7 @@ public class StockHandle {
 	/**
 	 * @return	ticker symbol for stock
 	 */
-	protected String getTicker() {
+	public String getTicker() {
 		return ticker;
 	}
 }

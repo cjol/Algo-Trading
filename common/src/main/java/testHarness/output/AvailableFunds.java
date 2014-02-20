@@ -1,38 +1,40 @@
 package testHarness.output;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.LinkedList;
-import java.util.List;
-
-import database.OutputServer;
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import testHarness.TickData;
-import testHarness.output.Output;
+import testHarness.output.result.Result;
+import testHarness.output.result.SingletonResult;
+import database.OutputServer;
 
 public class AvailableFunds extends Output{
 	
-	private List<BigDecimal> availableFundsList;
+	private Map<Timestamp, BigDecimal> availableFundsData;
 	
 	public AvailableFunds(OutputServer outputServer) {
 		super(outputServer);	
-		availableFundsList = new LinkedList<BigDecimal>();
+		availableFundsData = new HashMap<Timestamp, BigDecimal>();
 	}
 
 	@Override
 	public Result getResult() {
-		ListDataResult result = new ListDataResult(availableFundsList);
+		Map<String, Result> resultMap = new HashMap<String,Result>();
+		for (Entry<Timestamp, BigDecimal> fundDataPoint : availableFundsData.entrySet()) {
+			resultMap.put(fundDataPoint.getKey().toString(), 
+					new SingletonResult(fundDataPoint.getValue()));
+		}
+		Result result = new Result(resultMap);
 		if(outputServer != null) outputServer.store(result);
 		return result;
 	}
 
 	@Override
 	public void evaluateData(TickData data) {
-		availableFundsList.add(data.getAvailableFunds());
-		
+		availableFundsData.put(data.currentTime, data.availableFunds.add(data.reservedFunds));	
 	}
-
-	
-
 }
 
