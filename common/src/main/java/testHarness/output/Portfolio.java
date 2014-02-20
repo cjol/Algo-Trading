@@ -10,21 +10,23 @@ import database.StockHandle;
 
 public class Portfolio extends Output{
 	
-	private final LinkedList<Map<StockHandle, Integer>> portfolio;
+	private List<Map<StockHandle, Integer>> portfolioList;
 	
 	public Portfolio(OutputServer outputServer) {
 		super(outputServer);	
-		portfolio = new LinkedList<Map<StockHandle, Integer>>();
+		portfolioList = new LinkedList<Map<StockHandle, Integer>>();
 	}
 
 	@Override
-	public Serializable getOutput() {
-		return (Serializable)portfolio;
+	public Result getResult() {
+		ListDataResult result = new ListDataResult(portfolioList);
+		if(outputServer != null) outputServer.store(result);
+		return result;
 	}
 
 	@Override
 	public void evaluateData(TickData data) {
-		portfolio.add(data.getPortfolio());
+		portfolioList.add(data.getPortfolio());
 		
 	}
 

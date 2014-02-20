@@ -14,7 +14,7 @@ public abstract class Output {
 	
 	protected OutputServer outputServer;
 	
-	public abstract Serializable getOutput();
+	public abstract Result getResult();
 	
 	/**
 	 * Processes raw data from the test.

@@ -20,7 +20,7 @@ public class AvailableFunds extends Output{
 	}
 
 	@Override
-	public Result getOutput() {
+	public Result getResult() {
 		ListDataResult result = new ListDataResult(availableFundsList);
 		if(outputServer != null) outputServer.store(result);
 		return result;
