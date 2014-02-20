@@ -74,7 +74,7 @@ public class OrderBookReconstructor extends OrderBook{
 			//We've got a match!
 			//Make a trade on the average price: //TODO if we ever need this again this should be resolved 
 			int avgPrice = buyOrder.getPrice();
-			matches.add(new Match(order.getVolume(), avgPrice));
+			matches.add(new Match(this.handle, order.getVolume(), avgPrice));
 			
 			if (buyOrder.getVolume() > sellOrder.getVolume()) {
 				//Sell order completely filled, buy order partially filled.
