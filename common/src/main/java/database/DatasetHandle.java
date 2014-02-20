@@ -1,6 +1,6 @@
 package database;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 /**
  * Represents a particular test data set in the database.
@@ -8,7 +8,7 @@ import java.util.Date;
  */
 public class DatasetHandle {
 	private final int datasetID;
-	private final Date startDate;
+	private final Timestamp startTime, endTime;
 	
 	/** 
 	 * Creates a new DatasetHandle object.
@@ -16,9 +16,10 @@ public class DatasetHandle {
 	 * @param 	datasetID	internal identifier used by database	
 	 * @param	startDate	earliest order in the data set
 	 */
-	protected DatasetHandle(int datasetID, Date startDate) {
+	protected DatasetHandle(int datasetID, Timestamp startTime, Timestamp endTime) {
 		this.datasetID = datasetID;
-		this.startDate = startDate;
+		this.startTime = startTime;
+		this.endTime = endTime;
 	}
 	 
 	/**
@@ -30,10 +31,19 @@ public class DatasetHandle {
 
 	/**
 	 * 
-	 * @return	earliest order in the data set
+	 * @return	earliest order snapshot in the data set
 	 */
-	public Date getStartDate() {
-		// Date mutable
-		return (Date)startDate.clone();
+	public Timestamp getStartTime() {
+		// Timestamp mutable
+		return (Timestamp)startTime.clone();
+	}
+	
+	/**
+	 * 
+	 * @return	latest order snapshot in the data set
+	 */
+	public Timestamp getEndTime() {
+		// Timestamp mutable
+		return (Timestamp)endTime.clone();
 	}
 }

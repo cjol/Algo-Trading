@@ -38,7 +38,7 @@ CREATE table order_books (
 );
 	
 CREATE table matches (
-	trade_id bigserial PRIMARY KEY,
+	match_id bigserial PRIMARY KEY,
 	dataset_id serial,
 	ticker varchar(10),
 	ts timestamp NOT NULL,

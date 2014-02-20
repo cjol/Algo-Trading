@@ -74,4 +74,37 @@ public abstract class Order implements Comparable<Order>, Cloneable {
 	
 	public static final Comparator<BuyOrder> buyOrderOnlyComparator = new BuyOrderComparator<BuyOrder>();
 	public static final Comparator<SellOrder> sellOrderOnlyComparator = new SellOrderComparator<SellOrder>();
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + price;
+		result = prime * result + ((stock == null) ? 0 : stock.hashCode());
+		result = prime * result + volume;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Order other = (Order) obj;
+		if (stock == null) {
+			if (other.stock != null)
+				return false;
+		} else if (!stock.equals(other.stock))
+			return false;
+		return price == other.price && volume == other.volume;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("Order for %s of %d at %d", stock.toString(),
+							volume, price);
+	}
 }

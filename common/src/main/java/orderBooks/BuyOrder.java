@@ -1,11 +1,9 @@
 package orderBooks;
 
-import java.sql.Timestamp;
-
 import database.StockHandle;
 
 public class BuyOrder extends Order {
-	public BuyOrder(StockHandle stock, Timestamp timePlaced, int price, int volume) {
+	public BuyOrder(StockHandle stock, int price, int volume) {
 		super(stock, price, volume);
 	}
 
@@ -14,5 +12,9 @@ public class BuyOrder extends Order {
 		return Order.buyOrderComparitor.compare(this, that);
 	}
 	
+	@Override
+	public String toString() {
+		return "Buy" + super.toString();
+	}
 }
 
