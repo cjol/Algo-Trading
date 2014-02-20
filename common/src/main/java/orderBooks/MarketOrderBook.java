@@ -10,6 +10,7 @@ import database.Pair;
 import database.StockHandle;
 import database.TestDataHandler;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import testHarness.SimulationAbortedException;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 
@@ -63,8 +64,7 @@ public class MarketOrderBook extends OrderBook {
 			this.currentTime = softTime;
 			return matches;
 		} catch (SQLException e) {
-			e.printStackTrace();
-			return null;
+			throw new SimulationAbortedException(e);
 		}
 	}
 
