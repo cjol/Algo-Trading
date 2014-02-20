@@ -1,5 +1,7 @@
 package testHarness.output;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.List;
 
 public class ListDataResult extends Result {
@@ -17,10 +19,17 @@ public class ListDataResult extends Result {
 	 */
 	public void outputToFile(String location){
 		//TODO This just prints each value on a new line. May like other formats (CSV, etc)
-		PrintWriter out = new PrintWriter(location);
-		for (Object datum : data) {
-			out.println(datum.toString());
+		PrintWriter out;
+		try {
+			out = new PrintWriter(location);
+			for (Object datum : data) {
+				out.println(datum.toString());
+			}
+		} catch (FileNotFoundException e) {
+			System.err.println("Not found: " + location);
+			e.printStackTrace();
 		}
+		
 	}
 	
 	/**
