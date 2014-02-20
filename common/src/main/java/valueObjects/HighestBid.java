@@ -1,11 +1,11 @@
 package valueObjects;
 
-import orderBooks.OrderBookReconstructor;
+import orderBooks.OrderBook;
 
 public class HighestBid implements IValued {
-	private OrderBookReconstructor orderBook;
+	private OrderBook orderBook;
 	
-	public HighestBid(OrderBookReconstructor orderBook) {
+	public HighestBid(OrderBook orderBook) {
 		this.orderBook = orderBook;
 	}
 	
