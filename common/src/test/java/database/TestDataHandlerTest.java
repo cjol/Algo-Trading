@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import orderBooks.BuyOrder;
+import orderBooks.Match;
 import orderBooks.Order;
 import orderBooks.SellOrder;
 
@@ -27,12 +28,12 @@ public class TestDataHandlerTest {
 		dataHandler = new TestDataHandler();
 	}
 
-	public boolean orderEqual(Order a, Order b) {
+	public boolean matchEqual(Match a, Match b) {
 		// Order uses default equals from Object since Order's may have same 
 		// attributes but represent different trades in the market
-		return (a.getStockHandle() == b.getStockHandle()) &&
-				(a.getPrice() == b.getPrice()) &&
-				(a.getVolume() == b.getVolume());
+		return (a.stockHandle.equals(b.stockHandle)) &&
+				(a.price == b.price) &&
+				(a.quantity == b.quantity);
 		
 	}
 	@Test

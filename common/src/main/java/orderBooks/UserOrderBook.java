@@ -62,7 +62,7 @@ public class UserOrderBook extends OrderBook {
 				return bo;
 			}
 		}
-		BuyOrder bo = new BuyOrder(handle,time, price, volume);
+		BuyOrder bo = new BuyOrder(handle, price, volume);
 		outstandingBids.add(bo);
 		return bo;
 	}
@@ -76,7 +76,7 @@ public class UserOrderBook extends OrderBook {
 				return so;
 			}
 		}
-		SellOrder so = new SellOrder(handle,time, price, volume);
+		SellOrder so = new SellOrder(handle, price, volume);
 		outstandingOffers.add(so);
 		return so;
 	}
@@ -174,7 +174,7 @@ public class UserOrderBook extends OrderBook {
 				
 				int price = userOrder.getPrice();
 				
-				userMatches.add(new Match(this.handle, tradeVolume, price, isUserOffer));
+				userMatches.add(new Match(this.handle, price, tradeVolume, isUserOffer));
 				available -= tradeVolume;
 				userIntercepted += tradeVolume;
 				
@@ -220,7 +220,7 @@ public class UserOrderBook extends OrderBook {
 				addGhost(ghost, marketOrder.getPrice(), tradeVolume);
 					
 				//create match
-				userMatches.add(new Match(this.handle, tradeVolume, price, isUserOrder));
+				userMatches.add(new Match(this.handle, price, tradeVolume, isUserOrder));
 				
 				//update out outstanding
 				if(tradeVolume == userVolume) {

@@ -1,11 +1,11 @@
 package valueObjects;
 
-import orderBooks.OrderBookReconstructor;
+import orderBooks.OrderBook;
 
 public class LowestOffer implements IValued {
-	private OrderBookReconstructor orderBook;
+	private OrderBook orderBook;
 	
-	public LowestOffer(OrderBookReconstructor orderBook) {
+	public LowestOffer(OrderBook orderBook) {
 		this.orderBook = orderBook;
 	}
 	
