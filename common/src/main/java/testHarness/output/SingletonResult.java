@@ -1,6 +1,8 @@
 package testHarness.output;
 
-import java.util.List;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
 
 public class SingletonResult extends Result {
 
@@ -11,11 +13,18 @@ public class SingletonResult extends Result {
 	}
 	
 	public void outputToFile(String location){
-		// TODO
+		PrintWriter out;
+		try {
+			out = new PrintWriter(location);
+			out.println(data);
+		} catch (FileNotFoundException e) {
+			System.err.println("Not found: " + location);
+			e.printStackTrace();
+		}
+		
 	}
 	
-	public String outputToString(){
-		//TODO
-		return null;
+	public String outputToString(){		
+		return data.toString();
 	}
 }
