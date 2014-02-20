@@ -11,5 +11,10 @@ public class BuyOrder extends Order {
 	public int compareTo(Order that) {
 		return Order.buyOrderComparitor.compare(this, that);
 	}
+	
+	@Override
+	public String toString() {
+		return "Buy" + super.toString();
+	}
 }
 

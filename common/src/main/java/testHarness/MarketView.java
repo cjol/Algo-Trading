@@ -3,8 +3,6 @@ package testHarness;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -12,16 +10,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
-import Iterators.ProtectedIterator;
-
+import orderBooks.BuyOrder;
+import orderBooks.MarketOrderBook;
 import orderBooks.Match;
-import orderBooks.Order;
 import orderBooks.OrderBook;
-import orderBooks.OrderBookReconstructor;
+import orderBooks.SellOrder;
 import orderBooks.UserOrderBook;
 import testHarness.output.Output;
+import Iterators.ProtectedIterator;
 import database.DatasetHandle;
 import database.StockHandle;
 import database.TestDataHandler;
@@ -45,25 +42,27 @@ class SimulationAbortedException extends RuntimeException {
 public class MarketView {
 	private final BigDecimal STARTING_FUNDS = new BigDecimal(10000);
 	// TICK_SIZE is in milliseconds
-	private final int TICK_SIZE = 500;
+	private final int TICK_SIZE = 500; //
 
-	private ITradingAlgorithm algo;
-	private Map<StockHandle, Integer> portfolio;
-	private Map<StockHandle, Integer> reservedPortfolio;
-	private Map<StockHandle, OrderBook> openedBooks;
-	private HashSet<UserOrderBook> booksWithPosition;
-	private Timestamp currentTime;
-	private Timestamp endTime;
-	private int numTicks;
-
-	private BigDecimal availableFunds;
-	private BigDecimal reservedFunds;
-
-	private List<Output> outputs;
+	private final ITradingAlgorithm algo;
+	private final List<Output> outputs; 
 	private final TestDataHandler dataHandler;
 	private final DatasetHandle dataset;
-	private boolean threadShouldBeAborting;
+	
+	private final Map<StockHandle, Integer> portfolio = new HashMap<StockHandle, Integer>(); //
+	private final Map<StockHandle, Integer> reservedPortfolio = new HashMap<StockHandle, Integer>(); //
+	private final Map<StockHandle,OrderBook> openedBooks = new HashMap<>();
+	private final HashSet<UserOrderBook> booksWithPosition = new HashSet<>(); //
+	
+	private Timestamp currentTime; //
+	private Timestamp endTime; 
+	private int numTicks = 0;
+	
+	private BigDecimal availableFunds; //
+	private BigDecimal reservedFunds = new BigDecimal(0); //
 
+	private boolean threadShouldBeAborting = false;
+	
 	/**
 	 * Creates a new MarketView instance for a given algorithm to use
 	 * 
@@ -89,18 +88,9 @@ public class MarketView {
 	public void startSimulation() {
 		// TODO STARTING_FUNDS and *_TIME should be simulation parameters
 		availableFunds = STARTING_FUNDS;
-		reservedFunds = new BigDecimal(0);
-
 		currentTime = dataset.getStartTime();
 		endTime = dataset.getEndTime();
-
-		numTicks = 0;
-		portfolio = new HashMap<StockHandle, Integer>();
-		reservedPortfolio = new HashMap<StockHandle, Integer>();
-		booksWithPosition = new HashSet<>();
-		openedBooks = new HashMap<>();
-		threadShouldBeAborting = false;
-
+		
 		algo.run(this);
 	}
 
@@ -121,8 +111,6 @@ public class MarketView {
 		numTicks++;
 
 		Timestamp newTime = new Timestamp(currentTime.getTime() + TICK_SIZE);
-		// probably not needed since nanos are never updated
-		// newTime.setNanos(currentTime.getNanos());
 		currentTime = newTime;
 
 		for (OrderBook orderBook : openedBooks.values()) {
@@ -135,8 +123,9 @@ public class MarketView {
 			UserOrderBook book = bookIter.next();
 
 			Iterator<Match> matcheIter = book.updateTime();
-			// TODO commision
-			while (matcheIter.hasNext()) {
+			
+			//TODO commission
+			while(matcheIter.hasNext()) {
 				Match m = matcheIter.next();
 				matches.add(m);
 
@@ -154,10 +143,8 @@ public class MarketView {
 				bookIter.remove();
 		}
 
-		// FIXME
 		// update Outputs
-		TickData tickdata = new TickData(currentTime, portfolio, null,
-				availableFunds);
+		TickData tickdata = new TickData(this.TICK_SIZE, this.portfolio, this.reservedPortfolio, this.booksWithPosition, this.currentTime, this.availableFunds, this.reservedFunds, matches);
 		for (Output output : outputs) {
 			output.evaluateData(tickdata);
 		}
@@ -178,8 +165,7 @@ public class MarketView {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
 		if (!openedBooks.containsKey(stock)) {
-			OrderBook market = new OrderBookReconstructor(currentTime, stock,
-					dataHandler);
+			OrderBook market = new MarketOrderBook(currentTime, stock, dataHandler);
 			OrderBook user = new UserOrderBook(stock, market);
 			openedBooks.put(stock, user);
 		}
@@ -288,8 +274,9 @@ public class MarketView {
 		int alreadyReserved = reservedPortfolio.containsKey(stock) ? reservedPortfolio
 				.get(stock) : 0;
 		alreadyReserved -= volume;
-		assert (alreadyReserved >= 0);
-		reservedPortfolio.put(stock, alreadyReserved);
+		
+		if(alreadyReserved != 0) reservedPortfolio.put(stock, alreadyReserved);
+		else reservedPortfolio.remove(stock);
 	}
 
 	private void addStockToPortfolio(StockHandle stock, int volume) {
@@ -324,15 +311,31 @@ public class MarketView {
 	}
 
 	/**
-	 * Called by the user to get the Orders which have not yet been filled.
-	 * 
-	 * @return A new iterator over orders which are still outstanding
+	 * Called by the user to get the BuyOrders which have not yet been filled.
+	 * @return A new iterator over buy orders which are still outstanding
 	 */
-	public Iterator<Order> getOutstandingOrders() {
-		// FIXME
+	public Iterator<BuyOrder> getOutstandingBuyOrders() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		return null;
+		List<Iterator<BuyOrder>> orders = new LinkedList<>();
+		for(UserOrderBook uob : booksWithPosition) {
+			orders.add(uob.getMyBids());
+		}
+		return new MultiIterator<>(orders);
+	}
+	
+	/**
+	 * Called by the user to get the SellOrders which have not yet been filled.
+	 * @return A new iterator over sell orders which are still outstanding
+	 */
+	public Iterator<SellOrder> getOutstandingSellOrders() {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
+		List<Iterator<SellOrder>> orders = new LinkedList<>();
+		for(UserOrderBook uob : booksWithPosition) {
+			orders.add(uob.getMyOffers());
+		}
+		return new MultiIterator<>(orders);
 	}
 
 	/**

@@ -75,18 +75,27 @@ public class TestDataHandler {
 			}
 		}
 		
-		q = "SELECT ts FROM trades WHERE dataset_id=? ORDER BY ts LIMIT 1";
-		try (PreparedStatement s = conn.prepareStatement(q)) {
-			s.setInt(1, datasetID);
+		DatasetHandle res = null;
+		String qStart = "SELECT ts FROM order_books WHERE dataset_id=? ORDER by ts ASC LIMIT 1";
+		String qEnd =	"SELECT ts FROM order_books WHERE dataset_id=? ORDER by ts DESC LIMIT 1";
+		try (PreparedStatement sStart = conn.prepareStatement(qStart);
+			 PreparedStatement sEnd = conn.prepareStatement(qEnd)) {
+			sStart.setInt(1, datasetID);
+			sEnd.setInt(1, datasetID);
 			
-			try (ResultSet r = s.executeQuery()) {
-				Date ts = null;
-				if (r.next()) {
-					ts = r.getTimestamp(1);
+			try (ResultSet rStart = sStart.executeQuery();
+			     ResultSet rEnd = sEnd.executeQuery()) {
+				Timestamp start = null;
+				Timestamp end = null;
+				if (rStart.next() && rEnd.next()) {
+					start = rStart.getTimestamp(1);
+					end = rEnd.getTimestamp(1);
+					res = new DatasetHandle(datasetID, start, end);
 				}
-				return new DatasetHandle(datasetID, ts);
 			}
 		}
+		
+		return res;
 	}
 	
 	
