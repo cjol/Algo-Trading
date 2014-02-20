@@ -24,24 +24,8 @@ import database.StockHandle;
 import database.TestDataHandler;
 
 /**
-<<<<<<< HEAD
- * Thrown at the user when their algorithm tries to access any function after
- * the thread has been told to abort.
- * 
- * @author Christopher Little
- */
-class SimulationAbortedException extends RuntimeException {
-}
-
-/**
- * Allows the user's algorithm to interact with historical market data, both for
- * reading and posting orders. Also logs the user's actions for calculating how
- * well the algorithm performs.
- * 
-=======
  * Allows the user's algorithm to interact with historical market data, both for reading and posting orders.
  * Also logs the user's actions for calculating how well the algorithm performs.
->>>>>>> 87b392c162901ad4ab0345c85edb918b98eafcd7
  * @author Christopher Little
  */
 public class MarketView {
