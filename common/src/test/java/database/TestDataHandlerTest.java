@@ -5,7 +5,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -13,9 +12,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import orderBookReconstructor.BuyOrder;
-import orderBookReconstructor.Order;
-import orderBookReconstructor.SellOrder;
+import orderBooks.BuyOrder;
+import orderBooks.Order;
+import orderBooks.SellOrder;
 
 import org.junit.Before;
 import org.junit.Test;

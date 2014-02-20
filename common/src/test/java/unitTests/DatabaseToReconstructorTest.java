@@ -1,19 +1,16 @@
 package unitTests;
 
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Iterator;
 
-import orderBookReconstructor.BuyOrder;
-import orderBookReconstructor.Match;
-import orderBookReconstructor.OrderBook;
-import orderBookReconstructor.OrderBookReconstructor;
-import orderBookReconstructor.SellOrder;
-import orderBookReconstructor.UserOrderBook;
+import orderBooks.BuyOrder;
+import orderBooks.Match;
+import orderBooks.OrderBookReconstructor;
+import orderBooks.SellOrder;
+import orderBooks.UserOrderBook;
 
 import org.junit.Test;
-
 
 import database.DatasetHandle;
 import database.StockHandle;
