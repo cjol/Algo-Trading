@@ -118,7 +118,8 @@ public class FileLoader {
 		
 		//send and get result
 		try {
-			TestResultDescription result = sendTest(desc, address, port);
+			//TODO use the result
+			sendTest(desc, address, port);
 		} catch (UnknownHostException e) {
 			System.err.println("Could not connect to host");
 			System.exit(3);
@@ -139,5 +140,6 @@ public class FileLoader {
 		System.exit(0);
 	}
 	
-	private static class WrongResponseException extends Exception {}
+	private static class WrongResponseException extends Exception {
+		private static final long serialVersionUID = 1L;}
 }

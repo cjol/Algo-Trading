@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,7 +15,6 @@ import java.util.Properties;
 
 import orderBooks.BuyOrder;
 import orderBooks.Match;
-import orderBooks.Order;
 import orderBooks.SellOrder;
 
 /**

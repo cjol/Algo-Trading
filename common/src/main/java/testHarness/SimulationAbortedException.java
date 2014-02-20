@@ -4,6 +4,9 @@ package testHarness;
  * Thrown at the user when their algorithm tries to access any function after the thread has been told to abort.
  */
 public class SimulationAbortedException extends RuntimeException {
+	
+	private static final long serialVersionUID = 1L;
+	
 	public final Exception innerException;
 	
 	/**

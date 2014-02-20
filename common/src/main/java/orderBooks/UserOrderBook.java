@@ -334,6 +334,7 @@ public class UserOrderBook extends OrderBook {
 			return hold;
 		}
 		
+		@SuppressWarnings("unchecked")
 		T calculateNext() {
 			while(true) {
 				if(!parent.hasNext()) {

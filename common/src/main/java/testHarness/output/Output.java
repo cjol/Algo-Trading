@@ -1,9 +1,9 @@
 package testHarness.output;
 
 import testHarness.MarketView;
+import database.OutputServer;
 import testHarness.TickData;
 import testHarness.output.result.Result;
-import database.OutputServer;
 
 /**
  * Abstract class representing an output
