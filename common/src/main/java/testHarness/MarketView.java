@@ -126,7 +126,10 @@ public class MarketView {
 		
 		//FIXME 
 		// update Outputs
-		TickData tickdata = new TickData(currentTime, portfolio, outstandingOrders, availableFunds);
+		TickData tickdata = new TickData((Timestamp)currentTime.clone(), 
+				portfolioClone, 
+				outstandingOrdersClone, 
+				availableFunds);
 		for (Output output : outputs) {
 			output.evaluateData(tickdata);
 		}
@@ -148,7 +151,6 @@ public class MarketView {
 			openedBooks.put(stock, user); 	
 		}
 		return openedBooks.get(stock);
-		
 	}
 	
 	/**
