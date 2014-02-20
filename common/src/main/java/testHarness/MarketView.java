@@ -14,12 +14,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import Iterators.MultiIterator;
 import Iterators.ProtectedIterator;
 
+import orderBooks.BuyOrder;
 import orderBooks.MarketOrderBook;
 import orderBooks.Match;
 import orderBooks.Order;
 import orderBooks.OrderBook;
+import orderBooks.SellOrder;
 import orderBooks.UserOrderBook;
 import testHarness.output.Output;
 import database.DatasetHandle;
@@ -99,8 +102,7 @@ public class MarketView {
 		numTicks++;
 
 		Timestamp newTime = new Timestamp(currentTime.getTime() + TICK_SIZE);
-		// probably not needed since nanos are never updated
-		//newTime.setNanos(currentTime.getNanos()); 
+
 		currentTime = newTime;
 		
 		for (OrderBook orderBook : openedBooks.values()) {
@@ -272,14 +274,31 @@ public class MarketView {
 	}
 	
 	/**
-	 * Called by the user to get the Orders which have not yet been filled.
-	 * @return A new iterator over orders which are still outstanding
+	 * Called by the user to get the BuyOrders which have not yet been filled.
+	 * @return A new iterator over buy orders which are still outstanding
 	 */
-	public Iterator<Order> getOutstandingOrders() {
-		//FIXME
+	public Iterator<BuyOrder> getOutstandingBuyOrders() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		return null;
+		List<Iterator<BuyOrder>> orders = new LinkedList<>();
+		for(UserOrderBook uob : booksWithPosition) {
+			orders.add(uob.getMyBids());
+		}
+		return new MultiIterator<>(orders);
+	}
+	
+	/**
+	 * Called by the user to get the SellOrders which have not yet been filled.
+	 * @return A new iterator over sell orders which are still outstanding
+	 */
+	public Iterator<SellOrder> getOutstandingSellOrders() {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
+		List<Iterator<SellOrder>> orders = new LinkedList<>();
+		for(UserOrderBook uob : booksWithPosition) {
+			orders.add(uob.getMyOffers());
+		}
+		return new MultiIterator<>(orders);
 	}
 
 	/**
