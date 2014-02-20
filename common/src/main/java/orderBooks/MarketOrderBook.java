@@ -9,7 +9,6 @@ import Iterators.ProtectedIterator;
 import database.Pair;
 import database.StockHandle;
 import database.TestDataHandler;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import testHarness.SimulationAbortedException;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;

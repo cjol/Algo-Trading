@@ -1,7 +1,5 @@
 package testHarness.output;
 
-import java.io.Serializable;
-
 import database.OutputServer;
 import testHarness.TickData;
 
