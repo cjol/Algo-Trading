@@ -226,7 +226,7 @@ public class TestDataHandler {
 						int price = r.getInt(3);
 						int volume = r.getInt(4);
 
-						Match newMatch = new Match(stock, volume, price);
+						Match newMatch = new Match(stock, price, volume);
 						results.add(newMatch);
 					}
 				}

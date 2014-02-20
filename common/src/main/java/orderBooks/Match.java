@@ -11,7 +11,7 @@ public class Match {
 	public final boolean isUserOffer;
 	public final boolean isUserBid;
 	
-	public Match(StockHandle stock,int quantity, int price) {
+	public Match(StockHandle stock,int price, int quantity) {
 		this.stockHandle = stock;
 		this.quantity = quantity;
 		this.price = price;
@@ -19,7 +19,7 @@ public class Match {
 		this.isUserOffer = false;
 	}
 	
-	public Match(StockHandle stock, int quantity, int price, boolean isUserOffer) {
+	public Match(StockHandle stock, int price, int quantity, boolean isUserOffer) {
 		this.stockHandle = stock;
 		this.quantity = quantity;
 		this.price = price;
