@@ -243,8 +243,9 @@ public class MarketView {
 	private void removeReserveStock(StockHandle stock, int volume) {
 		int alreadyReserved = reservedPortfolio.containsKey(stock) ? reservedPortfolio.get(stock) : 0;
 		alreadyReserved -= volume;
-		assert(alreadyReserved >= 0);
-		reservedPortfolio.put(stock, alreadyReserved);
+		
+		if(alreadyReserved != 0) reservedPortfolio.put(stock, alreadyReserved);
+		else reservedPortfolio.remove(stock);
 	}
 	
 	private void addStockToPortfolio(StockHandle stock, int volume) {
