@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
-import orderBookReconstructor.Order;
+import orderBooks.Order;
 import database.StockHandle;
 
 public class TickData {	
