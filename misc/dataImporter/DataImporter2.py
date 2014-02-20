@@ -50,7 +50,7 @@ for file in truncatedRawFiles:
                      dataset[i][15], dataset[i][16],
                      dataset[i][18], dataset[i][17],
                      dataset[i][19], dataset[i][20], ] for i in range(numberOfData)]
-    for index in range(numberOfData):
+    for i in range(numberOfData):
         cursor.execute('INSERT INTO order_books(dataset_id, ticker, ts, bid1_price, bid1_volume,'
             'bid2_price, bid2_volume, bid3_price, bid3_volume,'
             'bid4_price, bid4_volume, bid5_price, bid5_volume,'
