@@ -121,7 +121,52 @@ public class TestDataHandler {
 	
 	public Pair<List<BuyOrder>, List<SellOrder>> getLastOrderSnapshot(
 				StockHandle handle, Timestamp t) throws SQLException {
-		throw new UnsupportedOperationException();
+		final String q = "SELECT bid1_price,bid1_volume,bid2_price,bid2_volume," +
+						 "bid3_price,bid3_volume,bid4_price,bid4_volume," + 
+						 "bid5_price,bid5_volume,ask1_price,ask1_volume," + 
+						 "ask3_price,ask3_volume,ask3_price,ask3_volume," +
+						 "ask5_price,ask5_volume,ask5_price,ask5_volume " +
+						 "FROM order_books " + 
+						 "WHERE dataset_id=? AND ticker=? AND ts <=? " +
+						 "ORDER BY ts DESC LIMIT 1";
+		
+		Pair<List<BuyOrder>, List<SellOrder>> res = null;
+		try (PreparedStatement s = conn.prepareStatement(q)) {
+			s.setInt(1, handle.getDatasetID());
+			s.setString(2, handle.getTicker());
+			s.setTimestamp(3, t);
+			
+			ResultSet r = s.executeQuery();
+			if (r.next()) {
+				List<BuyOrder> bids = new ArrayList<BuyOrder>();
+				List<SellOrder> asks = new ArrayList<SellOrder>();
+				
+				for (int i=0; i <5; i++) {
+					int bidPrice, bidVolume;
+					int askPrice, askVolume;
+					
+					// note SQL indices start at 1
+					bidPrice = r.getInt(2*i + 1);
+					bidVolume = r.getInt(2*i + 2);
+					askPrice = r.getInt(2*i + 11);
+					askVolume = r.getInt(2*i + 12);
+					
+					// if volume is 0, nothing exists at that price level
+					if (bidVolume > 0) {
+						BuyOrder bid = new BuyOrder(handle, bidPrice, bidVolume);
+						bids.add(bid);
+					}
+					if (askVolume > 0) {
+						SellOrder ask = new SellOrder(handle, askPrice, askVolume);
+						asks.add(ask);
+					}
+				}
+				
+				res = new Pair<List<BuyOrder>,List<SellOrder>>(bids,asks);
+			}
+		}
+		
+		return res;
 	}
 	
 	class ResultSetIterator implements Iterator<Match> {
