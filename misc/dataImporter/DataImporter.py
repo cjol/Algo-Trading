@@ -68,7 +68,7 @@ def importOrderBooks(hdf5file, datasetID, ticker):
                      askPrices[4],askVolumes[4]))
 
         if i != 0 and i % 100 == 0:
-            print "Imported %d rows" % i
+            print "Imported %d/%d rows" % (i, nrows)
 
 def importMatches(hdf5file, datasetID, ticker): 
     dataset = hdf5file['LastDones']
@@ -87,7 +87,7 @@ def importMatches(hdf5file, datasetID, ticker):
                        (datasetID, ticker, timestamp, price, volume))
 
         if i != 0 and i % 100 == 0:
-            print "Imported %d rows" % i
+            print "Imported %d/%d rows" % (i, nrows)
 
 def extractTicker(fname):
     return os.path.splitext(os.path.basename(fname))[0]
