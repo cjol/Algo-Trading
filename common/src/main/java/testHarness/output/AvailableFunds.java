@@ -34,11 +34,7 @@ public class AvailableFunds extends Output{
 
 	@Override
 	public void evaluateData(TickData data) {
-		availableFundsData.add(data.getAvailableFunds() + data.getReservedFunds());
-		
+		availableFundsData.put(data.currentTime, data.availableFunds.add(data.reservedFunds));	
 	}
-
-	
-
 }
 

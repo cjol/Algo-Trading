@@ -42,7 +42,21 @@ public class Portfolio extends Output {
 
 	@Override
 	public void evaluateData(TickData data) {
-		portfolioList.put(data.getDataTimestamp(), data.getPortfolio());
+		Map<StockHandle, Integer> combinedPortfolio = new HashMap<StockHandle, Integer>();
+		for (Entry<StockHandle, Integer> portfolioItem : data.portfolio.entrySet()) {
+			combinedPortfolio.put(portfolioItem.getKey(), portfolioItem.getValue()); 
+		}
+		for (Entry<StockHandle, Integer> portfolioItem : data.reservedPortfolio.entrySet()) {
+			if (combinedPortfolio.containsKey(portfolioItem.getKey())) {
+				combinedPortfolio.put(portfolioItem.getKey(), 
+						combinedPortfolio.get(portfolioItem.getKey()) + portfolioItem.getValue());
+			} else {
+				combinedPortfolio.put(portfolioItem.getKey(), portfolioItem.getValue());
+			}
+		}
+		
+		
+		portfolioList.put(data.currentTime, data.portfolio);
 		
 	}
 }
