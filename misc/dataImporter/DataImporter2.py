@@ -17,8 +17,8 @@ rawDataPath = raw_input("Path to Raw Data Folder: ")
 rawFiles = [f for f in listdir(rawDataPath) if isfile(join(rawDataPath, f))]
 
 #setting up database connection
-databaseName = raw_input("Database Name: ")
-db = psycopg2.connect("dbname=testenv user=postgres")
+databaseName = raw_input("Database Name: ") #not sure if we should use this...
+db = psycopg2.connect("dbname=testenv user=postgres") #or this....
 cursor = db.cursor()
 
 #populating dataset table
