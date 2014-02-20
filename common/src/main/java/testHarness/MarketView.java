@@ -24,6 +24,7 @@ import database.StockHandle;
 import database.TestDataHandler;
 
 /**
+<<<<<<< HEAD
  * Thrown at the user when their algorithm tries to access any function after
  * the thread has been told to abort.
  * 
@@ -37,6 +38,10 @@ class SimulationAbortedException extends RuntimeException {
  * reading and posting orders. Also logs the user's actions for calculating how
  * well the algorithm performs.
  * 
+=======
+ * Allows the user's algorithm to interact with historical market data, both for reading and posting orders.
+ * Also logs the user's actions for calculating how well the algorithm performs.
+>>>>>>> 87b392c162901ad4ab0345c85edb918b98eafcd7
  * @author Christopher Little
  */
 public class MarketView {
@@ -105,51 +110,54 @@ public class MarketView {
 	public Iterator<Match> tick() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		// FIXME another exception
-		if (!currentTime.before(endTime))
-			throw new RuntimeException("Simulation over");
-		numTicks++;
-
-		Timestamp newTime = new Timestamp(currentTime.getTime() + TICK_SIZE);
-		currentTime = newTime;
-
-		for (OrderBook orderBook : openedBooks.values()) {
-			orderBook.softSetTime(currentTime);
-		}
-
-		Iterator<UserOrderBook> bookIter = booksWithPosition.iterator();
-		List<Match> matches = new LinkedList<>();
-		while (bookIter.hasNext()) {
-			UserOrderBook book = bookIter.next();
-
-			Iterator<Match> matcheIter = book.updateTime();
+		try
+		{
+			//FIXME another exception
+			if (!currentTime.before(endTime)) throw new RuntimeException("Simulation over");
+			numTicks++;
+	
+			Timestamp newTime = new Timestamp(currentTime.getTime() + TICK_SIZE);
+	
+			currentTime = newTime;
 			
-			//TODO commission
-			while(matcheIter.hasNext()) {
-				Match m = matcheIter.next();
-				matches.add(m);
-
-				if (m.isUserBid) {
-					addStockToPortfolio(m.stockHandle, m.quantity);
-					reservedFunds
-							.subtract(new BigDecimal(m.price * m.quantity));
-				} else if (m.isUserOffer) {
-					removeReserveStock(m.stockHandle, m.quantity);
-					availableFunds.add(new BigDecimal(m.price * m.quantity));
-				}
+			for (OrderBook orderBook : openedBooks.values()) {
+				orderBook.softSetTime(currentTime);
 			}
-
-			if (book.isComplete())
-				bookIter.remove();
+			
+			Iterator<UserOrderBook> bookIter = booksWithPosition.iterator();
+			List<Match> matches = new LinkedList<>();
+			while(bookIter.hasNext()) {
+				UserOrderBook book = bookIter.next();
+				
+				Iterator<Match> matcheIter = book.updateTime();
+				//TODO commission
+				while(matcheIter.hasNext()) {
+					Match m = matcheIter.next();
+					matches.add(m);
+					
+					if(m.isUserBid) {
+						addStockToPortfolio(m.stockHandle, m.quantity);
+						reservedFunds.subtract(new BigDecimal(m.price * m.quantity));
+					} else if(m.isUserOffer) {
+						removeReserveStock(m.stockHandle, m.quantity);
+						availableFunds.add(new BigDecimal(m.price * m.quantity));
+					}
+				}
+				
+				if(book.isComplete()) bookIter.remove();
+			}
+			
+			// update Outputs
+			TickData tickdata = new TickData(this.TICK_SIZE, this.portfolio, this.reservedPortfolio, this.booksWithPosition, this.currentTime, this.availableFunds, this.reservedFunds, matches);
+			for (Output output : outputs) {
+				output.evaluateData(tickdata);
+			}
+			
+			return matches.iterator();
+		} catch (SimulationAbortedException e) {
+			tryCleanAbort(Thread.currentThread());
+			throw e;
 		}
-
-		// update Outputs
-		TickData tickdata = new TickData(this.TICK_SIZE, this.portfolio, this.reservedPortfolio, this.booksWithPosition, this.currentTime, this.availableFunds, this.reservedFunds, matches);
-		for (Output output : outputs) {
-			output.evaluateData(tickdata);
-		}
-
-		return matches.iterator();
 	}
 
 	/**
@@ -211,16 +219,21 @@ public class MarketView {
 	public boolean buy(StockHandle stock, int price, int volume) {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-
-		int totalPrice = price * volume;
-		BigDecimal totalBig = (new BigDecimal(totalPrice));
-		if (getAvailableFunds().compareTo(totalBig) < 0)
-			return false; // we don't have enough funds
-
-		reserveFunds(totalBig);
-
-		getOrderBook(stock).buy(volume, price, currentTime);
-		return true;
+		try
+		{
+			int totalPrice = price * volume;
+			BigDecimal totalBig = (new BigDecimal(totalPrice));
+			if (getAvailableFunds().compareTo(totalBig) < 0)
+				return false; // we don't have enough funds
+			
+			reserveFunds(totalBig);
+			
+			getOrderBook(stock).buy(volume, price, currentTime);
+			return true;
+		} catch (SimulationAbortedException e) {
+			tryCleanAbort(Thread.currentThread());
+			throw e;
+		}
 	}
 
 	/**
@@ -238,12 +251,16 @@ public class MarketView {
 	public boolean sell(StockHandle stock, int price, int volume) {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-
-		if (!reserveStocks(stock, volume))
-			return false;
-
-		getOrderBook(stock).sell(volume, price, currentTime);
-		return true;
+		try
+		{
+			if(!reserveStocks(stock, volume)) return false;
+			
+			getOrderBook(stock).sell(volume, price, currentTime);
+			return true;
+		} catch (SimulationAbortedException e) {
+			tryCleanAbort(Thread.currentThread());
+			throw e;
+		}
 	}
 
 	private void reserveFunds(BigDecimal amount) {
@@ -295,17 +312,12 @@ public class MarketView {
 	public Iterator<StockHandle> getAllStocks() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		// TODO: Does this need cloning HERE before being handed to the user?
-		// probably should determine a policy for where such clones are made so
-		// we don't make them a million times
 		Iterator<StockHandle> res = null;
 		try {
 			res = dataHandler.getAllStocks(dataset);
 		} catch (SQLException e) {
-			// TODO: Handle exceptions in consistent manner, + more
-			// intelligently //FIXME
-			e.printStackTrace();
-			System.exit(-1);
+			tryCleanAbort(Thread.currentThread());
+			throw new SimulationAbortedException(e);
 		}
 		return res;
 	}
@@ -317,11 +329,17 @@ public class MarketView {
 	public Iterator<BuyOrder> getOutstandingBuyOrders() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		List<Iterator<BuyOrder>> orders = new LinkedList<>();
-		for(UserOrderBook uob : booksWithPosition) {
-			orders.add(uob.getMyBids());
+		
+		try {
+			List<Iterator<BuyOrder>> orders = new LinkedList<>();
+			for(UserOrderBook uob : booksWithPosition) {
+				orders.add(uob.getMyBids());
+			}
+			return new MultiIterator<>(orders);
+		} catch (SimulationAbortedException e) {
+			tryCleanAbort(Thread.currentThread());
+			throw e;
 		}
-		return new MultiIterator<>(orders);
 	}
 	
 	/**
@@ -331,11 +349,17 @@ public class MarketView {
 	public Iterator<SellOrder> getOutstandingSellOrders() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		List<Iterator<SellOrder>> orders = new LinkedList<>();
-		for(UserOrderBook uob : booksWithPosition) {
-			orders.add(uob.getMyOffers());
+		
+		try {
+			List<Iterator<SellOrder>> orders = new LinkedList<>();
+			for(UserOrderBook uob : booksWithPosition) {
+				orders.add(uob.getMyOffers());
+			}
+			return new MultiIterator<>(orders);
+		} catch (SimulationAbortedException e) {
+			tryCleanAbort(Thread.currentThread());
+			throw e;
 		}
-		return new MultiIterator<>(orders);
 	}
 
 	/**
@@ -360,11 +384,17 @@ public class MarketView {
 	public Iterator<StockHandle> getStocksWithOutstanding() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		List<StockHandle> out = new LinkedList<StockHandle>();
-		for (UserOrderBook o : booksWithPosition) {
-			out.add(o.handle);
+		
+		try {
+			List<StockHandle> out = new LinkedList<StockHandle>();
+			for (UserOrderBook o : booksWithPosition) {
+				out.add(o.handle);
+			}
+			return out.iterator();
+		} catch (SimulationAbortedException e) {
+			tryCleanAbort(Thread.currentThread());
+			throw e;
 		}
-		return out.iterator();
 	}
 
 	/**

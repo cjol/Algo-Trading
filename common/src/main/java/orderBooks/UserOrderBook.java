@@ -119,7 +119,6 @@ public class UserOrderBook extends OrderBook {
 
 	@Override
 	public Iterator<Match> updateTime() {
-		//FIXME
 		
 		if(parent.currentTime.equals(softTime)) return null;
 		
@@ -158,7 +157,6 @@ public class UserOrderBook extends OrderBook {
 	 */
 	private <User extends Order> 
 	void coverMatch(int marketPrice, int q, HashMap<Integer, Integer> marketGhost, TreeSet<User> userOrders, boolean isUserOffer, List<Match> userMatches) {
-		//FIXME 
 		int exisitingGhosting = (marketGhost.containsKey(marketPrice)) ? marketGhost.get(marketPrice) : 0;
 		
 		int available = q - exisitingGhosting;
@@ -199,7 +197,6 @@ public class UserOrderBook extends OrderBook {
 	 */
 	private <Market extends Order, User extends Order> 
 	void match(HashMap<Integer, Integer> ghost, Iterator<Market> marketIter, Iterator<User> userIter, List<Match> userMatches, boolean isUserOrder) {
-		//FIXME 
 		if( marketIter.hasNext() && userIter.hasNext()) {
 			
 			Market marketOrder = marketIter.next();	
@@ -248,8 +245,6 @@ public class UserOrderBook extends OrderBook {
 	 */
 	@SuppressWarnings("unused")
 	private static void removeGhost(HashMap<Integer, Integer> ghost,int priceLevel, int q) {
-		//FIXME
-		
 		if(ghost.containsKey(priceLevel)) {
 			int left = ghost.get(priceLevel) - q;
 			if(left <= 0) ghost.remove(priceLevel);
@@ -264,8 +259,6 @@ public class UserOrderBook extends OrderBook {
 	 * @param q the amount to increment by.
 	 */
 	private static void addGhost(HashMap<Integer, Integer> ghost,int priceLevel, int q) {
-		//FIXME
-		
 		int val = ((ghost.containsKey(priceLevel)) ? ghost.get(priceLevel) : 0) + q;
 		ghost.put(priceLevel, val);
 	}
