@@ -1,18 +1,17 @@
 CREATE TABLE datasets (
 	dataset_id serial PRIMARY KEY,
 	name text NOT NULL UNIQUE,
-	
 );
 
 CREATE TABLE securities (
 	dataset_id serial REFERENCES datasets(dataset_id),
-	ticker varchar(10) REFERENCES trades(ticker),
+	ticker varchar(10),
 	PRIMARY KEY (dataset_id, ticker)
 );
 
 CREATE table order_books (
-  dataset_id serial REFERENCES datasets(dataset_id),
-  ticker varchar(10),
+	dataset_id serial
+	ticker varchar(10),
  	ts timestamp,
  	bid1_price integer,
  	bid1_volume integer NOT NULL,
@@ -34,16 +33,18 @@ CREATE table order_books (
  	ask4_volume integer NOT NULL,
  	ask5_price integer,
  	ask5_volume integer NOT NULL,
- 	PRIMARY KEY (datset_id, ticker, ts)
+ 	PRIMARY KEY (datset_id, ticker, ts),
+ 	FOREIGN KEY (dataset_id, ticker) REFERENCES securities (dataset_id, ticker)
 );
 	
 CREATE table matches (
 	trade_id bigserial PRIMARY KEY,
-	dataset_id serial REFERENCES datasets(dataset_id) NOT NULL,
-	ticker varchar(10) NOT NULL,
+	dataset_id serial,
+	ticker varchar(10),
 	ts timestamp NOT NULL,
 	price integer NOT NULL,
-	volume integer NOT NULL
+	volume integer NOT NULL,
+	FOREIGN KEY (dataset_id, ticker) REFERENCES securities (dataset_id, ticker)
 );
 
 CREATE INDEX orderbook_idx ON order_books (ts);
