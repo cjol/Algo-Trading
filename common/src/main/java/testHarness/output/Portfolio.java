@@ -45,16 +45,10 @@ public class Portfolio extends Output {
 			combinedPortfolio.put(portfolioItem.getKey(), portfolioItem.getValue()); 
 		}
 		for (Entry<StockHandle, Integer> portfolioItem : data.reservedPortfolio.entrySet()) {
-			if (combinedPortfolio.containsKey(portfolioItem.getKey())) {
-				combinedPortfolio.put(portfolioItem.getKey(), 
-						combinedPortfolio.get(portfolioItem.getKey()) + portfolioItem.getValue());
-			} else {
-				combinedPortfolio.put(portfolioItem.getKey(), portfolioItem.getValue());
-			}
+			int exists = combinedPortfolio.containsKey(portfolioItem.getKey()) ? combinedPortfolio.get(portfolioItem.getKey()) : 0;
+			combinedPortfolio.put(portfolioItem.getKey(), portfolioItem.getValue() + exists);
 		}
 		
-		
-		portfolioList.put(data.currentTime, data.portfolio);
-		
+		portfolioList.put(data.currentTime, combinedPortfolio);
 	}
 }
