@@ -25,7 +25,7 @@ import orderBooks.SellOrder;
  *
  */
 public class TestDataHandler {
-	private static final String url = "jdbc:postgresql://127.0.0.1:33333/testenv";
+	private static final String url = "jdbc:postgresql://127.0.0.1:5432/testenv";
 	Connection conn;
 	
 	/**

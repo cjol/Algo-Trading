@@ -16,6 +16,7 @@ import testHarness.clientConnection.ClassDescription;
 import testHarness.clientConnection.OutputRequest;
 import testHarness.clientConnection.TestRequestDescription;
 import testHarness.clientConnection.TestResultDescription;
+import testHarness.output.result.Result;
 
 /**
  * 
@@ -116,10 +117,17 @@ public class FileLoader {
 			System.exit(2);
 		}
 		
+		
+		
 		//send and get result
+		List<Result> results = null;
 		try {
-			//TODO use the result
-			sendTest(desc, address, port);
+			TestResultDescription resultDesc = sendTest(desc, address, port);
+			if (!resultDesc.testFinished) {
+				System.err.println(resultDesc.errorMessage);
+				System.exit(7);
+			}
+			results = resultDesc.outputs;
 		} catch (UnknownHostException e) {
 			System.err.println("Could not connect to host");
 			System.exit(3);
@@ -136,7 +144,13 @@ public class FileLoader {
 		}
 		
 		//TODO display result on command line
-		
+		if (results != null && results.size() > 0) {
+			for (Result result : results) {
+				System.out.println(result.getName() + ": ");
+				System.out.println(result.asJSON());
+				System.out.println();
+			}
+		}
 		System.exit(0);
 	}
 	

@@ -1,158 +1,137 @@
 #!/usr/bin/python
+
 import h5py
-import pandas as pd
-import MySQLdb
-import getpass
+import psycopg2
+import sys
 from os import listdir
 from os.path import isfile, join
+import os.path
 
-#setting up hdf5 variables
-hdf5_file_name = '../RawData/ADS.h5'
-event_number = 0
+def connect():
+    conn = psycopg2.connect(dbname=databaseName,host=databaseHost,port=databasePort,user="alpha")
+    conn.autocommit = True
+    return conn
 
-#grabbing all .m5 files
-mypath = '../RawData'
-rawFiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+def insertData(datasetName):
+    #populating dataset table
+    cursor.execute("""INSERT INTO datasets(name) VALUES (%s);""", (datasetName,))
 
-#setting up database connection
-databaseURL = raw_input("Database URL: ")
-databaseUser = raw_input("Username: ")
-databasePassword = getpass.getpass()
-databaseName = raw_input("Database Name: ")
-db = MySQLdb.connect(databaseURL, databaseUser, databasePassword, databaseName)
-cursor = db.cursor()
+    # get dataset ID
+    cursor.execute("""SELECT dataset_id FROM datasets WHERE name=%s""", (datasetName,))
+    (datasetID,) = cursor.fetchone()
 
-#populating dataset table
-cursor.execute('INSERT INTO datasets(dataset_id,name) VALUES (0,"Default Data"')
+    return datasetID
+
+def insertSecurity(datasetID, securityName):
+    cursor.execute("""INSERT INTO securities(dataset_id,ticker) VALUES (%s,%s)""",(datasetID,securityName))
+
+def convertTimestamp(rawTimestamp):
+    ticksTimestamp = rawTimestamp / 1000000000.0 # rawTimestamp is in nanoseconds
+    return psycopg2.TimestampFromTicks(ticksTimestamp)
+
+def importOrderBooks(hdf5file, datasetID, ticker): 
+    dataset = hdf5file['RetailStates']
+    nrows = dataset.len()
+
+    for i in range(nrows):
+        row = dataset[i]
+        timestamp = convertTimestamp(row[0])
+        bidPrices = []
+        bidVolumes = []
+        askPrices = []
+        askVolumes = []
+
+        # TODO: Are prices always to nearest cent?
+        # TODO: Can there ever be missing data?
+        for j in range(5):
+            bidPrices.append(int(row[2*j+1]*100))
+            bidVolumes.append(int(row[2*j+2]))
+            askPrices.append(int(row[2*j+11]*100))
+            # volumes are negative, which breaks our schema
+            askVolumes.append(-1*int(row[2*j+12]))
+
+        cursor.execute('INSERT INTO order_books(dataset_id, ticker, ts, bid1_price, bid1_volume,'
+            'bid2_price, bid2_volume, bid3_price, bid3_volume,'
+            'bid4_price, bid4_volume, bid5_price, bid5_volume,'
+            'ask1_price, ask1_volume, ask2_price, ask2_volume,'
+            'ask3_price, ask3_volume, ask4_price, ask4_volume,'
+            'ask5_price, ask5_volume)'
+            'VALUES (%s,%s,%s,'
+            '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'
+            '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+                     (datasetID, ticker, timestamp,
+                     bidPrices[0],bidVolumes[0],bidPrices[1],bidVolumes[1],
+                     bidPrices[2],bidVolumes[2],bidPrices[3],bidVolumes[3],
+                     bidPrices[4],bidVolumes[4],
+                     askPrices[0],askVolumes[0],askPrices[1],askVolumes[1],
+                     askPrices[2],askVolumes[2],askPrices[3],askVolumes[3],
+                     askPrices[4],askVolumes[4]))
+
+        if i != 0 and i % 100 == 0:
+            print "Imported %d/%d rows" % (i, nrows)
+
+def importMatches(hdf5file, datasetID, ticker): 
+    dataset = hdf5file['LastDones']
+    nrows = dataset.len()
+
+    for i in range(nrows):
+        row = dataset[i]
+        timestamp = convertTimestamp(row[0])
+        price = int(row[1]*100)
+        volume = int(row[2])
+
+        # TODO: Throwing away aggressor side
+
+        cursor.execute('INSERT INTO matches(dataset_id,ticker,ts,price,volume) '
+                       'VALUES(%s,%s,%s,%s,%s)', 
+                       (datasetID, ticker, timestamp, price, volume))
+
+        if i != 0 and i % 100 == 0:
+            print "Imported %d/%d rows" % (i, nrows)
+
+def extractTicker(fname):
+    return os.path.splitext(os.path.basename(fname))[0]
+
+if len(sys.argv) != 6:
+    print >>sys.stderr, "usage: %s <data folder> <name of dataset> <database name> <host> <port>" % sys.argv[0]
+    sys.exit(-1)
+
+dataPath = sys.argv[1]
+datasetName = sys.argv[2]
+databaseName = sys.argv[3]
+databaseHost = sys.argv[4]
+databasePort = sys.argv[5]
+
+dataFiles = [f for f in listdir(dataPath) if isfile(join(dataPath, f))]
+
+# connect to database
+conn = connect()
+cursor = conn.cursor()
+
+datasetID = insertData(datasetName)
+print "Inserted %s into dataset table with ID %d" % (datasetName, datasetID)
 
 #populating securities table
-rawFiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
-truncatedRawFiles = rawFiles[0:2]
+for fname in dataFiles:
+    ticker = extractTicker(fname)
+    insertSecurity(datasetID, ticker)
+print "Inserted into securities table"
 
-for file in truncatedRawFiles:
-    print 'Importing ', file
-    ticker = os.path.splitext(os.path.basename(file))[0]  # Removing extension from filename to get ticker
-    hdf5file = h5py.File(mypath+"/"+file, 'r')   # 'r' means that hdf5 file is open in read-only mode
-    dataset = hdf5file['RetailStates']
-    numberOfData = dataset.len()
+#populating orders table
+for fname in dataFiles:
+    ticker = extractTicker(fname)
+    fullyQualifiedPath = os.path.join(dataPath, fname)
+    hdf5file = h5py.File(fullyQualifiedPath, 'r')
 
-    #Idea being that we make a list of every aspect of an order, and the zip the lists into a tuple (polytuple?)
-    ListOfTimestamps = ["PlaceHolderString" for i in range(numberOfData*2)]
-    ListOfIDs = [0 for i in range(numberOfData*2)]
-    timeStampIterator = 0
-    offsetAccumulator = 0  
-
-    #hop back and forth between orders within a single raw data row.
-    #in its current form this just forms a list of the form
-    #[ts1,ts1,ts2,ts2,.....,tsn,tsn] (as the goal for the current code is to
-    #    just import top bid and top ask from each snapshot)
-    for i in range(len(ListOfTimestamps)):
-        ListOfTimestamps[i] = dataset[timeStampIterator][0]
-        offsetAccumulator += 1
-        if offsetAccumulator > 1:
-            timeStampIterator += 1
-            offsetAccumulator = 0
-
-    #note the *2 on the range as for each raw row, we are making 2 orders
-    ListOfTickers = [ticker for i in range(numberOfData*2)]
-
-    #hopping between columns one and eleven to extract prices
-    ListOfPrices = [-1 for i in range(numberOfData*2)]
-    priceIterator = 0
-    offsetAccumulator = 0
-    oneEleven = 1
-    for i in range(len(ListOfPrices)):
-        ListOfPrices[i] = dataset[priceIterator][oneEleven]
-        offsetAccumulator += 1
-        if offsetAccumulator > 1:
-            priceIterator += 1
-            offsetAccumulator = 0
-        if oneEleven == 1:
-            oneEleven = 11
-        else:
-            oneEleven = 1
-
-    #hopping between columns two and twelve to extract volumes
-    ListOfVolumes = [-1 for i in range(numberOfData*2)]
-    volumeIterator = 0
-    offsetAccumulator = 0
-    twoTwelve = 2
-    for i in range(len(ListOfVolumes)):
-        ListOfVolumes[i] = abs(dataset[volumeIterator][twoTwelve])
-        offsetAccumulator +=1
-        if offsetAccumulator > 1:
-            volumeIterator += 1
-            offsetAccumulator = 0
-        if twoTwelve == 2:
-            twoTwelve = 12
-        else:
-            twoTwelve = 2
-
-    #build a list of form ("B","A","B","A"...) to line up with B/A of imported orders
-    ListOfBidOrAsk = ["B" for i in range(numberOfData*2)]
-    askIterator = 1
-    for i in range(len(ListOfBidOrAsk)):
-        if askIterator % 2 == 0:
-            bidOrAsk = "A"
-        askIterator += 1
-
-    #zip all our lists together
-    ListOfOrders = zip(ListOfIDs, ListOfTickers, ListOfTimestamps, ListOfBidOrAsk, ListOfPrices, ListOfVolumes)
-
-    #throw into sql
-    for order in ListOfOrders:
-        cursor.execute('INSERT INTO trades(dataset_id,ticker,ts,bid_or_ask,price,volume) VALUES (%i,%s,%s,%s,%i,%i);',
-                       order[0],order[1],order[2],order[3],order[4],order[5])
-
-    ''' ----------------------------CODE PENDING RADMILLO RESPONSE------------------------------------------------
-    #TODO:Transform dataset to formattedDataset
-    #Creating sub lists by parameter, ready to zip together to form formattedDataset
-    DataSetIDs = [0 for i in range((numberOfData)*10)]
-    ListOfTickers = [ticker for i in range((numberOfData)*10)]  # Presuming ticker is the security identifier thing
-
-    ListOfTimestamps = ["PlaceHolderString" for i in range((numberOfData)*10)]
-    timeStampIterator = 0
-    offsetAccumulator = 0  # need to only advance to next Raw Order after filling in 10 formatted orders
-                           # This is due to there being 10 formatted orders worth of data in each raw order
-    for timeStamp in ListOfTimestamps:
-        timeStamp = dataset[timeStampIterator][0]
-        offsetAccumulator += 1
-        if offsetAccumulator > 9:
-            timeStampIterator += 1
-            offsetAccumulator = 0
-
-    ListOfAskBuy = ["PlaceHolderString" for i in range((numberOfData)*10)]
-
-    #Should create a List of size numberOfData in the form (B,B,B,B,B,A,A,A,A,A), to match with the 10 order pattern
-    askbuyAccumulator = 0
-    askbuyString = "B"
-    for askbuy in ListOfAskBuy:
-        if askbuyAccumulator > 4:
-            askbuyString = "A"
-        askbuy = askbuyString
-        askbuyAccumulator += 1
-        if askbuyAccumulator > 9:
-            askbuyString = "B"
-            askbuyAccumulator = 0
-
-
-    #TODO: ListOfPrice
-    ListOfPrices = [-1 for i in range((numberOfData)*10)]  # placeholder list, now fill in actual prices
-
-    #TODO: ListOfVolume
-    #TODO: ZIP FIELDS TOGETHER
-    #populating trades table
-    for data in dataset:
-        #TODO: insert into database
-    '''
-
-
+    print "Importing order books for %s" % ticker
+    sys.stdout.flush()
+    importOrderBooks(hdf5file, datasetID, ticker)
+    print "and matches"
+    sys.stdout.flush()
+    importMatches(hdf5file, datasetID, ticker)
+    print "Done!"
 
     hdf5file.close()
 
-db.close()
-
-
-#example insert - need to change format of data to match database schema
-#INSERT INTO trades(dataset_id,ticker,ts,bid_or_ask,price,volume) VALUES (0,"FOO","2014-01-01 00:00:00","B",9,200);
-#INSERT INTO trades(dataset_id,ticker,ts,bid_or_ask,price,volume) VALUES (0,"BAR","2014-01-01 00:00:00","B",9,200);
+cursor.close()
+conn.close()

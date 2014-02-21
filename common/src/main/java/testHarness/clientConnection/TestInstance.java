@@ -66,10 +66,12 @@ public class TestInstance implements Runnable{
 			} else {
 				List<Output> outputs = TestRequestDescription.getOutputs(desc, outputServer);
 				marketView = new MarketView(TestRequestDescription.getAlgo(desc), outputs, dataHandler, dataset);
-				startSim(testTimeLimit_mili);
+
 				for (Output o : outputs) {
 					o.attachMarketView(marketView);
 				}
+				
+				startSim(testTimeLimit_mili);
 				
 				result = (marketView.isFinished()) ?
 				     	 TestRequestDescription.filterOutputs(desc, outputs):

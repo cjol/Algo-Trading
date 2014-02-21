@@ -3,9 +3,10 @@ package unitTests;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-
+import java.net.URISyntaxException;
 import org.junit.Test;
 
 import testHarness.ITradingAlgorithm;
@@ -18,10 +19,14 @@ public class ReflectionTest {
 	public void test() {
 		TestRequestDescription req = null;
 		try {
-			req = FileLoader.getRequestFromFile("testJar.jar");
+			req = FileLoader.getRequestFromFile(new File(getClass().getResource("/testJar.jar").toURI()).getPath());
 		} catch (IOException e) {
 			e.printStackTrace();
 			fail("failed to load jar");
+		} catch (URISyntaxException e) {
+			fail("URI syntax problem (misconfigured classpath?)");
+		} catch (NullPointerException e) {
+			fail("could not find the testJar on the classpath");
 		}
 		
 		ITradingAlgorithm algo = null;
@@ -36,6 +41,6 @@ public class ReflectionTest {
 		System.setOut(new PrintStream(outStrm));
 		algo.run(null);
 		String out = outStrm.toString();
-		assertTrue("Sweet sweet success\r\n".equals(out));
+		assertTrue("Sweet sweet success\r\n".equals(out) || "Sweet sweet success\n".equals(out)); //windows.
 	}
 }
