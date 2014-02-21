@@ -9,7 +9,7 @@ public class Result implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private JSONObject data;
+	private String jsonData;
 	private String name;
 
 	public String getName() {
@@ -17,12 +17,11 @@ public class Result implements Serializable{
 	}
 	
 	public Result(String name, JSONObject d) {
-		this.name = name;
-		data = d;
+		this.jsonData = d.toString();
 	}
 	
 	public String asJSON() {
-		return data.toString();
+		return jsonData;
 	}
 //	
 //	public abstract void outputToFile(String location);
