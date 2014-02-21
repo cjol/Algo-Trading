@@ -119,10 +119,10 @@ public class MarketView {
 					
 					if(m.isUserBid) {
 						addStockToPortfolio(m.stockHandle, m.quantity);
-						reservedFunds.subtract(new BigDecimal(m.price * m.quantity));
+						reservedFunds = reservedFunds.subtract(new BigDecimal(m.price * m.quantity));
 					} else if(m.isUserOffer) {
 						removeReserveStock(m.stockHandle, m.quantity);
-						availableFunds.add(new BigDecimal(m.price * m.quantity));
+						availableFunds = availableFunds.add(new BigDecimal(m.price * m.quantity));
 					}
 				}
 				
