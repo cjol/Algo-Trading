@@ -95,7 +95,7 @@ public class TestRequestDescription implements Serializable {
 		
 		Permissions permissions = new Permissions();
 		ProtectionDomain protectionDomain = new ProtectionDomain(null, permissions);
-		netClassLoader netLoader = new netClassLoader(SecureClassLoader.getSystemClassLoader(), protectionDomain);
+		netClassLoader netLoader = new netClassLoader(TestRequestDescription.class.getClassLoader(), protectionDomain);
 		
 		Class<?> tradingClass = null;
 		
@@ -141,7 +141,8 @@ public class TestRequestDescription implements Serializable {
 	public static List<Output> getOutputs(TestRequestDescription request, OutputServer server) throws ClassNotFoundException, LoadClassException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		LinkedList<Output> outputs = new LinkedList<Output>();
 		
-		ClassLoader loader = ClassLoader.getSystemClassLoader();
+		//Makes the server work in Maven? 
+		ClassLoader loader = TestRequestDescription.class.getClassLoader();
 		
 		Set<Class<?>> disjoint = new HashSet<Class<?>>();
 		
