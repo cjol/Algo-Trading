@@ -1,5 +1,6 @@
 package unitTests;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedWriter;
@@ -8,6 +9,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,11 +23,17 @@ import clientLoaders.FileLoader;
 import database.StockHandle;
 import database.TestDataHandler;
 
-public class SecurityTests {
+public class SecurityTest {
 
 	@Test
 	public void test() {
-		System.setProperty("java.security.policy","allperms.policy");
+		try {
+			System.setProperty("java.security.policy",new File(getClass().getResource("/allperms.policy").toURI()).getPath());
+		} catch (URISyntaxException e1) {
+			fail("URI syntax problem (misconfigured classpath?)");
+		} catch (NullPointerException e) {
+			fail("could not find the policy file on the classpath");
+		}
 		
 		SecurityManager sm = new SecurityManager();
 		
@@ -44,10 +52,14 @@ public class SecurityTests {
 		
 		TestRequestDescription req = null;
 		try {
-			req = FileLoader.getRequestFromFile("naughty.jar");
+			req = FileLoader.getRequestFromFile(new File(getClass().getResource("/naughty.jar").toURI()).getPath());
 		} catch (IOException e) {
 			e.printStackTrace();
 			fail("failed to load jar");
+		} catch (URISyntaxException e) {
+			fail("URI syntax problem (misconfigured classpath?)");
+		} catch (NullPointerException e) {
+			fail("could not find the naughty jar on the classpath");
 		}
 		
 		ITradingAlgorithm algo = null;
@@ -66,8 +78,11 @@ public class SecurityTests {
 		//run the malicious code.
 		for(int i = 0; i < 8; i++) {
 			algo.run(mv);
-			assert(outStrm.equals("true"));
 		}
+		//The previous (checking for true every time) didn't work in maven, since
+		//the stream didn't flush every .equals("true") invocation (so it would become
+		//true -> truetrue -> truetruetrue...)
+		assertTrue(outStrm.toString().equals("truetruetruetruetruetruetruetrue"));
 		
 	}
 
