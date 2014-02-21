@@ -34,7 +34,7 @@ public class FileLoader {
 	 * @return A an object to send to the test server
 	 * @throws IOException if the jar cannot be read
 	 */
-	public static TestRequestDescription getRequestFromFile(String filename) throws IOException {
+	public static TestRequestDescription getRequestFromFile(String filename, List<OutputRequest> outs) throws IOException {
 		//TODO options
 		JarFile jar = new JarFile(filename);
 		
@@ -57,8 +57,6 @@ public class FileLoader {
 		}
 		
 		jar.close();
-		List<OutputRequest> outs =  new LinkedList<OutputRequest>();
-		outs.add(new OutputRequest(true, false,"testHarness.output.AvailableFunds"));
 		return new TestRequestDescription(classFiles,outs);
 	}
 	
@@ -100,7 +98,7 @@ public class FileLoader {
 	public static void main(String[] args) {
 		//TODO add options to arguments
 		
-		if(args.length != 3) showUsage();
+		if(args.length < 3) showUsage();
 		String file = args[0];
 		String address = args[1];
 		int port = 0;
@@ -110,13 +108,21 @@ public class FileLoader {
 		
 		//create request
 		TestRequestDescription desc = null;
+		List<OutputRequest> outs =  new LinkedList<OutputRequest>();
+
+		for (int i=3; i<args.length; i++) {
+			// args[3+] are outputs which the user would like to see
+			// TODO: sendResults and saveResults should be specified by the user
+			boolean sendResults = true;
+			boolean saveResults = false;
+			outs.add(new OutputRequest(sendResults, saveResults, args[i]));
+		}
 		try {
-			desc = getRequestFromFile(file);
+			desc = getRequestFromFile(file, outs);
 		} catch (IOException e) {
 			System.err.println("Error reading in jar file.");
 			System.exit(2);
 		}
-		
 		
 		
 		//send and get result
