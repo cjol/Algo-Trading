@@ -14,7 +14,7 @@ import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 
 public class MarketOrderBook extends OrderBook {
-
+	 
 	private final TestDataHandler dataHandler;
 	
 	private List<BuyOrder> bids;
@@ -23,7 +23,7 @@ public class MarketOrderBook extends OrderBook {
 	
 	public MarketOrderBook(Timestamp startTime, StockHandle handle, TestDataHandler dataHandler) {
 		super(handle);
-		this.currentTime = new Timestamp(Long.MIN_VALUE);
+		this.currentTime = new Timestamp(OrderBook.MinTimestamp);
 		this.softTime = startTime;
 		this.dataHandler = dataHandler;
 	}

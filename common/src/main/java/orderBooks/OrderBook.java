@@ -12,9 +12,11 @@ import database.StockHandle;
  * 
  */
 public abstract class OrderBook {
-		
+	// 100 AD in UNIX timestamp. 
+	// Early enough not to have any trades before, but not cause Postgres errors.
+	protected static final long MinTimestamp = -59011437600L;
 	public final StockHandle handle;
-	protected Timestamp softTime = new Timestamp(Long.MIN_VALUE);
+	protected Timestamp softTime = new Timestamp(MinTimestamp);
 	protected Timestamp currentTime;
 	
 	public OrderBook(StockHandle handle) {
