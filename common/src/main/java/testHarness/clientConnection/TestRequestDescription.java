@@ -95,7 +95,7 @@ public class TestRequestDescription implements Serializable {
 		
 		Permissions permissions = new Permissions();
 		ProtectionDomain protectionDomain = new ProtectionDomain(null, permissions);
-		netClassLoader netLoader = new netClassLoader(SecureClassLoader.getSystemClassLoader(), protectionDomain);
+		netClassLoader netLoader = new netClassLoader(SecureClassLoader.class.getClassLoader(), protectionDomain);
 		
 		Class<?> tradingClass = null;
 		
