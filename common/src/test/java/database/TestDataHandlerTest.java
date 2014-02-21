@@ -37,6 +37,7 @@ public class TestDataHandlerTest {
 				(a.isUserOffer == b.isUserOffer);
 		
 	}
+	@SuppressWarnings("deprecation")
 	@Test
 	public void test() {
 		try {

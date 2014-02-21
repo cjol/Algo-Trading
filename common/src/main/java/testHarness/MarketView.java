@@ -19,8 +19,6 @@ import orderBooks.OrderBook;
 import orderBooks.SellOrder;
 import orderBooks.UserOrderBook;
 import testHarness.output.Output;
-import Iterators.MultiIterator;
-import Iterators.ProtectedIterator;
 import database.DatasetHandle;
 import database.StockHandle;
 import database.TestDataHandler;

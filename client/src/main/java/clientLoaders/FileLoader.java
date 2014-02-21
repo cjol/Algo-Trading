@@ -60,6 +60,10 @@ public class FileLoader {
 		return new TestRequestDescription(classFiles,outs);
 	}
 	
+	public static TestRequestDescription getRequestFromFile(String filename) throws IOException {
+		return FileLoader.getRequestFromFile(filename, null);
+	}
+	
 	/**
 	 * 
 	 * @param testDescription The request object to send to the test server.
