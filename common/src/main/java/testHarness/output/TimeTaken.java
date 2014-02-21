@@ -28,7 +28,7 @@ public class TimeTaken extends Output{
 	public Result getResult() {
 		JSONObject resultMap = new JSONObject();
 		for (Entry<Timestamp, Long> timetakenDataPoint : timeTakenData.entrySet()) {
-			resultMap.put(timetakenDataPoint.getKey().toString(),timetakenDataPoint.getValue().longValue());
+			resultMap.put(timetakenDataPoint.getKey().toString(),timetakenDataPoint.getValue());
 		}
 		Result result = new Result(resultMap);
 		if(outputServer != null) outputServer.store(result);
