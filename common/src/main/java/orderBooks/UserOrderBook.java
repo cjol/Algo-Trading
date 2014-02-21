@@ -364,4 +364,31 @@ public class UserOrderBook extends OrderBook {
 			throw new RuntimeException("Operation not supported");
 		}
 	}
+
+	@Override
+	public boolean CancelBuyOrder(int volume, int price) {
+		return cancelOrder(volume, price, outstandingBids);
+	}
+
+	@Override
+	public boolean CancelSellOrder(int volume, int price) {
+		return cancelOrder(volume, price, outstandingOffers);
+	}
+	
+	private static <T extends Order> boolean 
+	cancelOrder(int volume, int price, TreeSet<T> orders) {
+		Iterator<T> iter = orders.iterator();
+		while(iter.hasNext()) {
+			T b = iter.next();
+			if(b.getPrice() == price) {
+				int remain = b.getVolume() - volume;
+				if(remain < 0) return false;
+				
+				if(remain == 0) iter.remove();
+				else b.decrementVolume(volume);
+				return true;
+			}
+		}
+		return false;
+	}
 }
