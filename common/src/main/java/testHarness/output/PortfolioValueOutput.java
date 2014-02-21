@@ -6,10 +6,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import orderBooks.OrderBook;
+
+import org.json.JSONObject;
+
 import testHarness.MarketView;
 import testHarness.TickData;
 import testHarness.output.result.Result;
-import testHarness.output.result.SingletonResult;
 import valueObjects.TickOutOfRangeException;
 import database.OutputServer;
 import database.StockHandle;
@@ -25,10 +27,9 @@ public class PortfolioValueOutput extends Output{
 
 	@Override
 	public Result getResult() {
-		Map<String, Result> resultMap = new HashMap<String, Result>();
+		JSONObject resultMap = new JSONObject();
 		for (Entry<Timestamp, Integer> portfolioValue : portfolioValueData.entrySet()) {
-			resultMap.put(portfolioValue.getKey().toString(), 
-					new SingletonResult(portfolioValue.getValue()));
+			resultMap.put(portfolioValue.getKey().toString(), portfolioValue.getValue());
 		}
 		Result result = new Result(resultMap);
 		if(outputServer != null) outputServer.store(result);

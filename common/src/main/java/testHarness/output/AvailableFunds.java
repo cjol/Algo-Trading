@@ -6,9 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.json.JSONObject;
+
 import testHarness.TickData;
 import testHarness.output.result.Result;
-import testHarness.output.result.SingletonResult;
 import database.OutputServer;
 
 public class AvailableFunds extends Output{
@@ -22,10 +23,9 @@ public class AvailableFunds extends Output{
 
 	@Override
 	public Result getResult() {
-		Map<String, Result> resultMap = new HashMap<String,Result>();
+		JSONObject resultMap = new JSONObject();
 		for (Entry<Timestamp, BigDecimal> fundDataPoint : availableFundsData.entrySet()) {
-			resultMap.put(fundDataPoint.getKey().toString(), 
-					new SingletonResult(fundDataPoint.getValue()));
+			resultMap.put(fundDataPoint.getKey().toString(), fundDataPoint.getValue().doubleValue());
 		}
 		Result result = new Result(resultMap);
 		if(outputServer != null) outputServer.store(result);

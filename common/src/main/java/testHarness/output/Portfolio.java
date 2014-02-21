@@ -2,13 +2,13 @@ package testHarness.output;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.json.JSONObject;
+
 import testHarness.TickData;
 import testHarness.output.result.Result;
-import testHarness.output.result.SingletonResult;
 import database.OutputServer;
 import database.StockHandle;
 
@@ -23,20 +23,18 @@ public class Portfolio extends Output {
 
 	@Override
 	public Result getResult() {
-		Map<String, Result> portfolioMap = new HashMap<String,Result>();
+		JSONObject portfolioMap = new JSONObject();
 		
 		for (Entry<Timestamp, Map<StockHandle,Integer>> portfolio : portfolioList.entrySet()) {
 
-			Map<String, Result> portfolioItems = new HashMap<String,Result>();
+			JSONObject portfolioItems = new JSONObject();
 			for (Entry<StockHandle,Integer> portfolioItem : portfolio.getValue().entrySet()) {
-				portfolioItems.put(portfolioItem.getKey().getTicker(), 
-						new SingletonResult(portfolioItem.getValue()));
+				portfolioItems.put(portfolioItem.getKey().getTicker(), portfolioItem.getValue());
 			}
-			Result portfolioResult = new Result(portfolioItems);
-			portfolioMap.put(portfolio.getKey().toString(), portfolioResult);
+			portfolioMap.put(portfolio.getKey().toString(), portfolioItems);
 		}
 		Result result = new Result(portfolioMap);
-		if(outputServer != null) outputServer.store(result);
+		if (outputServer != null) outputServer.store(result);
 		return result;
 	}
 
