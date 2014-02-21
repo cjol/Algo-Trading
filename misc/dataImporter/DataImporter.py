@@ -33,7 +33,6 @@ def convertTimestamp(rawTimestamp):
     ticksTimestamp = rawTimestamp // 1000
     # convert to floating-point seconds
     ticksTimestamp = ticksTimestamp / 1000000.0
-    print 
     return psycopg2.TimestampFromTicks(ticksTimestamp)
 
 def importOrderBooks(hdf5file, datasetID, ticker): 
