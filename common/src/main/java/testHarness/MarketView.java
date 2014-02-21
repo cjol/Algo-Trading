@@ -40,7 +40,7 @@ public class MarketView {
 	
 	private final Map<StockHandle, Integer> portfolio = new HashMap<StockHandle, Integer>();
 	private final Map<StockHandle, Integer> reservedPortfolio = new HashMap<StockHandle, Integer>();
-	private final Map<StockHandle,OrderBook> openedBooks = new HashMap<>();
+	private final Map<StockHandle,UserOrderBook> openedBooks = new HashMap<>();
 	private final HashSet<UserOrderBook> booksWithPosition = new HashSet<>();
 	
 	private Timestamp currentTime;
@@ -151,12 +151,12 @@ public class MarketView {
 	 * @return An OrderBook representing the market data for the given stock, at
 	 *         the current simulation time.
 	 */
-	public OrderBook getOrderBook(StockHandle stock) {
+	public UserOrderBook getOrderBook(StockHandle stock) {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
 		if (!openedBooks.containsKey(stock)) {
 			OrderBook market = new MarketOrderBook(currentTime, stock, dataHandler);
-			OrderBook user = new UserOrderBook(stock, market);
+			UserOrderBook user = new UserOrderBook(stock, market);
 			openedBooks.put(stock, user);
 		}
 		return openedBooks.get(stock);
@@ -207,7 +207,9 @@ public class MarketView {
 			
 			if(!reserveFunds(totalPrice)) return false;
 			
-			getOrderBook(stock).buy(volume, price, currentTime);
+			UserOrderBook book = (UserOrderBook) getOrderBook(stock);
+			book.buy(volume, price, currentTime);
+			booksWithPosition.add(book);
 			return true;
 		} catch (SimulationAbortedException e) {
 			tryCleanAbort(Thread.currentThread());
@@ -234,7 +236,9 @@ public class MarketView {
 		{
 			if(!reserveStocks(stock, volume)) return false;
 			
-			getOrderBook(stock).sell(volume, price, currentTime);
+			UserOrderBook book = (UserOrderBook) getOrderBook(stock);
+			book.sell(volume, price, currentTime);
+			booksWithPosition.add(book);
 			return true;
 		} catch (SimulationAbortedException e) {
 			tryCleanAbort(Thread.currentThread());
