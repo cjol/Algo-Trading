@@ -1,8 +1,6 @@
 package testHarness.output.result;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.json.JSONObject;
 
