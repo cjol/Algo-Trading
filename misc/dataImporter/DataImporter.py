@@ -26,7 +26,14 @@ def insertSecurity(datasetID, securityName):
     cursor.execute("""INSERT INTO securities(dataset_id,ticker) VALUES (%s,%s)""",(datasetID,securityName))
 
 def convertTimestamp(rawTimestamp):
-    ticksTimestamp = rawTimestamp / 1000000000.0 # rawTimestamp is in nanoseconds
+    # rawTimestamp is in nanoseconds
+    # discard nanosecond component.
+    # this is necessary as psycopg2 does not play nicely with it
+    # (triggers subtle error when nanoseconds would round up)
+    ticksTimestamp = rawTimestamp // 1000
+    # convert to floating-point seconds
+    ticksTimestamp = ticksTimestamp / 1000000.0
+    print 
     return psycopg2.TimestampFromTicks(ticksTimestamp)
 
 def importOrderBooks(hdf5file, datasetID, ticker): 
