@@ -31,7 +31,7 @@ public class PortfolioValueOutput extends Output{
 		for (Entry<Timestamp, Integer> portfolioValue : portfolioValueData.entrySet()) {
 			resultMap.put(portfolioValue.getKey().toString(), portfolioValue.getValue());
 		}
-		Result result = new Result(resultMap);
+		Result result = new Result("Portfolio Value", resultMap);
 		if(outputServer != null) outputServer.store(result);
 		return result;
 	}

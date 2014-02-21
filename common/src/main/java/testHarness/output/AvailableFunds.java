@@ -27,7 +27,7 @@ public class AvailableFunds extends Output{
 		for (Entry<Timestamp, BigDecimal> fundDataPoint : availableFundsData.entrySet()) {
 			resultMap.put(fundDataPoint.getKey().toString(), fundDataPoint.getValue().doubleValue());
 		}
-		Result result = new Result(resultMap);
+		Result result = new Result("Available Funds", resultMap);
 		if(outputServer != null) outputServer.store(result);
 		return result;
 	}

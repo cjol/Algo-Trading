@@ -30,7 +30,7 @@ public class TimeTaken extends Output{
 		for (Entry<Timestamp, Long> timetakenDataPoint : timeTakenData.entrySet()) {
 			resultMap.put(timetakenDataPoint.getKey().toString(),timetakenDataPoint.getValue());
 		}
-		Result result = new Result(resultMap);
+		Result result = new Result("Time Taken to Process", resultMap);
 		if(outputServer != null) outputServer.store(result);
 		return result;
 	}

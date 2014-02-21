@@ -12,8 +12,14 @@ public class Result implements Serializable{
 	 */
 	private static final long serialVersionUID = 1L;
 	private JSONObject data;
+	private String name;
+
+	public String getName() {
+		return name;
+	}
 	
-	public Result(JSONObject d) {
+	public Result(String name, JSONObject d) {
+		this.name = name;
 		data = d;
 	}
 	

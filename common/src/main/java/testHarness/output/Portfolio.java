@@ -33,7 +33,7 @@ public class Portfolio extends Output {
 			}
 			portfolioMap.put(portfolio.getKey().toString(), portfolioItems);
 		}
-		Result result = new Result(portfolioMap);
+		Result result = new Result("Portfolio Contents", portfolioMap);
 		if (outputServer != null) outputServer.store(result);
 		return result;
 	}
