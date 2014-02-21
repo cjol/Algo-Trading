@@ -26,7 +26,7 @@ public class FileLoader {
 
 	private FileLoader() {}
 	
-	private static String usage = "Usage: FileLoader filePath remoteAddress remotePort";
+	private static String usage = "Usage: FileLoader filePath remoteAddress remotePort output1 output2 output3 ...";
 	
 	/**
 	 * 
