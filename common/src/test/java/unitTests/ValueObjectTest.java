@@ -16,7 +16,7 @@ import valueObjects.Subtraction;
 import valueObjects.TickOutOfRangeException;
 
 
-public class ValueObjectTests {
+public class ValueObjectTest {
 	
 	@Test
 	public void testOffset() throws TickOutOfRangeException {
