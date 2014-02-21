@@ -104,11 +104,9 @@ def importMatches(hdf5file, datasetID, ticker):
             args_str = ','.join(cursor.mogrify('(%s,%s,%s,%s,%s)', x)
                                                for x in rowsToInsert)
             rowsToInsert = []
-
             cursor.execute('INSERT INTO matches(dataset_id,ticker,ts,price,volume) '
                            'VALUES ' + args_str)
 
-        if i != 0 and i % 100 == 0:
             print "Imported %d/%d rows" % (i, nrows)
 
 def extractTicker(fname):
