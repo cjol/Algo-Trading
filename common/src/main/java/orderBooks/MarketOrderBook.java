@@ -101,4 +101,14 @@ public class MarketOrderBook extends OrderBook {
 		return new LowestOffer(this);
 	}
 
+	@Override
+	public boolean CancelBuyOrder(int volume, int price) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean CancelSellOrder(int volume, int price) {
+		throw new UnsupportedOperationException();
+	}
+
 }

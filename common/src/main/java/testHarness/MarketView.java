@@ -206,11 +206,8 @@ public class MarketView {
 		try
 		{
 			int totalPrice = price * volume;
-			BigDecimal totalBig = (new BigDecimal(totalPrice));
-			if (getAvailableFunds().compareTo(totalBig) < 0)
-				return false; // we don't have enough funds
 			
-			reserveFunds(totalBig);
+			if(!reserveFunds(totalPrice)) return false;
 			
 			getOrderBook(stock).buy(volume, price, currentTime);
 			return true;
@@ -246,10 +243,67 @@ public class MarketView {
 			throw e;
 		}
 	}
+	
+	
+	public boolean cancelBuy(StockHandle stock, int price, int volume) {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
+		try
+		{
+			OrderBook ob = getOrderBook(stock);
+			if(ob.CancelBuyOrder(volume, price)) {
+				refundFunds(new BigDecimal(volume * price));
+				return true;
+			} else return false;
+			
+		} catch (SimulationAbortedException e) {
+			tryCleanAbort(Thread.currentThread());
+			throw e;
+		}
+	}
+	
+	public boolean cancelSell(StockHandle stock, int price, int volume) {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
+		try
+		{
+			OrderBook ob = getOrderBook(stock);
+			if(ob.CancelSellOrder(volume, price)) {
+				refundStocks(stock, volume);
+				return true;
+			} else return false;
+			
+		} catch (SimulationAbortedException e) {
+			tryCleanAbort(Thread.currentThread());
+			throw e;
+		}
+	}
 
-	private void reserveFunds(BigDecimal amount) {
-		availableFunds = availableFunds.subtract(amount);
-		reservedFunds = reservedFunds.add(amount);
+	private boolean reserveFunds(int totalPrice) {
+		BigDecimal totalBig = (new BigDecimal(totalPrice));
+		if (getAvailableFunds().compareTo(totalBig) < 0)
+			return false; // we don't have enough funds
+		
+		availableFunds = availableFunds.subtract(totalBig);
+		reservedFunds = reservedFunds.add(totalBig);
+		return true;
+	}
+	
+	private void refundFunds(BigDecimal amount) {
+		availableFunds = availableFunds.add(amount);
+		reservedFunds = reservedFunds.subtract(amount);
+	}
+	
+	private void refundStocks(StockHandle stock, int volume) {
+		int oldAmount = reservedPortfolio.get(stock);
+		int newAmount = oldAmount - volume;
+		
+		if(newAmount > 0) reservedPortfolio.put(stock, newAmount);
+		else reservedPortfolio.remove(stock);
+		
+		oldAmount = portfolio.get(stock);
+		newAmount = oldAmount + volume;
+		portfolio.put(stock, newAmount);
 	}
 
 	private boolean reserveStocks(StockHandle stock, int volume) {

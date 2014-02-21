@@ -40,6 +40,20 @@ public abstract class OrderBook {
 	public abstract SellOrder sell(int volume, int price, Timestamp time);
 	
 	/**
+	 * Cancels an existing bid in the book.
+	 * @param volume the volume to cancel.
+	 * @param price the price at which to cancel.
+	 */
+	public abstract boolean CancelBuyOrder(int volume, int price);
+	
+	/**
+	 * Cancels an existing sell in the book.
+	 * @param volume the volume to cancel.
+	 * @param price the price at which to cancel.
+	 */
+	public abstract boolean CancelSellOrder(int volume, int price);
+	
+	/**
 	 * @return An iterator of all the bids in the order book.
 	 */
 	public abstract Iterator<BuyOrder> getAllBids();
