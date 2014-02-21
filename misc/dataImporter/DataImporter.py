@@ -8,7 +8,7 @@ from os.path import isfile, join
 import os.path
 
 # max # of rows to insert at a time
-CHUNK_SIZE = 128
+CHUNK_SIZE = 1024
 
 def connect():
     conn = psycopg2.connect(dbname=databaseName,host=databaseHost,port=databasePort,user="alpha")
@@ -41,7 +41,7 @@ def convertTimestamp(rawTimestamp):
 def importOrderBooks(hdf5file, datasetID, ticker): 
     dataset = hdf5file['RetailStates']
     nrows = dataset.len()
-
+    
     rowsToInsert = []
     for i in range(nrows):
         row = dataset[i]
@@ -67,13 +67,13 @@ def importOrderBooks(hdf5file, datasetID, ticker):
                      bidPrices[4],bidVolumes[4],
                      askPrices[0],askVolumes[0],askPrices[1],askVolumes[1],
                      askPrices[2],askVolumes[2],askPrices[3],askVolumes[3],
-                     askPrices[4],askVolumes[4])))
+                     askPrices[4],askVolumes[4]))
 
-        if nRows % CHUNK_SIZE == 0:
-            args_str = ','.join(cur.mogrify(
+        if i % CHUNK_SIZE == 0 or i == nrows-1:
+            args_str = ','.join(cursor.mogrify(
                 '(%s,%s,%s,'
                 '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'
-                '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', x) for x in rowsToInsert
+                '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', x) for x in rowsToInsert)
             rowsToInsert = []
 
             cursor.execute('INSERT INTO order_books(dataset_id, ticker, ts, bid1_price, bid1_volume,'
@@ -90,6 +90,7 @@ def importMatches(hdf5file, datasetID, ticker):
     dataset = hdf5file['LastDones']
     nrows = dataset.len()
 
+    rowsToInsert = []
     for i in range(nrows):
         row = dataset[i]
         timestamp = convertTimestamp(row[0])
@@ -97,10 +98,15 @@ def importMatches(hdf5file, datasetID, ticker):
         volume = int(row[2])
 
         # TODO: Throwing away aggressor side
+        rowsToInsert.append((datasetID, ticker, timestamp, price, volume))
 
-        cursor.execute('INSERT INTO matches(dataset_id,ticker,ts,price,volume) '
-                       'VALUES(%s,%s,%s,%s,%s)', 
-                       (datasetID, ticker, timestamp, price, volume))
+        if i % CHUNK_SIZE == 0 or i == nrows-1:
+            args_str = ','.join(cursor.mogrify('(%s,%s,%s,%s,%s)', x)
+                                               for x in rowsToInsert)
+            rowsToInsert = []
+
+            cursor.execute('INSERT INTO matches(dataset_id,ticker,ts,price,volume) '
+                           'VALUES ' + args_str)
 
         if i != 0 and i % 100 == 0:
             print "Imported %d/%d rows" % (i, nrows)
