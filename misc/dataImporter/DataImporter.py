@@ -41,7 +41,7 @@ def convertTimestamp(rawTimestamp):
 def importOrderBooks(hdf5file, datasetID, ticker): 
     dataset = hdf5file['RetailStates']
     nrows = dataset.len()
-
+    
     rowsToInsert = []
     for i in range(nrows):
         row = dataset[i]
@@ -67,13 +67,13 @@ def importOrderBooks(hdf5file, datasetID, ticker):
                      bidPrices[4],bidVolumes[4],
                      askPrices[0],askVolumes[0],askPrices[1],askVolumes[1],
                      askPrices[2],askVolumes[2],askPrices[3],askVolumes[3],
-                     askPrices[4],askVolumes[4])))
+                     askPrices[4],askVolumes[4]))
 
         if nRows % CHUNK_SIZE == 0:
             args_str = ','.join(cur.mogrify(
                 '(%s,%s,%s,'
                 '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'
-                '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', x) for x in rowsToInsert
+                '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', x) for x in rowsToInsert)
             rowsToInsert = []
 
             cursor.execute('INSERT INTO order_books(dataset_id, ticker, ts, bid1_price, bid1_volume,'
