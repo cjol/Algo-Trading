@@ -7,6 +7,9 @@ from os import listdir
 from os.path import isfile, join
 import os.path
 
+# max # of rows to insert at a time
+CHUNK_SIZE = 128
+
 def connect():
     conn = psycopg2.connect(dbname=databaseName,host=databaseHost,port=databasePort,user="alpha")
     conn.autocommit = True
@@ -39,6 +42,7 @@ def importOrderBooks(hdf5file, datasetID, ticker):
     dataset = hdf5file['RetailStates']
     nrows = dataset.len()
 
+    rowsToInsert = []
     for i in range(nrows):
         row = dataset[i]
         timestamp = convertTimestamp(row[0])
@@ -56,24 +60,30 @@ def importOrderBooks(hdf5file, datasetID, ticker):
             # volumes are negative, which breaks our schema
             askVolumes.append(-1*int(row[2*j+12]))
 
-        cursor.execute('INSERT INTO order_books(dataset_id, ticker, ts, bid1_price, bid1_volume,'
-            'bid2_price, bid2_volume, bid3_price, bid3_volume,'
-            'bid4_price, bid4_volume, bid5_price, bid5_volume,'
-            'ask1_price, ask1_volume, ask2_price, ask2_volume,'
-            'ask3_price, ask3_volume, ask4_price, ask4_volume,'
-            'ask5_price, ask5_volume)'
-            'VALUES (%s,%s,%s,'
-            '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'
-            '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-                     (datasetID, ticker, timestamp,
+        rowsToInsert.append(
+                    (datasetID, ticker, timestamp,
                      bidPrices[0],bidVolumes[0],bidPrices[1],bidVolumes[1],
                      bidPrices[2],bidVolumes[2],bidPrices[3],bidVolumes[3],
                      bidPrices[4],bidVolumes[4],
                      askPrices[0],askVolumes[0],askPrices[1],askVolumes[1],
                      askPrices[2],askVolumes[2],askPrices[3],askVolumes[3],
-                     askPrices[4],askVolumes[4]))
+                     askPrices[4],askVolumes[4])))
 
-        if i != 0 and i % 100 == 0:
+        if nRows % CHUNK_SIZE == 0:
+            args_str = ','.join(cur.mogrify(
+                '(%s,%s,%s,'
+                '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,'
+                '%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)', x) for x in rowsToInsert
+            rowsToInsert = []
+
+            cursor.execute('INSERT INTO order_books(dataset_id, ticker, ts, bid1_price, bid1_volume,'
+                'bid2_price, bid2_volume, bid3_price, bid3_volume,'
+                'bid4_price, bid4_volume, bid5_price, bid5_volume,'
+                'ask1_price, ask1_volume, ask2_price, ask2_volume,'
+                'ask3_price, ask3_volume, ask4_price, ask4_volume,'
+                'ask5_price, ask5_volume)'
+                'VALUES ' + args_str)
+
             print "Imported %d/%d rows" % (i, nrows)
 
 def importMatches(hdf5file, datasetID, ticker): 
