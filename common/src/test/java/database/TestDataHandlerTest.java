@@ -24,7 +24,7 @@ public class TestDataHandlerTest {
 	
 	@Before
 	public void setUp() throws Exception {
-		dataHandler = new TestDataHandler("localhost/testenv");
+		dataHandler = new TestDataHandler();
 	}
 
 	public boolean matchEqual(Match a, Match b) {
