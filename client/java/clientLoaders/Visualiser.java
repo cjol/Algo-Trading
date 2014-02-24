@@ -9,8 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -26,6 +26,8 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleInsets;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -84,7 +86,7 @@ public class Visualiser {
 			}		
 	}
 	
-	class ChartComboBox extends JComboBox implements ActionListener{
+	class ChartComboBox extends JComboBox<Result> implements ActionListener{
 		
 		List<Result> results;
 		JFreeChart chartReference;
@@ -120,30 +122,14 @@ public class Visualiser {
 	private static TreeMap<String, Double> jsonToMap(String jsondata) {
 		TreeMap<String, Double> map = new TreeMap<String, Double>();
 
-		JSONParser parser = new JSONParser();
-		ContainerFactory containerFactory = new ContainerFactory() {
-			public List creatArrayContainer() {
-				return new LinkedList();
-			}
-
-			public Map createObjectContainer() {
-				return new LinkedHashMap();
-			}
-
-		};
-
 		try {
-			Map json = (Map) parser.parse(jsondata, containerFactory);
-			Iterator iter = json.entrySet().iterator();
-			System.out.println("==iterate result==");
-			while (iter.hasNext()) {
-				Map.Entry entry = (Map.Entry) iter.next();
-				map.put(entry.getKey().toString(), (Double) entry.getValue());
-
+			JSONObject obj = new JSONObject(jsondata);
+			for (String key : JSONObject.getNames(obj)) {
+				map.put(key, (double)obj.getLong(key));
 			}
 
 			System.out.println(map);
-		} catch (ParseException e) {
+		} catch (JSONException e) {
 			System.err.println("JSON parse exception");
 			e.printStackTrace();
 		}

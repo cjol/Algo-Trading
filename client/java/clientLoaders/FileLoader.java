@@ -151,7 +151,7 @@ public class FileLoader {
 			System.err.println("Response from test server was of incorrect type");
 			System.exit(6);
 		}
-		
+		Visualiser visualiser = new Visualiser(results);
 		//TODO display result on command line
 		if (results != null && results.size() > 0) {
 			for (Result result : results) {

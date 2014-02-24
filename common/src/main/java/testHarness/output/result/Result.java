@@ -17,6 +17,7 @@ public class Result implements Serializable{
 	}
 	
 	public Result(String name, JSONObject d) {
+		this.name = name;
 		this.jsonData = d.toString();
 	}
 	

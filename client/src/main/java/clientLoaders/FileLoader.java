@@ -58,7 +58,7 @@ public class FileLoader {
 		}
 		
 		jar.close();
-		return new TestRequestDescription(classFiles,outs);
+		return new TestRequestDescription(classFiles,outs, "unittests");
 	}
 	
 	public static TestRequestDescription getRequestFromFile(String filename) throws IOException {

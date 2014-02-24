@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -26,6 +27,8 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleInsets;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.json.simple.parser.ContainerFactory;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -47,15 +50,15 @@ public class Visualiser {
 		//
 		// TODO!!!!
 		//
+		JFreeChart chart1 ;
+		JFreeChart chart2;
 		if(results.size()==1) {
-			JFreeChart chart1 = jsonToChart(results.get(0).getName(),results.get(0).asJSON());
+			chart1 = jsonToChart(results.get(0).getName(),results.get(0).asJSON());
+			chart2 = jsonToChart(results.get(0).getName(),results.get(0).asJSON());
+		} else{ //if more than 1 result in the results list
+			chart1 = jsonToChart(results.get(0).getName(),results.get(0).asJSON());
+			chart2 = jsonToChart(results.get(1).getName(),results.get(1).asJSON());
 		}
-		
-		else{ //if more than 1 result in the results list
-			
-			JFreeChart chart1 = jsonToChart(results.get(0).getName(),results.get(0).asJSON());
-			JFreeChart chart2 = jsonToChart(results.get(1).getName(),results.get(1).asJSON());
-			
 			JFrame mainFrame = new JFrame();			
 			
 			mainFrame.setSize(1000, 800);
@@ -69,19 +72,24 @@ public class Visualiser {
 			
 			
 			
-			
-			ChartComboBox chartComboBox1 = new ChartComboBox(chartPanel1,chart1,results);
-			chartComboBox1.setSelectedIndex(0);
-			chartComboBox1.addActionListener(chartComboBox1);
-			ChartComboBox chartComboBox2 = new ChartComboBox(chartPanel2,chart2,results);
-			chartComboBox2.setSelectedIndex(1);
-			chartComboBox2.addActionListener(chartComboBox2);
-			mainFrame.add(BorderLayout.NORTH,chartComboBox1);
-			mainFrame.add(BorderLayout.SOUTH,chartComboBox2);
-			
+//			
+//			ChartComboBox chartComboBox1 = new ChartComboBox(chartPanel1,chart1,results);
+//			chartComboBox1.setSelectedIndex(0);
+//			chartComboBox1.addActionListener(chartComboBox1);
+//			ChartComboBox chartComboBox2 = new ChartComboBox(chartPanel2,chart2,results);
+//			chartComboBox2.setSelectedIndex(1);
+//			chartComboBox2.addActionListener(chartComboBox2);
+//			mainFrame.add(BorderLayout.NORTH,chartComboBox1);
+//			mainFrame.add(BorderLayout.SOUTH,chartComboBox2);
+//			
 			mainFrame.setVisible(true);
-			
-			}		
+			try {
+				System.in.read();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+					
 	}
 	
 	class ChartComboBox extends JComboBox implements ActionListener{
@@ -120,30 +128,14 @@ public class Visualiser {
 	private static TreeMap<String, Double> jsonToMap(String jsondata) {
 		TreeMap<String, Double> map = new TreeMap<String, Double>();
 
-		JSONParser parser = new JSONParser();
-		ContainerFactory containerFactory = new ContainerFactory() {
-			public List creatArrayContainer() {
-				return new LinkedList();
-			}
-
-			public Map createObjectContainer() {
-				return new LinkedHashMap();
-			}
-
-		};
-
 		try {
-			Map json = (Map) parser.parse(jsondata, containerFactory);
-			Iterator iter = json.entrySet().iterator();
-			System.out.println("==iterate result==");
-			while (iter.hasNext()) {
-				Map.Entry entry = (Map.Entry) iter.next();
-				map.put(entry.getKey().toString(), (Double) entry.getValue());
-
+			JSONObject obj = new JSONObject(jsondata);
+			for (String key : JSONObject.getNames(obj)) {
+				map.put(key, (double)obj.getLong(key));
 			}
 
 			System.out.println(map);
-		} catch (ParseException e) {
+		} catch (JSONException e) {
 			System.err.println("JSON parse exception");
 			e.printStackTrace();
 		}
