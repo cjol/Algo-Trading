@@ -76,7 +76,7 @@ public class SecurityTest {
 		
 		//run the malicious code.
 		for(int i = 0; i < 8; i++) {
-			algo.run(mv);
+			algo.run(mv, null);
 		}
 		//The previous (checking for true every time) didn't work in maven, since
 		//the stream didn't flush every .equals("true") invocation (so it would become
@@ -90,7 +90,7 @@ public class SecurityTest {
 
 		public FakeMarket(ITradingAlgorithm algo, List<Output> outputs,
 				TestDataHandler dataHandler) {
-			super(algo, outputs, dataHandler,null);
+			super(algo, outputs, dataHandler,null, null);
 			// TODO Auto-generated constructor stub
 		}
 		

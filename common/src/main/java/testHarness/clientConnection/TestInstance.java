@@ -17,11 +17,7 @@ import database.TestDataHandler;
  * @author Lawrence Esswood
  *
  */
-public class TestInstance implements Runnable{
-
-	private static final long testTimeLimit_mili = 600000;
-	private static final String defaultTestString = "small";
-	
+public class TestInstance implements Runnable{	
 	private ConnectionHandler connection;
 	private TestDataHandler dataHandler;
 	private OutputServer outputServer;
@@ -51,9 +47,10 @@ public class TestInstance implements Runnable{
 			
 			TestRequestDescription desc = connection.getTest();
 			TestResultDescription result;
+
+			String datasetName = desc.datasetName;
+			Options options = (desc.options == null) ? Options.defaultOptions : desc.options;
 			
-			// TODO: Retrieve dataset name from users submission
-			String datasetName = (desc.datasetName == null) ? defaultTestString : desc.datasetName;
 			DatasetHandle dataset = null;
 			try {
 				dataset = dataHandler.getDataset(datasetName);	
@@ -65,13 +62,13 @@ public class TestInstance implements Runnable{
 				result = new TestResultDescription("Dataset " + datasetName + " not found.");
 			} else {
 				List<Output> outputs = TestRequestDescription.getOutputs(desc, outputServer);
-				marketView = new MarketView(TestRequestDescription.getAlgo(desc), outputs, dataHandler, dataset);
+				marketView = new MarketView(TestRequestDescription.getAlgo(desc), outputs, dataHandler, dataset, options);
 
 				for (Output o : outputs) {
 					o.attachMarketView(marketView);
 				}
 				
-				startSim(testTimeLimit_mili);
+				startSim(options.timeout);
 				
 				result = (marketView.isFinished()) ?
 				     	 TestRequestDescription.filterOutputs(desc, outputs):
