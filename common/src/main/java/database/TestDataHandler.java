@@ -25,7 +25,9 @@ import orderBooks.SellOrder;
  *
  */
 public class TestDataHandler {
-	private static final String url = "jdbc:postgresql://127.0.0.1:5432/testenv";
+	private static final String URI_PREFIX = "jdbc:postgresql:";
+	private static final String USERNAME = "alpha";
+	private static final String PASSWORD = "";
 	Connection conn;
 	
 	/**
@@ -34,13 +36,13 @@ public class TestDataHandler {
 	 * 
 	 * @throws SQLException
 	 */
-	public TestDataHandler() throws SQLException {
+	public TestDataHandler(String dbURI) throws SQLException {
 		// TODO: Make parameters configurable
 		Properties props = new Properties();
-		props.setProperty("user", "alpha");
-		props.setProperty("password", "");
+		props.setProperty("user", USERNAME);
+		props.setProperty("password", PASSWORD);
 		
-		conn = DriverManager.getConnection(url, props);
+		conn = DriverManager.getConnection(URI_PREFIX + dbURI, props);
 	}
 	
 	/** 

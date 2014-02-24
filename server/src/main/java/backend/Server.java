@@ -18,7 +18,7 @@ public class Server {
 		 * 2. Read configuration file?
 		 * 3. Instantiate other elements
 		 */
-		TestDataHandler tdh = new TestDataHandler();
+		TestDataHandler tdh = new TestDataHandler("localhost//testenv");
 		ConnectionServer cs = new ConnectionServer(1234, tdh, null);
 		cs.startServer();
 	}
