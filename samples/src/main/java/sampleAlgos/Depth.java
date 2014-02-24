@@ -15,6 +15,7 @@ import orderBooks.OrderBook;
 import orderBooks.SellOrder;
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
+import testHarness.clientConnection.Options;
 import valueObjects.HighestBid;
 import valueObjects.LowestOffer;
 import valueObjects.TickOutOfRangeException;
@@ -26,7 +27,7 @@ public class Depth implements ITradingAlgorithm {
 	private static final int VOLUME_PERCENTAGE = 10;
 	
 	@Override
-	public void run(MarketView market) {
+	public void run(MarketView market, Options options) {
 		new DepthImpl(market).run();
 	}
 	

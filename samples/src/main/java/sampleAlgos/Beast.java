@@ -9,11 +9,12 @@ import database.StockHandle;
 
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
+import testHarness.clientConnection.Options;
 
 public class Beast implements ITradingAlgorithm {
 
 	@Override
-	public void run(MarketView marketView) {
+	public void run(MarketView marketView, Options options) {
 		Iterator<StockHandle> stocks = marketView.getAllStocks().iterator();
 		StockHandle bestStockEver = stocks.next();
 		OrderBook book = marketView.getOrderBook(bestStockEver);

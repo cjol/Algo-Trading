@@ -3,18 +3,17 @@ package sampleAlgos;
 import java.util.Iterator;
 
 import orderBooks.OrderBook;
-
-import database.StockHandle;
-
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
+import testHarness.clientConnection.Options;
+import database.StockHandle;
 
 public class BuyAndSell implements ITradingAlgorithm {
 
 	
 	
 	@Override
-	public void run(MarketView marketView) {
+	public void run(MarketView marketView, Options options) {
 		/*
 		 * Buys and sells alternatively 1 volume for each stock on each tick
 		 */
