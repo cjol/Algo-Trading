@@ -25,17 +25,16 @@ import orderBooks.SellOrder;
  *
  */
 public class TestDataHandler {
-	private static final String defaultUrl = "jdbc:postgresql://127.0.0.1:5432/testenv";
+	private static final String DEFAULT_URL = "//127.0.0.1:5432/testenv";
+	private static final String URI_PREFIX = "jdbc:postgresql:";
+	private static final String USERNAME = "alpha";
+	private static final String PASSWORD = "";
 	Connection conn;
 	
 
 	/**
 	 * Connects to the database using default parameters. If successful, creates a new instance of
 	 * TestDataServer. Throws SQLException on error; e.g. server unavailable.
-	 * @param url 
-	 * @param password 
-	 * @param user 
-	 * 
 	 * @throws SQLException
 	 */
 	public TestDataHandler() throws SQLException {
@@ -52,14 +51,13 @@ public class TestDataHandler {
 	 */
 	public TestDataHandler(String user, String password, String url) throws SQLException {
 		Properties props = new Properties();
-		user = (user == null)?"alpha":user;
-		password = (password == null)?"":password;
-		url = (url == null)?TestDataHandler.defaultUrl:url;
+		user = (user == null)?USERNAME:user;
+		password = (password == null)?PASSWORD:password;
+		url = (url == null)?DEFAULT_URL:url;
 		props.setProperty("user", user);
 		props.setProperty("password", password);
-		System.out.println(url);
 		
-		conn = DriverManager.getConnection(url, props);
+		conn = DriverManager.getConnection(URI_PREFIX + url, props);
 	}
 	
 	/** 
@@ -124,7 +122,7 @@ public class TestDataHandler {
 	 * @return 		List of StockHandles.
 	 * @throws SQLException
 	 */
-	public Iterator<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
+	public List<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
 		int datasetID = d.getId();
 		
 		List<StockHandle> res = null;
@@ -142,7 +140,7 @@ public class TestDataHandler {
 			}
 		}
 		
-		return res.iterator();
+		return res;
 	}
 	
 	public Pair<List<BuyOrder>, List<SellOrder>> getLastOrderSnapshot(

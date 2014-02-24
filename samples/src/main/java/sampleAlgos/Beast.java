@@ -14,7 +14,7 @@ public class Beast implements ITradingAlgorithm {
 
 	@Override
 	public void run(MarketView marketView) {
-		Iterator<StockHandle> stocks = marketView.getAllStocks();
+		Iterator<StockHandle> stocks = marketView.getAllStocks().iterator();
 		StockHandle bestStockEver = stocks.next();
 		OrderBook book = marketView.getOrderBook(bestStockEver);
 		double woot = 4;
@@ -37,13 +37,4 @@ public class Beast implements ITradingAlgorithm {
 			
 		}
 	}
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
-	}
-
 }
