@@ -25,7 +25,7 @@ import orderBooks.SellOrder;
  *
  */
 public class TestDataHandler {
-	private static final String URI_PREFIX = "jdbc:postgresql:";
+	private static final String URI_PREFIX = "jdbc:postgresql://";
 	private static final String USERNAME = "alpha";
 	private static final String PASSWORD = "";
 	Connection conn;
