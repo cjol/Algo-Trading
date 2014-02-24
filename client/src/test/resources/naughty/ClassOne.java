@@ -1,8 +1,6 @@
 package naughty;
 
-import testHarness.ITradingAlgorithm;
-import testHarness.MarketView;
-
 public class ClassOne{
+	@SuppressWarnings("unused")
 	private ClassTwo oooh;
 }

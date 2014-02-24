@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
+import testHarness.clientConnection.Options;
 import testHarness.clientConnection.TestRequestDescription;
 import testHarness.output.Output;
 import clientLoaders.FileLoader;
@@ -87,11 +88,14 @@ public class SecurityTest {
 
 	private static class FakeMarket extends MarketView
 	{
-
+		private static final int DUMMY_TICK_SIZE = 1000;
+		private static final int DUMMY_STARTING_FUNDS = 1000;
+		private static final int DUMMY_TIMEOUT = 60;
+		private static final Options DUMMY_OPTIONS = new Options(DUMMY_TICK_SIZE, DUMMY_STARTING_FUNDS, DUMMY_TIMEOUT);
+		
 		public FakeMarket(ITradingAlgorithm algo, List<Output> outputs,
 				TestDataHandler dataHandler) {
-			super(algo, outputs, dataHandler,null, null);
-			// TODO Auto-generated constructor stub
+			super(algo, outputs, dataHandler,null, DUMMY_OPTIONS);
 		}
 		
 		@Override

@@ -10,13 +10,14 @@ import java.net.ServerSocket;
 
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
+import testHarness.clientConnection.Options;
 
 
 public class Naughty implements ITradingAlgorithm {
 
 	private int i = 1;
 	@Override
-	public void run(MarketView marketView) {
+	public void run(MarketView marketView, Options options) {
 		int test = i++;
 		switch(test) {
 		
