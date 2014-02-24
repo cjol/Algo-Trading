@@ -39,7 +39,7 @@ public class ReflectionTest {
 		
 		ByteArrayOutputStream outStrm = new ByteArrayOutputStream();
 		System.setOut(new PrintStream(outStrm));
-		algo.run(null);
+		algo.run(null,null);
 		String out = outStrm.toString();
 		assertTrue("Sweet sweet success\r\n".equals(out) || "Sweet sweet success\n".equals(out)); //windows.
 	}

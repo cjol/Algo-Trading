@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import Iterators.MultiIterator;
 import Iterators.ProtectedIterator;
 import orderBooks.BuyOrder;
@@ -18,6 +19,7 @@ import orderBooks.Match;
 import orderBooks.OrderBook;
 import orderBooks.SellOrder;
 import orderBooks.UserOrderBook;
+import testHarness.clientConnection.Options;
 import testHarness.output.Output;
 import database.DatasetHandle;
 import database.StockHandle;
@@ -29,14 +31,15 @@ import database.TestDataHandler;
  * @author Christopher Little
  */
 public class MarketView {
-	private final BigDecimal STARTING_FUNDS = new BigDecimal(10000);
+	private final BigDecimal STARTING_FUNDS;
 	// TICK_SIZE is in milliseconds
-	private final int TICK_SIZE = 500;
+	private final int TICK_SIZE;
 
 	private final ITradingAlgorithm algo;
 	private final List<Output> outputs; 
 	private final TestDataHandler dataHandler;
 	private final DatasetHandle dataset;
+	private final Options options;
 	
 	private final Map<StockHandle, Integer> portfolio = new HashMap<StockHandle, Integer>();
 	private final Map<StockHandle, Integer> reservedPortfolio = new HashMap<StockHandle, Integer>();
@@ -62,11 +65,15 @@ public class MarketView {
 	 *            The source of data which this MarketView will use
 	 */
 	public MarketView(ITradingAlgorithm algo, List<Output> outputs,
-			TestDataHandler dataHandler, DatasetHandle dataset) {
+			TestDataHandler dataHandler, DatasetHandle dataset, Options options) {
 		this.algo = algo;
 		this.outputs = outputs;
 		this.dataHandler = dataHandler;
 		this.dataset = dataset;
+		this.options = options;
+		
+		STARTING_FUNDS = new BigDecimal(options.startingFunds);
+		TICK_SIZE = options.tickSize;
 	}
 
 	/**
@@ -74,12 +81,11 @@ public class MarketView {
 	 * parameterised). Must be called before any other methods.
 	 */
 	public void startSimulation() {
-		// TODO STARTING_FUNDS and *_TIME should be simulation parameters
 		availableFunds = STARTING_FUNDS;
 		currentTime = dataset.getStartTime();
 		endTime = dataset.getEndTime();
 		
-		algo.run(this);
+		algo.run(this, options);
 	}
 
 	/**
