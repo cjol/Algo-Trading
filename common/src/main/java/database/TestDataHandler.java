@@ -25,20 +25,39 @@ import orderBooks.SellOrder;
  *
  */
 public class TestDataHandler {
-	private static final String url = "jdbc:postgresql://127.0.0.1:5432/testenv";
+	private static final String defaultUrl = "jdbc:postgresql://127.0.0.1:5432/testenv";
 	Connection conn;
 	
+
 	/**
-	 * Connects to the database. If successful, creates a new instance of
+	 * Connects to the database using default parameters. If successful, creates a new instance of
 	 * TestDataServer. Throws SQLException on error; e.g. server unavailable.
+	 * @param url 
+	 * @param password 
+	 * @param user 
 	 * 
 	 * @throws SQLException
 	 */
 	public TestDataHandler() throws SQLException {
-		// TODO: Make parameters configurable
+		this(null, null, null);
+	}
+	/**
+	 * Connects to the database. If successful, creates a new instance of
+	 * TestDataServer. Throws SQLException on error; e.g. server unavailable.
+	 * @param url the database url
+	 * @param password the database password
+	 * @param user the database username to use
+	 * 
+	 * @throws SQLException
+	 */
+	public TestDataHandler(String user, String password, String url) throws SQLException {
 		Properties props = new Properties();
-		props.setProperty("user", "alpha");
-		props.setProperty("password", "");
+		user = (user == null)?"alpha":user;
+		password = (password == null)?"":password;
+		url = (url == null)?TestDataHandler.defaultUrl:url;
+		props.setProperty("user", user);
+		props.setProperty("password", password);
+		System.out.println(url);
 		
 		conn = DriverManager.getConnection(url, props);
 	}
