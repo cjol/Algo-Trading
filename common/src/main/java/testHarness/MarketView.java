@@ -349,10 +349,10 @@ public class MarketView {
 	 * @return An iterator over StockHandles for all stocks available in this
 	 *         market
 	 */
-	public Iterator<StockHandle> getAllStocks() {
+	public List<StockHandle> getAllStocks() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		Iterator<StockHandle> res = null;
+		List<StockHandle> res = null;
 		try {
 			res = dataHandler.getAllStocks(dataset);
 		} catch (SQLException e) {

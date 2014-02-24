@@ -49,12 +49,12 @@ public class TestDataHandlerTest {
 			assertEquals(new Timestamp(114,0,1,0,0,3,0), dataset.getEndTime());
 			
 			
-			Iterator<StockHandle> stocks = dataHandler.getAllStocks(dataset);
+			List<StockHandle> stocks = dataHandler.getAllStocks(dataset);
 			List<String> tickers = new ArrayList<String>();
-			StockHandle s = null;
-			while (stocks.hasNext()) {
-				s = stocks.next();
+			StockHandle last = null;
+			for (StockHandle s : stocks) {
 				tickers.add(s.getTicker());
+				last = s;
 			}
 			String[] expectedTickers = {"FOO", "BAR"};
 			assertEquals(Arrays.asList(expectedTickers), tickers);
@@ -64,28 +64,28 @@ public class TestDataHandlerTest {
 			// check order book snapshot
 			Pair<List<BuyOrder>, List<SellOrder>> snapshot;
 			// far too early
-			snapshot = dataHandler.getLastOrderSnapshot(s, new Timestamp(113,0,1,0,0,0,0));
+			snapshot = dataHandler.getLastOrderSnapshot(last, new Timestamp(113,0,1,0,0,0,0));
 			assertNull(snapshot);
 			// ever so slightly early
-			snapshot = dataHandler.getLastOrderSnapshot(s, new Timestamp(113,11,31,23,59,59,0));
+			snapshot = dataHandler.getLastOrderSnapshot(last, new Timestamp(113,11,31,23,59,59,0));
 			assertNull(snapshot);
 			// first order snapshot
-			snapshot = dataHandler.getLastOrderSnapshot(s, new Timestamp(114,0,1,0,0,0,0));
+			snapshot = dataHandler.getLastOrderSnapshot(last, new Timestamp(114,0,1,0,0,0,0));
 			assertNotNull(snapshot);
 			// interesting order snapshot
-			snapshot = dataHandler.getLastOrderSnapshot(s, new Timestamp(114,0,1,0,0,2,0));
+			snapshot = dataHandler.getLastOrderSnapshot(last, new Timestamp(114,0,1,0,0,2,0));
 			BuyOrder[] expectedBids = {
-					new BuyOrder(s, 9, 200),
-					new BuyOrder(s, 10, 100)
+					new BuyOrder(last, 9, 200),
+					new BuyOrder(last, 10, 100)
 			};
 			SellOrder[] expectedAsks = {
-					new SellOrder(s, 11, 90)
+					new SellOrder(last, 11, 90)
 			};
 			assertEquals(Arrays.asList(expectedBids), snapshot.getFirst());
 			assertEquals(Arrays.asList(expectedAsks), snapshot.getSecond());
 			
 			// check matches iterator
-			Iterator<Match> matchIt = dataHandler.getMatches(s,
+			Iterator<Match> matchIt = dataHandler.getMatches(last,
 									 new Timestamp(114,0,1,0,0,0,0), 
 									 new Timestamp(114,0,1,0,0,2,1000));
 			List<Match> matches = new ArrayList<Match>();
@@ -94,7 +94,7 @@ public class TestDataHandlerTest {
 			}
 			
 			Match[] expectedMatches = {
-										new Match(s, 11, 10)
+										new Match(last, 11, 10)
 									  };
 			assertEquals(expectedMatches.length, matches.size());
 			for (int i = 0; i < expectedMatches.length; i++) {

@@ -105,7 +105,7 @@ public class TestDataHandler {
 	 * @return 		List of StockHandles.
 	 * @throws SQLException
 	 */
-	public Iterator<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
+	public List<StockHandle> getAllStocks(DatasetHandle d) throws SQLException {
 		int datasetID = d.getId();
 		
 		List<StockHandle> res = null;
@@ -123,7 +123,7 @@ public class TestDataHandler {
 			}
 		}
 		
-		return res.iterator();
+		return res;
 	}
 	
 	public Pair<List<BuyOrder>, List<SellOrder>> getLastOrderSnapshot(
