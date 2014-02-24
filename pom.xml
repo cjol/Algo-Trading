@@ -8,7 +8,7 @@
         <module>common</module>
         <module>server</module>
         <module>client</module>
-	<module>beast</module>
+	<module>samples</module>
     </modules>
     <build>
         <plugins>
@@ -19,7 +19,22 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-       </plugins>
+	    <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-shade-plugin</artifactId>
+		<executions>
+			<execution>
+				<phase>package</phase>
+				<goals>
+					<goal>shade</goal>
+				</goals>
+			</execution>
+		</executions>
+		<configuration>
+			<finalName>uber-${artifactId}-${version}</finalName>
+		</configuration>
+            </plugin>
+        </plugins>
     </build>
     <dependencies>
         <dependency>
