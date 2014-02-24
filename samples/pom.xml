@@ -9,10 +9,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>Beast</artifactId>
+    <artifactId>samples</artifactId>
     <packaging>jar</packaging>
-    <name>Beast</name>
-    <description>A test algorithm</description>
+    <name>Sample algorithms</name>
+    <description>A set of sample algorithms</description>
 
     <build>
         <finalName>${project.artifactId}</finalName>
