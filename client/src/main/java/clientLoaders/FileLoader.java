@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import clientLoaders.Visualiser;
 import testHarness.clientConnection.ClassDescription;
 import testHarness.clientConnection.OutputRequest;
 import testHarness.clientConnection.TestRequestDescription;
@@ -158,8 +159,11 @@ public class FileLoader {
 			for (Result result : results) {
 				System.out.println(result.getName() + ": ");
 				System.out.println(result.asJSON());
-				System.out.println();
+				System.out.println();	
 			}
+			
+			Visualiser vis = new Visualiser(results);
+			
 		}
 		System.exit(0);
 	}
