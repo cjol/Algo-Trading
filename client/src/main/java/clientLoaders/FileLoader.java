@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import config.YamlConfig;
 import clientLoaders.Visualiser;
 import testHarness.clientConnection.ClassDescription;
 import testHarness.clientConnection.OutputRequest;
@@ -27,17 +28,28 @@ public class FileLoader {
 
 	private FileLoader() {}
 	
-	private static String usage = "Usage: FileLoader filePath remoteAddress remotePort output1 output2 output3 ...";
+	private static String usage = "Usage: FileLoader jarFilePath remoteAddress remotePort [configFilePath]";
 	
 	/**
 	 * 
-	 * @param filename The path to the jar file containing user code
-	 * @return A an object to send to the test server
-	 * @throws IOException if the jar cannot be read
+	 * @param jarFilename the Jar file containing user code.
+	 * @param yamlFilename The yaml file containing config.
+	 * @return A an object to send to the test server.
+	 * @throws IOException if a file cannot be read.
 	 */
-	public static TestRequestDescription getRequestFromFile(String filename, List<OutputRequest> outs, String dataset) throws IOException {
-		//TODO options
-		JarFile jar = new JarFile(filename);
+	public static TestRequestDescription getRequestFromFile(String jarFilename, String yamlFilename) throws IOException {
+		
+		return new TestRequestDescription(loadClassFiles(jarFilename), YamlConfig.loadFromFile(yamlFilename));
+	}
+	
+	/**
+	 * 
+	 * @param jarFilename the Jar file containing user code.
+	 * @return
+	 * @throws IOException
+	 */
+	public static List<ClassDescription> loadClassFiles(String jarFilename) throws IOException {
+		JarFile jar = new JarFile(jarFilename);
 		
 		Enumeration<JarEntry> entries = jar.entries();
 		List<ClassDescription> classFiles = new LinkedList<ClassDescription>();
@@ -58,11 +70,11 @@ public class FileLoader {
 		}
 		
 		jar.close();
-		return new TestRequestDescription(classFiles,outs, dataset);
+		return classFiles;
 	}
 	
 	public static TestRequestDescription getRequestFromFile(String filename) throws IOException {
-		return FileLoader.getRequestFromFile(filename, null, "small");
+		return new TestRequestDescription(loadClassFiles(filename));
 	}
 	
 	/**
@@ -101,10 +113,8 @@ public class FileLoader {
 	}
 	
 	public static void main(String[] args) {
-		//TODO add options to arguments
 		
-		if(args.length < 3) showUsage();
-		String dataset = "small";
+		if(args.length < 3 || args.length > 4) showUsage();
 		String file = args[0];
 		String address = args[1];
 		int port = 0;
@@ -114,17 +124,9 @@ public class FileLoader {
 		
 		//create request
 		TestRequestDescription desc = null;
-		List<OutputRequest> outs =  new LinkedList<OutputRequest>();
-
-		for (int i=3; i<args.length; i++) {
-			// args[3+] are outputs which the user would like to see
-			// TODO: sendResults and saveResults should be specified by the user
-			boolean sendResults = true;
-			boolean saveResults = false;
-			outs.add(new OutputRequest(sendResults, saveResults, args[i]));
-		}
+		
 		try {
-			desc = getRequestFromFile(file, outs, dataset);
+			desc = (args.length == 4) ? getRequestFromFile(file, args[3]) : getRequestFromFile(file);
 		} catch (IOException e) {
 			System.err.println("Error reading in jar file.");
 			System.exit(2);

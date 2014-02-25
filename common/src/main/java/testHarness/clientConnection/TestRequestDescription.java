@@ -45,6 +45,14 @@ public class TestRequestDescription implements Serializable {
 		this.options = null;
 	}
 	
+	public TestRequestDescription(List<ClassDescription> classFiles) {
+		this.classFiles = classFiles;
+		//TODO some default outputs
+		this. outputsRequested = null;
+		this.datasetName = defaultTestString;
+		this.options = null;
+	}
+	
 	public TestRequestDescription(List<ClassDescription> classFiles, YamlConfig config) {
 		this.classFiles = classFiles;
 		this.outputsRequested = new LinkedList<OutputRequest>();
