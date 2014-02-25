@@ -23,7 +23,7 @@
             <version>2.4</version>
             <configuration>
                 <includes>
-                    <include>**/BuyAndSell*</include>
+                    <include>**/Beast*</include>
                 </includes>
             </configuration>
         </plugin>
