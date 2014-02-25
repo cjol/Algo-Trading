@@ -17,5 +17,5 @@ public class Options {
 	}
 	
 	
-	public static final Options defaultOptions = new Options(500, 10000,60000);
+	public static final Options defaultOptions = new Options(600000, 10000,60000);
 }
