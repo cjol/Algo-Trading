@@ -63,7 +63,7 @@ public class FileLoader {
 	}
 	
 	public static TestRequestDescription getRequestFromFile(String filename) throws IOException {
-		return FileLoader.getRequestFromFile(filename, null, "unittests");
+		return FileLoader.getRequestFromFile(filename, null, "small");
 	}
 	
 	/**
