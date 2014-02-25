@@ -143,6 +143,15 @@ public class TestDataHandler {
 		return res;
 	}
 	
+	/**
+	 * Returns a snapshot of the state of the order book for stock, handle,
+	 * at the latest time <= t.
+	 * 
+	 * @param handle	handle identifying stock	
+	 * @param t			time to retrieve order state
+	 * @return			a Pair of BuyOrder and SellOrder lists; empty list if no data.
+	 * @throws SQLException
+	 */
 	public Pair<List<BuyOrder>, List<SellOrder>> getLastOrderSnapshot(
 				StockHandle handle, Timestamp t) throws SQLException {
 		final String q = "SELECT bid1_price,bid1_volume,bid2_price,bid2_volume," +
@@ -154,7 +163,8 @@ public class TestDataHandler {
 						 "WHERE dataset_id=? AND ticker=? AND ts <=? " +
 						 "ORDER BY ts DESC LIMIT 1";
 		
-		Pair<List<BuyOrder>, List<SellOrder>> res = null;
+		List<BuyOrder> bids = new ArrayList<BuyOrder>();
+		List<SellOrder> asks = new ArrayList<SellOrder>();
 		try (PreparedStatement s = conn.prepareStatement(q)) {
 			s.setInt(1, handle.getDatasetID());
 			s.setString(2, handle.getTicker());
@@ -162,9 +172,7 @@ public class TestDataHandler {
 			
 			ResultSet r = s.executeQuery();
 			if (r.next()) {
-				List<BuyOrder> bids = new ArrayList<BuyOrder>();
-				List<SellOrder> asks = new ArrayList<SellOrder>();
-				
+
 				for (int i=0; i <5; i++) {
 					int bidPrice, bidVolume;
 					int askPrice, askVolume;
@@ -185,12 +193,10 @@ public class TestDataHandler {
 						asks.add(ask);
 					}
 				}
-				
-				res = new Pair<List<BuyOrder>,List<SellOrder>>(bids,asks);
 			}
 		}
 		
-		return res;
+		return new Pair<List<BuyOrder>,List<SellOrder>>(bids,asks);
 	}
 	
 	class ResultSetIterator implements Iterator<Match> {
