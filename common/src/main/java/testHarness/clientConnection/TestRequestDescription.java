@@ -28,7 +28,7 @@ public class TestRequestDescription implements Serializable {
 	protected List<ClassDescription> classFiles;
 	protected List<OutputRequest>  outputsRequested;
 	
-	private static final String defaultTestString = "test";
+	private static final String defaultTestString = "small";
 	public final String datasetName;
 	public final Options options;
 	/**
