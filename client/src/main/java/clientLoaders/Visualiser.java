@@ -4,16 +4,18 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
@@ -25,9 +27,6 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleInsets;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.simple.parser.ContainerFactory;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import testHarness.output.result.Result;
 
@@ -56,7 +55,12 @@ public class Visualiser {
 			chart2 = jsonToChart(results.get(1).getName(),results.get(1).asJSON());
 		}
 			JFrame mainFrame = new JFrame();			
-			
+			try {
+				ChartUtilities.saveChartAsPNG(new File("test.png"), chart1, 500, 400);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			mainFrame.setSize(1000, 800);
 			ChartPanel chartPanel1 = new ChartPanel(chart1);
 			ChartPanel chartPanel2 = new ChartPanel(chart2);

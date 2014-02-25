@@ -35,7 +35,7 @@ public class FileLoader {
 	 * @return A an object to send to the test server
 	 * @throws IOException if the jar cannot be read
 	 */
-	public static TestRequestDescription getRequestFromFile(String filename, List<OutputRequest> outs) throws IOException {
+	public static TestRequestDescription getRequestFromFile(String filename, List<OutputRequest> outs, String dataset) throws IOException {
 		//TODO options
 		JarFile jar = new JarFile(filename);
 		
@@ -58,11 +58,11 @@ public class FileLoader {
 		}
 		
 		jar.close();
-		return new TestRequestDescription(classFiles,outs, "unittests");
+		return new TestRequestDescription(classFiles,outs, dataset);
 	}
 	
 	public static TestRequestDescription getRequestFromFile(String filename) throws IOException {
-		return FileLoader.getRequestFromFile(filename, null);
+		return FileLoader.getRequestFromFile(filename, null, "unittests");
 	}
 	
 	/**
@@ -104,6 +104,7 @@ public class FileLoader {
 		//TODO add options to arguments
 		
 		if(args.length < 3) showUsage();
+		String dataset = "small";
 		String file = args[0];
 		String address = args[1];
 		int port = 0;
@@ -123,7 +124,7 @@ public class FileLoader {
 			outs.add(new OutputRequest(sendResults, saveResults, args[i]));
 		}
 		try {
-			desc = getRequestFromFile(file, outs);
+			desc = getRequestFromFile(file, outs, dataset);
 		} catch (IOException e) {
 			System.err.println("Error reading in jar file.");
 			System.exit(2);
