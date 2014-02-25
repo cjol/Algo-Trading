@@ -63,15 +63,18 @@ public class TestDataHandlerTest {
 			
 			// check order book snapshot
 			Pair<List<BuyOrder>, List<SellOrder>> snapshot;
+			List<BuyOrder> emptyBuyList = new ArrayList<BuyOrder>();
+			List<SellOrder> emptySellList = new ArrayList<SellOrder>();
+			Pair<List<BuyOrder>, List<SellOrder>> emptySnapshot = new Pair(emptyBuyList, emptySellList);
 			// far too early
 			snapshot = dataHandler.getLastOrderSnapshot(last, new Timestamp(113,0,1,0,0,0,0));
-			assertNull(snapshot);
+			assertEquals(emptySnapshot, snapshot);
 			// ever so slightly early
 			snapshot = dataHandler.getLastOrderSnapshot(last, new Timestamp(113,11,31,23,59,59,0));
-			assertNull(snapshot);
+			assertEquals(emptySnapshot, snapshot);
 			// first order snapshot
 			snapshot = dataHandler.getLastOrderSnapshot(last, new Timestamp(114,0,1,0,0,0,0));
-			assertNotNull(snapshot);
+			assert(!emptySnapshot.equals(snapshot));
 			// interesting order snapshot
 			snapshot = dataHandler.getLastOrderSnapshot(last, new Timestamp(114,0,1,0,0,2,0));
 			BuyOrder[] expectedBids = {
