@@ -1,11 +1,13 @@
 package testHarness.clientConnection;
 
+import java.io.Serializable;
+
 /**
  * Extra options on how to run the simulation. Made visible to the user as well.
  * @author Lawrence Esswood
  *
  */
-public class Options {
+public class Options implements Serializable {
 	public final int tickSize;
 	public final int startingFunds;
 	public final int timeout;
@@ -17,5 +19,5 @@ public class Options {
 	}
 	
 	
-	public static final Options defaultOptions = new Options(600000, 10000,60000);
+	public static final Options defaultOptions = new Options(500, 10000,60000);
 }

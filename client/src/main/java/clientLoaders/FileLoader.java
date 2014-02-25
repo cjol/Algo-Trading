@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import clientLoaders.Visualiser;
 import testHarness.clientConnection.ClassDescription;
+import testHarness.clientConnection.Options;
 import testHarness.clientConnection.OutputRequest;
 import testHarness.clientConnection.TestRequestDescription;
 import testHarness.clientConnection.TestResultDescription;
@@ -58,7 +58,8 @@ public class FileLoader {
 		}
 		
 		jar.close();
-		return new TestRequestDescription(classFiles,outs, dataset);
+		Options o = new Options(1000000,10000,600000);
+		return new TestRequestDescription(classFiles,outs, dataset, o);
 	}
 	
 	public static TestRequestDescription getRequestFromFile(String filename) throws IOException {
