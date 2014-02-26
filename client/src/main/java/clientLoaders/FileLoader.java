@@ -34,21 +34,11 @@ public class FileLoader {
 	/**
 	 * 
 	 * @param jarFilename the Jar file containing user code.
-	 * @param yamlFilename The yaml file containing config.
+	 * @param yc A YamlConfig object with simulation configuration parameters.
 	 * @return A an object to send to the test server.
 	 * @throws IOException if a file cannot be read.
 	 */
-	public static TestRequestDescription getRequestFromFile(String jarFilename, String yamlFilename) throws IOException {
-		YamlConfig yc = null;
-		if (yamlFilename != null) {
-			try {
-				yc = YamlConfig.loadFromFile(yamlFilename);
-			} catch (IOException e) {
-				System.err.println("Error reading YAML config " + yamlFilename);
-				throw(e);
-			}	
-		}
-		
+	public static TestRequestDescription getRequestFromFile(String jarFilename, YamlConfig yc) throws IOException {
 		List<ClassDescription> classFiles;
 		try {
 			classFiles = loadClassFiles(jarFilename);
@@ -57,7 +47,7 @@ public class FileLoader {
 			throw(e);
 		}
 		
-		if (yamlFilename != null) {
+		if (yc != null) {
 			return new TestRequestDescription(classFiles, yc);	
 		} else {
 			return new TestRequestDescription(classFiles);
@@ -148,7 +138,24 @@ public class FileLoader {
 		TestRequestDescription desc = null;
 		
 		try {
-			desc = (args.length == 4) ? getRequestFromFile(file, args[3]) : getRequestFromFile(file);
+			if (args.length == 4) {
+				String yamlFilename = args[3];
+						
+				YamlConfig yc = null;
+				if (yamlFilename != null) {
+					try {
+						yc = YamlConfig.loadFromFile(yamlFilename);
+					} catch (IOException e) {
+						System.err.println("Error reading YAML config " + yamlFilename);
+						throw(e);
+					}	
+				}
+				
+				
+				desc = getRequestFromFile(file,yc);
+			} else {
+				desc = getRequestFromFile(file);
+			}
 		} catch (IOException e) {
 			// error message printed in getRequestFromFile 
 			// as it can disambiguate where IO error occurred
