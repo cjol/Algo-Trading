@@ -1,0 +1,12 @@
+# tick size is in miliseconds
+tickSize:       60000
+# outputs is a list
+outputs: 
+    # name: fully qualified class name
+    # respond: print output to user
+    # commit: write output to database
+    - name: testHarness.output.availableFunds
+      respond: true
+      commit: false
+dataset:    small
+params: []

@@ -39,8 +39,34 @@ public class FileLoader {
 	 * @throws IOException if a file cannot be read.
 	 */
 	public static TestRequestDescription getRequestFromFile(String jarFilename, String yamlFilename) throws IOException {
+		YamlConfig yc = null;
+		if (yamlFilename != null) {
+			try {
+				yc = YamlConfig.loadFromFile(yamlFilename);
+			} catch (IOException e) {
+				System.err.println("Error reading YAML config " + yamlFilename);
+				throw(e);
+			}	
+		}
 		
-		return new TestRequestDescription(loadClassFiles(jarFilename), YamlConfig.loadFromFile(yamlFilename));
+		List<ClassDescription> classFiles;
+		try {
+			classFiles = loadClassFiles(jarFilename);
+		} catch (IOException e) {
+			System.err.println("Error reading JAR " + jarFilename);
+			throw(e);
+		}
+		
+		if (yamlFilename != null) {
+			return new TestRequestDescription(classFiles, yc);	
+		} else {
+			return new TestRequestDescription(classFiles);
+		}
+	
+	}
+	
+	public static TestRequestDescription getRequestFromFile(String filename) throws IOException {
+		return getRequestFromFile(filename, null);
 	}
 	
 	/**
@@ -72,10 +98,6 @@ public class FileLoader {
 		
 		jar.close();
 		return classFiles;
-	}
-	
-	public static TestRequestDescription getRequestFromFile(String filename) throws IOException {
-		return new TestRequestDescription(loadClassFiles(filename));
 	}
 	
 	/**
@@ -114,7 +136,6 @@ public class FileLoader {
 	}
 	
 	public static void main(String[] args) {
-		
 		if(args.length < 3 || args.length > 4) showUsage();
 		String file = args[0];
 		String address = args[1];
@@ -129,7 +150,8 @@ public class FileLoader {
 		try {
 			desc = (args.length == 4) ? getRequestFromFile(file, args[3]) : getRequestFromFile(file);
 		} catch (IOException e) {
-			System.err.println("Error reading in jar file.");
+			// error message printed in getRequestFromFile 
+			// as it can disambiguate where IO error occurred
 			System.exit(2);
 		}
 		
