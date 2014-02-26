@@ -1,6 +1,9 @@
+dataset:    small
 # tick size is in miliseconds
 tickSize:       100
 maxTicks:       100
+timeout:       60000
+startingFunds: 10000
 # outputs is a list
 outputs: 
     # name: fully qualified class name
@@ -9,5 +12,4 @@ outputs:
     - name: testHarness.output.AvailableFunds
       respond: true
       commit: false
-dataset:    small
 params: []
