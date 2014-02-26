@@ -7,6 +7,7 @@ import org.junit.Test;
 import valueObjects.Addition;
 import valueObjects.ArrayValueObject;
 import valueObjects.Constant;
+import valueObjects.Correlation;
 import valueObjects.Division;
 import valueObjects.FirstDerivative;
 import valueObjects.MovingAverage;
@@ -105,5 +106,17 @@ public class ValueObjectTest {
 		assertTrue(division.getValue(1) == 3.0/2.0);
 		assertTrue(division.getValue(5) == 2.0/2.0);
 		
+	}
+	
+	@Test
+	public void testCorrelation() throws TickOutOfRangeException {
+		ArrayValueObject testData1 = new ArrayValueObject(new double[]{1,2,3,4,5,6,7,8,9,10});
+		ArrayValueObject testData2 = new ArrayValueObject(new double[]{4,6,8,10,12,15,14,13,12,11});
+		//First 5 are correlated with coefficient 1, the second 5 have coefficient -1
+		
+		Correlation corr = new Correlation(testData1, testData2, 5);
+		assertTrue(corr.getValue(0) == -1.0);
+		assertTrue(corr.getValue(5) == 1.0);
+		assertTrue(Math.abs(corr.getValue(1) - -0.24253563) < 0.00000001);
 	}
 }
