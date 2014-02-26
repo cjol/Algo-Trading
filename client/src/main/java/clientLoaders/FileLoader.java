@@ -12,13 +12,11 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import config.YamlConfig;
-import clientLoaders.Visualiser;
 import testHarness.clientConnection.ClassDescription;
-import testHarness.clientConnection.OutputRequest;
 import testHarness.clientConnection.TestRequestDescription;
 import testHarness.clientConnection.TestResultDescription;
 import testHarness.output.result.Result;
+import config.YamlConfig;
 
 /**
  * 
