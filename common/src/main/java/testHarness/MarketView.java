@@ -101,7 +101,7 @@ public class MarketView {
 	public Iterator<Match> tick() {
 		remaining_ticks--;
 		if (remaining_ticks < 0) {
-			threadShouldBeAborting = true;
+			throw new RuntimeException("Simulation over");
 		}
 		
 		if (threadShouldBeAborting) {
