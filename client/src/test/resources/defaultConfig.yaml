@@ -1,12 +1,16 @@
+dataset:    small
 # tick size is in miliseconds
-tickSize:       60000
+tickSize:       100
+maxTicks:       100
+timeout:       60000
+startingFunds: 10000
 # outputs is a list
 outputs: 
     # name: fully qualified class name
     # respond: print output to user
     # commit: write output to database
-    # formats: how to present this output to the user (list)
-    - name: testHarness.output.availableFunds
+    # formats: list of formats for display of this output
+    - name: testHarness.output.AvailableFunds
       respond: true
       commit: false
       formats: 
@@ -15,5 +19,4 @@ outputs:
         - type: json
         - type: chart
           filename: test.png
-dataset:    small
 params: []

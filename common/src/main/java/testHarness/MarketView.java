@@ -53,6 +53,7 @@ public class MarketView {
 	private BigDecimal reservedFunds = new BigDecimal(0);
 
 	private boolean threadShouldBeAborting = false;
+	private int remaining_ticks;
 	
 	/**
 	 * Creates a new MarketView instance for a given algorithm to use
@@ -74,6 +75,7 @@ public class MarketView {
 		
 		STARTING_FUNDS = new BigDecimal(options.startingFunds);
 		TICK_SIZE = options.tickSize;
+		remaining_ticks = options.maxTicks;
 	}
 
 	/**
@@ -97,8 +99,11 @@ public class MarketView {
 	 *         called tick().
 	 */
 	public Iterator<Match> tick() {
-		if (threadShouldBeAborting)
-			throw new SimulationAbortedException();
+		remaining_ticks--;
+		
+		if (threadShouldBeAborting) {
+			throw new SimulationAbortedException();	
+		}
 		try
 		{
 			//FIXME another exception
@@ -176,7 +181,7 @@ public class MarketView {
 	public boolean isFinished() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		return (!currentTime.before(endTime));
+		return (!currentTime.before(endTime) || remaining_ticks <= 0);
 	}
 
 	/**

@@ -199,6 +199,7 @@ public class FileLoader {
 					String resultType = result.getSlug();
 					for (YamlOutput output : yc.outputs) {
 						if (output.name.equals(resultType)) {
+
 							for (YamlFormat format : output.formats) {
 								OutputFormat outputFormat = null;
 								if (format.type.equalsIgnoreCase("json")) {
@@ -206,7 +207,8 @@ public class FileLoader {
 								} else if (format.type.equalsIgnoreCase("chart")) {
 									outputFormat = new ChartFormat(result);
 								} else {
-									throw new UnsupportedOperationException(format + " is not a recognised output format");
+									System.out.println("display nothing");
+									throw new UnsupportedOperationException(format + " is not a recognised out	put format");
 								}
 
 								if (format.filename == null) {

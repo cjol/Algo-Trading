@@ -15,15 +15,12 @@ public class JSONFormat implements OutputFormat {
 	public void display() {
 		System.out.println(result.getName() + ": ");
 		System.out.println(result.asJSON());
-		System.out.println();
 	}
 	
 	public void save(String filename) {
 		try {
 			PrintWriter writer = new PrintWriter(filename, "UTF-8");
-			writer.println(result.getName() + ": ");
 			writer.println(result.asJSON());
-			writer.println();
 			writer.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
