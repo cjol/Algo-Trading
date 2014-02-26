@@ -11,6 +11,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import config.YamlConfig;
+import config.YamlOutput;
 import testHarness.ITradingAlgorithm;
 import testHarness.output.Output;
 import testHarness.output.result.Result;
@@ -41,6 +43,25 @@ public class TestRequestDescription implements Serializable {
 		this. outputsRequested = outputsRequested;
 		this.datasetName = defaultTestString;
 		this.options = null;
+	}
+	
+	public TestRequestDescription(List<ClassDescription> classFiles) {
+		this.classFiles = classFiles;
+		//TODO some default outputs
+		this. outputsRequested = null;
+		this.datasetName = defaultTestString;
+		this.options = null;
+	}
+	
+	public TestRequestDescription(List<ClassDescription> classFiles, YamlConfig config) {
+		this.classFiles = classFiles;
+		this.outputsRequested = new LinkedList<OutputRequest>();
+		for(YamlOutput out: config.outputs) {
+			outputsRequested.add(new OutputRequest(out.respond, out.commit, out.name));
+		}
+		this.datasetName = config.dataset;
+		this.options = new Options(config);
+		
 	}
 	
 	/**
