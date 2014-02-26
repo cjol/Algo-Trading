@@ -101,15 +101,44 @@ A stock handle essentially does what it says on the tin and allows us to hold a 
 \begin{lstlisting}
 @Override
 public void run(MarketView marketView, Options options) {
-	Iterator<StockHandle> stocks = marketView.getAllStocks().iterator();
-	StockHandle bestStockEver = stocks.next();
-	OrderBook book = marketView.getOrderBook(bestStockEver);
 \end{lstlisting}
+As we are implementing the \texttt{ITradingAlgorithm} interface, we must \texttt{@Override} the \texttt{run()} method. The \texttt{MarketView} and \texttt{Options} will be decided by the testing server and handed to the algorithm. \\
+
+\begin{lstlisting}
+Iterator<StockHandle> stocks = marketView.getAllStocks().iterator();
+StockHandle bestStockEver = stocks.next();
+OrderBook book = marketView.getOrderBook(bestStockEver);
+\end{lstlisting}
+First, we define a new \texttt{Iterator} that iterates over all possible stocks -(\texttt{marketView.getAllStocks().iterator()}), and then use it to arbitrarily pick a stock for our algorithm to work with. In this example we simply choose the stock that is returned from \texttt{stocks.next()}, i.e. the first stock of the iterator. Finally, we extract the \texttt{OrderBook} for this specific stock so that we can begin attempting to interface with the market.\\
+
+\begin{lstlisting}
+double propensityToSell = 4;
+while(!marketView.isFinished()) {
+	marketView.tick();
+	propensityToSell += Math.random()-0.5;
+\end{lstlisting}
+Here we begin to set up the logic of our algorithm - how we are going to determine our money making strategy for this market tick. A tick, in this context, refers to the smallest possible snapshot of time that our algorithm can witness in our market. We can do as much computation as we need to (provided we do not time-out our simulation) within a tick and then advance in time by calling \texttt{marketView.tick()}. For this example algorithm, our strategy is going to be based on the rolling of \texttt{Math.random()} affecting our inclination towards selling the stock we have bought. In this code snippet specifically, we see that, so long as the simulation has not finished, we will advance to the next tick of time and then alter our inclination towards buying/selling with equal weight.\\
+
+\begin{lstlisting}
+if(propensityToSell < 5) {
+	//BUY BUY BUY
+	Iterator<? extends Order> iter = book.getAllOffers();
+	if(!iter.hasNext()) continue;
+	int bd = iter.next().getPrice();
+	marketView.buy(bestStockEver, bd, 1);
+} else {
+	//SELL SELL SELL
+	Iterator<? extends Order> iter = book.getAllBids();
+	if(!iter.hasNext()) continue;
+	int bd = iter.next().getPrice();
+	marketView.sell(bestStockEver, bd, 1);
+}
+\end{lstlisting}
+Directly following from the previous snippet, after altering our propensity to sell, we then check if we lie within the buying range or the selling range. Note that the initial value of \texttt{propensityToSell} is set to 4 to force the market strategy of the first tick to be a buy (as we of course need to buy before we can sell). Upon making our buy/sell decision, we use the \texttt{OrderBook} object \texttt{book} to get the iterator for either all current bids or all current offers for our chosen stock. Then, we check to see if the iterator is non-empty, setting an int to the value of either the best off or the best bid if this is the case. Finally, we use our \texttt{marketView} to buy or sell respectively.\\\\(And then progress to the next \texttt{tick()}, as per our loop)
 
 \section{Key Commands/Concepts}
-We hope you will enjoy using this release as much as we enjoyed creating it. If you have comments, suggestions or wish to report an issue you are experiencing - contact us at: \emph{http://gummi.midnightcoding.org}.
-
+The simple example covered a few of the methods needed to interface with the market, but here we will concretely list everything you need to spread the wings of your algorithm and fly slightly farther afield.
 \section{A (more in depth) example}
-If you are wondering where your old default text is; it has been stored as a template. The template menu can be used to access and restore it. 
+Yet to be written
 
 \end{document}
