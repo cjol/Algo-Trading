@@ -15,6 +15,8 @@ import database.OutputServer;
 public class AvailableFunds extends Output{
 	
 	private Map<Timestamp, BigDecimal> availableFundsData;
+	private static final String slug = "testHarness.output.AvailableFunds";
+	private static final String name = "Available Funds";
 	
 	public AvailableFunds(OutputServer outputServer) {
 		super(outputServer);	
@@ -27,7 +29,7 @@ public class AvailableFunds extends Output{
 		for (Entry<Timestamp, BigDecimal> fundDataPoint : availableFundsData.entrySet()) {
 			resultMap.put(fundDataPoint.getKey().toString(), fundDataPoint.getValue().doubleValue());
 		}
-		Result result = new Result("Available Funds", resultMap);
+		Result result = new Result(slug, name, resultMap);
 		if(outputServer != null) outputServer.store(result);
 		return result;
 	}

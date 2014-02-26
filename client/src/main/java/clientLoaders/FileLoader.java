@@ -12,14 +12,15 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import config.YamlConfig;
-import clientLoaders.Visualiser;
+import resultFormats.JSONFormat;
+import resultFormats.OutputFormat;
 import testHarness.clientConnection.ClassDescription;
-import testHarness.clientConnection.Options;
-import testHarness.clientConnection.OutputRequest;
 import testHarness.clientConnection.TestRequestDescription;
 import testHarness.clientConnection.TestResultDescription;
 import testHarness.output.result.Result;
+import config.YamlConfig;
+import config.YamlFormat;
+import config.YamlOutput;
 
 /**
  * 
@@ -136,12 +137,13 @@ public class FileLoader {
 		
 		//create request
 		TestRequestDescription desc = null;
+
+		YamlConfig yc = null;
 		
 		try {
 			if (args.length == 4) {
 				String yamlFilename = args[3];
-						
-				YamlConfig yc = null;
+				
 				if (yamlFilename != null) {
 					try {
 						yc = YamlConfig.loadFromFile(yamlFilename);
@@ -150,7 +152,6 @@ public class FileLoader {
 						throw(e);
 					}	
 				}
-				
 				
 				desc = getRequestFromFile(file,yc);
 			} else {
@@ -189,14 +190,36 @@ public class FileLoader {
 		
 		//TODO display result on command line
 		if (results != null && results.size() > 0) {
+			
 			for (Result result : results) {
-				System.out.println(result.getName() + ": ");
-				System.out.println(result.asJSON());
-				System.out.println();	
+				if (yc == null) {
+					// no config provided, so fall back to default (just print json to commandline)
+					(new JSONFormat(result)).display();
+				} else {
+					String resultType = result.getSlug();
+					for (YamlOutput output : yc.outputs) {
+						if (output.name.equals(resultType)) {
+							for (YamlFormat format : output.formats) {
+								OutputFormat outputFormat = null;
+								if (format.type.equalsIgnoreCase("json")) {
+									outputFormat = new JSONFormat(result);
+								} else if (format.type.equalsIgnoreCase("chart")) {
+									outputFormat = new ChartFormat(result);
+								} else {
+									throw new UnsupportedOperationException(format + " is not a recognised output format");
+								}
+
+								if (format.filename == null) {
+									outputFormat.display();
+								} else {
+									outputFormat.save(format.filename);
+								}
+							}
+							break;
+						}
+					}
+				}
 			}
-			
-			Visualiser vis = new Visualiser(results);
-			
 		}
 		System.exit(0);
 	}

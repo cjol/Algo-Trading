@@ -11,22 +11,29 @@ public class Result implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private String jsonData;
 	private String name;
+	private String slug;
 
 	public String getName() {
 		return name;
 	}
+
+	public String getSlug() {
+		return slug;
+	}
 	
-	public Result(String name, JSONObject d) {
+	/**
+	 * 
+	 * @param slug the identifier for the output which generated this result, as specified in the YAML config file
+	 * @param name the human-readable name for this result
+	 * @param d the data for this result
+	 */
+	public Result(String slug, String name, JSONObject d) {
 		this.name = name;
+		this.slug = slug;
 		this.jsonData = d.toString();
 	}
 	
 	public String asJSON() {
 		return jsonData;
 	}
-//	
-//	public abstract void outputToFile(String location);
-//	
-//	public abstract String outputToString();
-	
 }
