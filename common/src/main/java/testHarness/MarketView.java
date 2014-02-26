@@ -100,9 +100,6 @@ public class MarketView {
 	 */
 	public Iterator<Match> tick() {
 		remaining_ticks--;
-		if (remaining_ticks < 0) {
-			throw new RuntimeException("Simulation over");
-		}
 		
 		if (threadShouldBeAborting) {
 			throw new SimulationAbortedException();	
@@ -184,7 +181,7 @@ public class MarketView {
 	public boolean isFinished() {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
-		return (!currentTime.before(endTime));
+		return (!currentTime.before(endTime) || remaining_ticks <= 0);
 	}
 
 	/**
