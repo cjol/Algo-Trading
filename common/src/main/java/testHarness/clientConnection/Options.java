@@ -12,15 +12,17 @@ import config.YamlParam;
  *
  */
 public class Options implements Serializable {
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	public final int tickSize;
+	public final int maxTicks;
 	public final int startingFunds;
 	public final int timeout;
 	
 	private final HashMap<String, String> userParams;
 	
-	public Options(int tickSize, int startingFunds, int timeout) {
+	public Options(int tickSize, int maxTicks, int startingFunds, int timeout) {
 		this.tickSize = tickSize;
+		this.maxTicks = maxTicks;
 		this.startingFunds = startingFunds;
 		this.timeout = timeout;
 		this.userParams = null;
@@ -28,6 +30,7 @@ public class Options implements Serializable {
 	
 	public Options(YamlConfig config) {
 		this.tickSize = config.tickSize;
+		this.maxTicks = config.maxTicks;
 		this.startingFunds = config.startingFunds;
 		this.timeout = config.timeout;
 		this.userParams = new HashMap<>();
@@ -46,5 +49,5 @@ public class Options implements Serializable {
 		return userParams.get(paramName);
 	}
 	
-	public static final Options defaultOptions = new Options(500, 10000,60000);
+	public static final Options defaultOptions = new Options(500, Integer.MAX_VALUE, 10000,60000);
 }

@@ -15,6 +15,7 @@ public class YamlConfig {
 	
 	public String dataset;
 	public int tickSize;
+	public int maxTicks;
 	public int timeout;
 	public int startingFunds;
 	
