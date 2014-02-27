@@ -17,6 +17,8 @@ outputs:
       formats: 
         # type: One of json|chart
         # filename: if this is present the result will be saved to this file (absent means don't save)
+        # combine: Not relevant for all formats, but if true will display a single result for all
+        #          outputs of a particular format. Only combine on display, not save.
         - type: json
           filename: availableFunds.json
         - type: chart

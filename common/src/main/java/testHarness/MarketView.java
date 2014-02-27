@@ -85,7 +85,7 @@ public class MarketView {
 	 * Initialise the MarketView with defaults (will eventually be
 	 * parameterised). Must be called before any other methods.
 	 */
-	public void startSimulation() {
+	void startSimulation() {
 		availableFunds = STARTING_FUNDS;
 		currentTime = dataset.getStartTime();
 		endTime = dataset.getEndTime();

@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
 
+import testHarness.TestInstance;
 import database.OutputServer;
 import database.TestDataHandler;
 

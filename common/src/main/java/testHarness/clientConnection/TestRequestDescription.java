@@ -221,6 +221,7 @@ public class TestRequestDescription implements Serializable {
 		}
 		
 		public Class<?> defineNewClass(String name, byte[] bytes) {
+			if (name.contains("testHarness")) throw new SecurityException("Package name shouldn't contain \"testHarness\"");
 			Class<?> newClass = defineClass(name, bytes, 0, bytes.length, domain);
 			resolveClass(newClass);
 			return newClass;

@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -127,7 +128,7 @@ public class FileLoader {
 		System.exit(1);
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		if(args.length < 3 || args.length > 4) showUsage();
 		String file = args[0];
 		String address = args[1];
@@ -170,8 +171,7 @@ public class FileLoader {
 		try {
 			TestResultDescription resultDesc = sendTest(desc, address, port);
 			if (!resultDesc.testFinished) {
-				System.err.println(resultDesc.errorMessage);
-				System.exit(7);
+				throw resultDesc.errorMessage;
 			}
 			results = resultDesc.outputs;
 		} catch (UnknownHostException e) {
@@ -194,11 +194,12 @@ public class FileLoader {
 				if (config == null) {
 					
 					// no config provided, so fall back to default (just print json to commandline)
-					(new JSONFormat(result)).display();
+					(new JSONFormat(result)).display(true);
 				} else {
 			
 					// find the output type of this result from those requested in config
 					String resultType = result.getSlug(); 
+					List<OutputFormat> delayedFormats = new ArrayList<OutputFormat>(); 
 					for (YamlOutput output : config.outputs) {
 						if (output.name.equals(resultType)) {
 							
@@ -215,13 +216,18 @@ public class FileLoader {
 								
 								// if the user gave a filename, we save, else just display
 								if (format.filename == null) {
-									outputFormat.display();
+									outputFormat.display(format.combine);
+									if (format.combine) delayedFormats.add(outputFormat);
 								} else {
 									outputFormat.save(format.filename);
 								}
 							}
 							break;
 						}
+					}
+					
+					for (OutputFormat delayedFormat : delayedFormats) {
+						delayedFormat.finishDisplay();
 					}
 				}
 			}
