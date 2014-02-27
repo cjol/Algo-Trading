@@ -53,7 +53,7 @@ public class MarketView {
 	private BigDecimal availableFunds;
 	private BigDecimal reservedFunds = new BigDecimal(0);
 
-	private boolean threadShouldBeAborting = false;
+	private volatile boolean threadShouldBeAborting = false;
 	private int remaining_ticks;
 	
 	/**
