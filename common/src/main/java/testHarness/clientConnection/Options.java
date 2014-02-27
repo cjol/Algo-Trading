@@ -16,14 +16,16 @@ public class Options implements Serializable {
 	public final int tickSize;
 	public final int maxTicks;
 	public final int startingFunds;
+	public final int commissionRate; // percent of a basis point, i.e. 1/10000'th
 	public final int timeout;
 	
 	private final HashMap<String, String> userParams;
 	
-	public Options(int tickSize, int maxTicks, int startingFunds, int timeout) {
+	public Options(int tickSize, int maxTicks, int startingFunds, int commisionRate, int timeout) {
 		this.tickSize = tickSize;
 		this.maxTicks = maxTicks;
 		this.startingFunds = startingFunds;
+		this.commissionRate = commisionRate;
 		this.timeout = timeout;
 		this.userParams = null;
 	}
@@ -32,6 +34,7 @@ public class Options implements Serializable {
 		this.tickSize = config.tickSize;
 		this.maxTicks = config.maxTicks;
 		this.startingFunds = config.startingFunds;
+		this.commissionRate = config.commissionRate;
 		this.timeout = config.timeout;
 		this.userParams = new HashMap<>();
 		
@@ -49,5 +52,5 @@ public class Options implements Serializable {
 		return userParams.get(paramName);
 	}
 	
-	public static final Options defaultOptions = new Options(500, Integer.MAX_VALUE, 10000,60000);
+	public static final Options defaultOptions = new Options(500, Integer.MAX_VALUE, 10000, 50, 60000);
 }

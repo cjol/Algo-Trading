@@ -91,8 +91,9 @@ public class SecurityTest {
 		private static final int DUMMY_TICK_SIZE = 1000;
 		private static final int DUMMY_MAX_TICKS = 1000;
 		private static final int DUMMY_STARTING_FUNDS = 1000;
+		private static final int DUMMY_COMMISSION_RATE = 50;
 		private static final int DUMMY_TIMEOUT = 60;
-		private static final Options DUMMY_OPTIONS = new Options(DUMMY_TICK_SIZE, DUMMY_MAX_TICKS, DUMMY_STARTING_FUNDS, DUMMY_TIMEOUT);
+		private static final Options DUMMY_OPTIONS = new Options(DUMMY_TICK_SIZE, DUMMY_MAX_TICKS, DUMMY_STARTING_FUNDS, DUMMY_COMMISSION_RATE, DUMMY_TIMEOUT);
 		
 		public FakeMarket(ITradingAlgorithm algo, List<Output> outputs,
 				TestDataHandler dataHandler) {

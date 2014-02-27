@@ -1,9 +1,10 @@
 dataset:    small
 # tick size is in miliseconds
 tickSize:       100
-maxTicks:       100
-timeout:       60000
+maxTicks:       10000
 startingFunds: 10000
+commissionRate: 50 # half of a basis point
+timeout:       60000
 # outputs is a list
 outputs: 
     # name: fully qualified class name
@@ -17,6 +18,15 @@ outputs:
         # type: One of json|chart
         # filename: if this is present the result will be saved to this file (absent means don't save)
         - type: json
+          filename: availableFunds.json
         - type: chart
           filename: test.png
+    - name: testHarness.output.TimeTaken
+      respond: true
+      commit: false
+      formats: 
+        # type: One of json|chart
+        # filename: if this is present the result will be saved to this file (absent means don't save)
+        - type: json
+          filename: timeTaken.json
 params: []

@@ -1,6 +1,7 @@
 dataset:       small
 tickSize:      100
 maxTicks:      100
+commissionRate: 50 # half of a basis point
 timeout:       60000
 startingFunds: 10000
 
