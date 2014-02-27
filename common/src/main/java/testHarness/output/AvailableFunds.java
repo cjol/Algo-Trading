@@ -18,9 +18,7 @@ import database.OutputServer;
  *
  */
 public class AvailableFunds extends Output{
-	
 	private Map<Timestamp, BigDecimal> availableFundsData;
-	private static final String slug = "testHarness.output.AvailableFunds";
 	private static final String name = "Available Funds";
 	
 	public AvailableFunds(OutputServer outputServer) {
@@ -40,7 +38,7 @@ public class AvailableFunds extends Output{
 		}
 		
 		// Create result object, save to DB if required, and return
-		Result result = new Result(slug, name, resultMap);
+		Result result = new Result(getSlug(), name, resultMap);
 		if(outputServer != null) outputServer.store(result);
 		return result;
 	}

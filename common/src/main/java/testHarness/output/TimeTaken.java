@@ -16,7 +16,6 @@ import testHarness.output.result.Result;
 public class TimeTaken extends Output{
 	
 	private Map<Timestamp, Long> timeTakenData;
-	private static final String slug = "testHarness.output.TimeTaken";
 	private static final String name = "Time Taken per Tick";
 	private long lastTime;
 	
@@ -32,7 +31,7 @@ public class TimeTaken extends Output{
 		for (Entry<Timestamp, Long> timetakenDataPoint : timeTakenData.entrySet()) {
 			resultMap.put(timetakenDataPoint.getKey().toString(),timetakenDataPoint.getValue());
 		}
-		Result result = new Result(slug, name, resultMap);
+		Result result = new Result(getSlug(), name, resultMap);
 		if(outputServer != null) outputServer.store(result);
 		return result;
 	}
