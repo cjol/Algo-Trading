@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import resultFormats.ChartFormat;
 import resultFormats.JSONFormat;
 import resultFormats.OutputFormat;
 import testHarness.clientConnection.ClassDescription;

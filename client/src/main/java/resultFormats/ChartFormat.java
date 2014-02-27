@@ -1,6 +1,5 @@
-package clientLoaders;
+package resultFormats;
 
-import resultFormats.OutputFormat;
 import testHarness.output.result.Result;
 
 public class ChartFormat implements OutputFormat {
