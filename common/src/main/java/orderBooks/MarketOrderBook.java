@@ -20,12 +20,20 @@ public class MarketOrderBook extends OrderBook {
 	private List<BuyOrder> bids;
 	private List<SellOrder> offers;
 	
+	private int tickSize;
 	
-	public MarketOrderBook(Timestamp startTime, StockHandle handle, TestDataHandler dataHandler) {
+	//Invariant: customBid holds the list of bids at lastCustomBidOffer
+	//			 customOffer holds the list of offers at lastCustomBidOffer
+	private Timestamp lastCustomBidOffer;
+	private List<BuyOrder> customBids;
+	private List<SellOrder> customOffers;
+	
+	public MarketOrderBook(Timestamp startTime, StockHandle handle, TestDataHandler dataHandler, int tickSize) {
 		super(handle);
 		this.currentTime = new Timestamp(OrderBook.MinTimestamp);
 		this.softTime = startTime;
 		this.dataHandler = dataHandler;
+		this.tickSize = tickSize;
 	}
 
 	@Override
@@ -47,7 +55,49 @@ public class MarketOrderBook extends OrderBook {
 	public Iterator<SellOrder> getAllOffers() {
 		return getOtherOffers();
 	}
-
+	
+	//Returns the bids and offers iterator at any time for the purposes of the value objects.
+	//Reuses the interface provided by the database.
+	//Is probably extremely slow, especially if using things that evaluate
+	//value objects very often (like MovingAverage). Tries to save some time by exploiting
+	//the fact that the database returns bids and offers, so if we ask for the bids' and offers'
+	//iterator several times for the same timestamp, no extra work will be done.
+	private void fetchCustomBidOffer(Timestamp ts) {
+		Pair<List<BuyOrder>, List<SellOrder>> pair;
+		try {
+			pair = dataHandler.getLastOrderSnapshot(handle, ts);
+		} catch (SQLException e) {
+			throw new SimulationAbortedException(e);
+		}
+		customBids = pair.first;
+		customOffers = pair.second;
+		lastCustomBidOffer = ts;
+	}
+	
+	public Iterator<BuyOrder> getBidsAtTicksAgo(int ticksAgo) {
+		if (ticksAgo == 0) return getAllBids();
+		Timestamp ts = new Timestamp(currentTime.getTime() - tickSize * ticksAgo);
+		
+		if (!ts.equals(lastCustomBidOffer)) {
+			fetchCustomBidOffer(ts);
+		}
+		
+		if (customBids == null) return null;
+		return new ProtectedIterator<>(customBids.iterator());
+	}
+	
+	public Iterator<SellOrder> getOffersAtTicksAgo(int ticksAgo) {
+		if (ticksAgo == 0) return getAllOffers();
+		Timestamp ts = new Timestamp(currentTime.getTime() - tickSize * ticksAgo);
+		
+		if (!ts.equals(lastCustomBidOffer)) {
+			fetchCustomBidOffer(ts);
+		}
+		
+		if (customOffers == null) return null;
+		return new ProtectedIterator<>(customOffers.iterator());
+	}
+	
 	@Override
 	public Iterator<Match> updateTime() {
 		if(currentTime.equals(softTime)) return null;

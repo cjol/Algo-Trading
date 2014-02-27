@@ -170,7 +170,7 @@ public class MarketView {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
 		if (!openedBooks.containsKey(stock)) {
-			OrderBook market = new MarketOrderBook(currentTime, stock, dataHandler);
+			OrderBook market = new MarketOrderBook(currentTime, stock, dataHandler, TICK_SIZE);
 			UserOrderBook user = new UserOrderBook(stock, market);
 			openedBooks.put(stock, user);
 		}

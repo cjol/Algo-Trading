@@ -165,12 +165,12 @@ public class Depth implements ITradingAlgorithm {
 				
 				try {
 					if (sd.val > 0) {
-						int bestBid = (int)new HighestBid(o).getValue(0);
+						int bestBid = (int) o.getHighestBid().getValue(0);
 						// TODO: Check if we have sufficient funds
 						market.buy(s, bestBid, orderVolume);
 						break;
 					} else {
-						int bestOffer = (int)new LowestOffer(o).getValue(0);
+						int bestOffer = (int) o.getLowestOffer().getValue(0);
 						// TODO: Check if we already own stock/cap volume?
 						market.sell(s, bestOffer, orderVolume);
 					}	
