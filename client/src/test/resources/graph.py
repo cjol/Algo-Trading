@@ -1,7 +1,10 @@
+#!/usr/bin/env python
+
 import json
 from datetime import datetime
 from matplotlib.pyplot import plot_date
 import os
+import sys
 
 def decode_series(path):
     series = json.JSONDecoder().decode(open(path).read())
@@ -13,7 +16,7 @@ def decode_series(path):
 class Plot:
     def __init__(self, pathPrefix="."):
         (times, availableFunds) = decode_series(os.path.join(pathPrefix,"availableFunds.json"))
-        (times, portfolioValue) = decode_series(os.path.join("portfolioValue.json"))
+        (times, portfolioValue) = decode_series(os.path.join(pathPrefix,"portfolioValue.json"))
         # note times same for both series
         self.times = times
         self.availableFunds = availableFunds
@@ -40,6 +43,13 @@ class Plot:
 
 if __name__ == "__main__":
     import pylab
-    plot = Plot()
+    if len(sys.argv) == 2:
+        dataPath = sys.argv[1]
+        plot = Plot(dataPath)
+    elif len(sys.argv) > 2:
+        print >>sys.stderr, "usage: %s [data path]" % sys.argv[0]
+        sys.exit(1)
+    else:
+        plot = Plot()
     plot.plotAll()
     pylab.show()
