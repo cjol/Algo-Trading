@@ -18,33 +18,28 @@ public class BuyAndSell implements ITradingAlgorithm {
 		 * Buys and sells alternatively 1 volume for each stock on each tick
 		 */
 		Iterator<StockHandle> stocks = marketView.getAllStocks().iterator();
-		StockHandle stock = null;
+		stocks.next();
+		stocks.next();
+		stocks.next();
+		StockHandle stock = stocks.next();
 		OrderBook book = null;
 		boolean buyOrSell = true;
 		
-		
 		while (!marketView.isFinished()) {
 			marketView.tick();
-						
-			while(stocks.hasNext()){
-				stock = stocks.next();
-				book = marketView.getOrderBook(stock);
-				if(buyOrSell){
-					if(book.getAllOffers().hasNext()){
-						marketView.buy(stock, (int)book.getAllOffers().next().getPrice(), 1);
-					}					
-				}
-				else{
-					if(book.getAllBids().hasNext()){
-						marketView.sell(stock, (int)book.getAllBids().next().getPrice(), 1);
-					}					
-				}
+			book = marketView.getOrderBook(stock);
+			if(buyOrSell){
+				if(book.getAllOffers().hasNext()){
+					marketView.buy(stock, (int)book.getAllOffers().next().getPrice(), 1);
+				}					
 			}
-							
+			else{
+				if(book.getAllBids().hasNext()){
+					marketView.sell(stock, (int)book.getAllBids().next().getPrice(), 1);
+				}					
+			}
+
 			buyOrSell = !buyOrSell;
 		}
 	}
-
-	
-
 }
