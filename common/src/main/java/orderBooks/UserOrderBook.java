@@ -24,11 +24,11 @@ public class UserOrderBook extends OrderBook {
 
 	OrderBook parent;
 	
-	private final TreeSet<BuyOrder> outstandingBids;
-	private TreeSet<SellOrder> outstandingOffers;
+	protected final TreeSet<BuyOrder> outstandingBids;
+	protected TreeSet<SellOrder> outstandingOffers;
 	
-	private HashMap<Integer, Integer> ghostBids;
-	private HashMap<Integer, Integer> ghostOffers;
+	protected HashMap<Integer, Integer> ghostBids;
+	protected HashMap<Integer, Integer> ghostOffers;
 	
 	public UserOrderBook(StockHandle handle, OrderBook parent) {
 		super(handle);
@@ -103,7 +103,7 @@ public class UserOrderBook extends OrderBook {
 	 * 
 	 * @return Bids as the user should see them.
 	 */
-	private Iterator<BuyOrder> getGhostedBids() {
+	protected Iterator<BuyOrder> getGhostedBids() {
 		updateTime();
 		return new GhostingIterator<>(parent.getAllBids(),ghostBids);
 	}
@@ -112,7 +112,7 @@ public class UserOrderBook extends OrderBook {
 	 * 
 	 * @return Offers as the user should see them.
 	 */
-	private Iterator<SellOrder> getGhostedOffers() {
+	protected Iterator<SellOrder> getGhostedOffers() {
 		updateTime();
 		return new GhostingIterator<>(parent.getAllOffers(),ghostOffers);
 	}
@@ -155,7 +155,7 @@ public class UserOrderBook extends OrderBook {
 	 * @param userOrders The outstanding orders for the user.
 	 * @param userMatches The matches list to append matches to.
 	 */
-	private <User extends Order> 
+	protected <User extends Order> 
 	void coverMatch(int marketPrice, int q, HashMap<Integer, Integer> marketGhost, TreeSet<User> userOrders, boolean isUserOffer, List<Match> userMatches) {
 		int exisitingGhosting = (marketGhost.containsKey(marketPrice)) ? marketGhost.get(marketPrice) : 0;
 		
@@ -195,7 +195,7 @@ public class UserOrderBook extends OrderBook {
 	 * @param userIter An iterator for the users orders.
 	 * @param userMatches A list to append the output matches to.
 	 */
-	private <Market extends Order, User extends Order> 
+	protected <Market extends Order, User extends Order> 
 	void match(HashMap<Integer, Integer> ghost, Iterator<Market> marketIter, Iterator<User> userIter, List<Match> userMatches, boolean isUserOrder) {
 		if( marketIter.hasNext() && userIter.hasNext()) {
 			
@@ -233,7 +233,7 @@ public class UserOrderBook extends OrderBook {
 		}
 	}
 	
-	private static boolean canTrade(int market, int user, boolean isUserOffer) {
+	protected static boolean canTrade(int market, int user, boolean isUserOffer) {
 		return ((market == user) || (isUserOffer ^ (market < user)));
 	}
 	
@@ -244,7 +244,7 @@ public class UserOrderBook extends OrderBook {
 	 * @param q the amount to decrement by.
 	 */
 	@SuppressWarnings("unused")
-	private static void removeGhost(HashMap<Integer, Integer> ghost,int priceLevel, int q) {
+	protected static void removeGhost(HashMap<Integer, Integer> ghost,int priceLevel, int q) {
 		if(ghost.containsKey(priceLevel)) {
 			int left = ghost.get(priceLevel) - q;
 			if(left <= 0) ghost.remove(priceLevel);
@@ -258,7 +258,7 @@ public class UserOrderBook extends OrderBook {
 	 * @param priceLevel The order to change.
 	 * @param q the amount to increment by.
 	 */
-	private static void addGhost(HashMap<Integer, Integer> ghost,int priceLevel, int q) {
+	protected static void addGhost(HashMap<Integer, Integer> ghost,int priceLevel, int q) {
 		int val = ((ghost.containsKey(priceLevel)) ? ghost.get(priceLevel) : 0) + q;
 		ghost.put(priceLevel, val);
 	}

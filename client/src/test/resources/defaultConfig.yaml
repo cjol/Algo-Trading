@@ -9,7 +9,14 @@ outputs:
     # name: fully qualified class name
     # respond: print output to user
     # commit: write output to database
+    # formats: list of formats for display of this output
     - name: testHarness.output.AvailableFunds
       respond: true
       commit: false
+      formats: 
+        # type: One of json|chart
+        # filename: if this is present the result will be saved to this file (absent means don't save)
+        - type: json
+        - type: chart
+          filename: test.png
 params: []

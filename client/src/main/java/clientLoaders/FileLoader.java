@@ -12,11 +12,16 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import resultFormats.ChartFormat;
+import resultFormats.JSONFormat;
+import resultFormats.OutputFormat;
 import testHarness.clientConnection.ClassDescription;
 import testHarness.clientConnection.TestRequestDescription;
 import testHarness.clientConnection.TestResultDescription;
 import testHarness.output.result.Result;
 import config.YamlConfig;
+import config.YamlFormat;
+import config.YamlOutput;
 
 /**
  * 
@@ -31,21 +36,11 @@ public class FileLoader {
 	/**
 	 * 
 	 * @param jarFilename the Jar file containing user code.
-	 * @param yamlFilename The yaml file containing config.
+	 * @param yc A YamlConfig object with simulation configuration parameters.
 	 * @return A an object to send to the test server.
 	 * @throws IOException if a file cannot be read.
 	 */
-	public static TestRequestDescription getRequestFromFile(String jarFilename, String yamlFilename) throws IOException {
-		YamlConfig yc = null;
-		if (yamlFilename != null) {
-			try {
-				yc = YamlConfig.loadFromFile(yamlFilename);
-			} catch (IOException e) {
-				System.err.println("Error reading YAML config " + yamlFilename);
-				throw(e);
-			}	
-		}
-		
+	public static TestRequestDescription getRequestFromFile(String jarFilename, YamlConfig yc) throws IOException {
 		List<ClassDescription> classFiles;
 		try {
 			classFiles = loadClassFiles(jarFilename);
@@ -54,7 +49,7 @@ public class FileLoader {
 			throw(e);
 		}
 		
-		if (yamlFilename != null) {
+		if (yc != null) {
 			return new TestRequestDescription(classFiles, yc);	
 		} else {
 			return new TestRequestDescription(classFiles);
@@ -143,9 +138,26 @@ public class FileLoader {
 		
 		//create request
 		TestRequestDescription desc = null;
+
+		YamlConfig config = null;
 		
 		try {
-			desc = (args.length == 4) ? getRequestFromFile(file, args[3]) : getRequestFromFile(file);
+			if (args.length == 4) {
+				String yamlFilename = args[3];
+				
+				if (yamlFilename != null) {
+					try {
+						config = YamlConfig.loadFromFile(yamlFilename);
+					} catch (IOException e) {
+						System.err.println("Error reading YAML config " + yamlFilename);
+						throw(e);
+					}	
+				}
+				
+				desc = getRequestFromFile(file,config);
+			} else {
+				desc = getRequestFromFile(file);
+			}
 		} catch (IOException e) {
 			// error message printed in getRequestFromFile 
 			// as it can disambiguate where IO error occurred
@@ -177,16 +189,42 @@ public class FileLoader {
 			System.exit(6);
 		}
 		
-		//TODO display result on command line
 		if (results != null && results.size() > 0) {
 			for (Result result : results) {
-				System.out.println(result.getName() + ": ");
-				System.out.println(result.asJSON());
-				System.out.println();	
+				if (config == null) {
+					
+					// no config provided, so fall back to default (just print json to commandline)
+					(new JSONFormat(result)).display();
+				} else {
+			
+					// find the output type of this result from those requested in config
+					String resultType = result.getSlug(); 
+					for (YamlOutput output : config.outputs) {
+						if (output.name.equals(resultType)) {
+							
+							// display this result in every requested format
+							for (YamlFormat format : output.formats) {
+								OutputFormat outputFormat = null;
+								
+								if (format.type.equalsIgnoreCase("json")) 
+									outputFormat = new JSONFormat(result);
+								else if (format.type.equalsIgnoreCase("chart"))
+									outputFormat = new ChartFormat(result);
+								else 
+									throw new UnsupportedOperationException(format + " is not a recognised output format");
+								
+								// if the user gave a filename, we save, else just display
+								if (format.filename == null) {
+									outputFormat.display();
+								} else {
+									outputFormat.save(format.filename);
+								}
+							}
+							break;
+						}
+					}
+				}
 			}
-			
-			Visualiser vis = new Visualiser(results);
-			
 		}
 		System.exit(0);
 	}
