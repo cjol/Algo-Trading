@@ -1,9 +1,9 @@
 dataset:    small
 # tick size is in miliseconds
-tickSize:       60000
-maxTicks:       300
-startingFunds: 10000
-commissionRate: 50 # half of a basis point
+tickSize:       30000
+maxTicks:       600
+startingFunds: 100000
+commissionRate: 0 # 50 half of a basis point
 timeout:       30000
 # outputs is a list
 outputs: 
@@ -41,6 +41,8 @@ outputs:
           filename: timeTaken.json
 params:
     - name: slowWindow
-      value: 20
+      value: 40 
     - name: fastWindow
-      value: 5
+      value: 10
+    - name: ticker
+      value: HOT 

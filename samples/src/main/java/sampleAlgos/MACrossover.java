@@ -15,8 +15,17 @@ public class MACrossover implements ITradingAlgorithm {
 	public void run(MarketView marketView, Options options) {
 		int slowWindow = Integer.parseInt(options.getParam("slowWindow"));
 		int fastWindow = Integer.parseInt(options.getParam("fastWindow"));
+		String stockName = options.getParam("ticker");
 		
-		StockHandle stock = marketView.getAllStocks().get(0);
+		StockHandle stock = null;
+		for (StockHandle s: marketView.getAllStocks()) {
+			if (s.getTicker().equals(stockName)) {
+				stock = s;
+				break;
+			}
+		}
+		
+		if (stock == null) return;
 		
 		IValued hb = marketView.getOrderBook(stock).getHighestBid();
 		IValued lo = marketView.getOrderBook(stock).getLowestOffer();
