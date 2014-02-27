@@ -272,7 +272,9 @@ public class MarketView {
 		{
 			OrderBook ob = getOrderBook(stock);
 			if(ob.CancelBuyOrder(volume, price)) {
-				refundFunds(new BigDecimal(volume * price));
+				BigDecimal totalPrice = new BigDecimal(volume * price); 
+				BigDecimal toRefund = totalPrice.add(calculateCommission(totalPrice)); 
+				refundFunds(toRefund);
 				return true;
 			} else return false;
 			
