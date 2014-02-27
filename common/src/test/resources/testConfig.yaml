@@ -1,0 +1,21 @@
+dataset:       small
+tickSize:      100
+maxTicks:      100
+timeout:       60000
+startingFunds: 10000
+
+outputs:
+    - name:    out1
+      respond: true
+      commit:  false
+    - name:    out2
+      respond: false
+      commit:  true 
+
+params:
+    - name:  myParam1
+      value: Hello World
+    - name:  myParam2
+      value: foobar
+    - name:  myParam3
+      value: 123
