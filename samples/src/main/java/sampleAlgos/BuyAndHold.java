@@ -2,8 +2,6 @@ package sampleAlgos;
 
 import java.util.Iterator;
 
-import orderBooks.Order;
-import orderBooks.OrderBook;
 import orderBooks.SellOrder;
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
@@ -13,8 +11,17 @@ import database.StockHandle;
 public class BuyAndHold implements ITradingAlgorithm {
 	//Buys a stock from the market and holds it forever.
 	public void run(MarketView marketView, Options options) {
-		Iterator<StockHandle> stocks = marketView.getAllStocks().iterator();
-		StockHandle stock = stocks.next();
+		String stockName = options.getParam("ticker");
+		
+		StockHandle stock = null;
+		for (StockHandle s: marketView.getAllStocks()) {
+			if (s.getTicker().equals(stockName)) {
+				stock = s;
+				break;
+			}
+		}
+		
+		if (stock == null) return;
 		
 		int account = marketView.getAvailableFunds().intValue();
 		
@@ -27,8 +34,8 @@ public class BuyAndHold implements ITradingAlgorithm {
 				SellOrder order = marketView.getOrderBook(stock).getAllOffers().next();
 				if (order == null) continue;
 				
-				int amount = (account / order.getPrice()) - 1;
-				marketView.buy(stock, amount, order.getPrice());
+				//int amount = (account / order.getPrice()) - 1;
+				marketView.buy(stock, 1, order.getPrice());
 				bought = true;
 			}
 		}
