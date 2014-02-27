@@ -73,9 +73,17 @@ public class TestInstance implements Runnable{
 				
 				startSim(options.timeout);
 				
-				result = (marketView.isFinished()) ?
-				     	 TestRequestDescription.filterOutputs(desc, outputs):
-						 new TestResultDescription(new Exception("Test timed out"));
+				result = null;
+				try {
+					if (marketView.isFinished()) {
+						result = TestRequestDescription.filterOutputs(desc, outputs);
+					}
+				} catch (SimulationAbortedException e) {
+					// timedout and thread has aborted -- handled by next case
+				}
+				if (result == null) {
+					result = new TestResultDescription(new Exception("Test timed out"));
+				}
 			}
 											
 			connection.sendResults(result);
