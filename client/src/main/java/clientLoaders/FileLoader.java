@@ -139,7 +139,7 @@ public class FileLoader {
 		//create request
 		TestRequestDescription desc = null;
 
-		YamlConfig yc = null;
+		YamlConfig config = null;
 		
 		try {
 			if (args.length == 4) {
@@ -147,14 +147,14 @@ public class FileLoader {
 				
 				if (yamlFilename != null) {
 					try {
-						yc = YamlConfig.loadFromFile(yamlFilename);
+						config = YamlConfig.loadFromFile(yamlFilename);
 					} catch (IOException e) {
 						System.err.println("Error reading YAML config " + yamlFilename);
 						throw(e);
 					}	
 				}
 				
-				desc = getRequestFromFile(file,yc);
+				desc = getRequestFromFile(file,config);
 			} else {
 				desc = getRequestFromFile(file);
 			}
@@ -189,29 +189,31 @@ public class FileLoader {
 			System.exit(6);
 		}
 		
-		//TODO display result on command line
 		if (results != null && results.size() > 0) {
-			
 			for (Result result : results) {
-				if (yc == null) {
+				if (config == null) {
+					
 					// no config provided, so fall back to default (just print json to commandline)
 					(new JSONFormat(result)).display();
 				} else {
-					String resultType = result.getSlug();
-					for (YamlOutput output : yc.outputs) {
+			
+					// find the output type of this result from those requested in config
+					String resultType = result.getSlug(); 
+					for (YamlOutput output : config.outputs) {
 						if (output.name.equals(resultType)) {
-
+							
+							// display this result in every requested format
 							for (YamlFormat format : output.formats) {
 								OutputFormat outputFormat = null;
-								if (format.type.equalsIgnoreCase("json")) {
+								
+								if (format.type.equalsIgnoreCase("json")) 
 									outputFormat = new JSONFormat(result);
-								} else if (format.type.equalsIgnoreCase("chart")) {
+								else if (format.type.equalsIgnoreCase("chart"))
 									outputFormat = new ChartFormat(result);
-								} else {
-									System.out.println("display nothing");
-									throw new UnsupportedOperationException(format + " is not a recognised out	put format");
-								}
-
+								else 
+									throw new UnsupportedOperationException(format + " is not a recognised output format");
+								
+								// if the user gave a filename, we save, else just display
 								if (format.filename == null) {
 									outputFormat.display();
 								} else {
