@@ -35,7 +35,7 @@ public class BuyAndHold implements ITradingAlgorithm {
 				if (order == null) continue;
 				
 				//int amount = (account / order.getPrice()) - 1;
-				marketView.buy(stock, 1, order.getPrice());
+				marketView.buy(stock, order.getPrice(), 1);
 				bought = true;
 			}
 		}
