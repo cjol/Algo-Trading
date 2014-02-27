@@ -127,7 +127,7 @@ public class FileLoader {
 		System.exit(1);
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		if(args.length < 3 || args.length > 4) showUsage();
 		String file = args[0];
 		String address = args[1];
@@ -170,8 +170,7 @@ public class FileLoader {
 		try {
 			TestResultDescription resultDesc = sendTest(desc, address, port);
 			if (!resultDesc.testFinished) {
-				System.err.println(resultDesc.errorMessage);
-				System.exit(7);
+				throw resultDesc.errorMessage;
 			}
 			results = resultDesc.outputs;
 		} catch (UnknownHostException e) {
