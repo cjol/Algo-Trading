@@ -107,6 +107,9 @@ public class TestInstance implements Runnable{
 		{
 			marketViewThread.join(timeout);
 		} catch (InterruptedException e) {
+			//
+		}
+		if (marketViewThread.isAlive()) {
 			abortTest();
 		}
 	}
