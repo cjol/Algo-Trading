@@ -1,10 +1,10 @@
 dataset:    small
 # tick size is in miliseconds
 tickSize:       100
-maxTicks:       10000
+maxTicks:       100000
 startingFunds: 10000
-commissionRate: 50 # half of a basis point
-timeout:       30000
+commissionRate: 0 # half of a basis point
+timeout:       600000
 # outputs is a list
 outputs: 
     # name: fully qualified class name
