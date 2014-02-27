@@ -18,12 +18,12 @@ public class TimeTaken extends Output{
 	private Map<Timestamp, Long> timeTakenData;
 	private static final String slug = "testHarness.output.TimeTaken";
 	private static final String name = "Time Taken per Tick";
-	private Timestamp lastTimestamp;
+	private long lastTime;
 	
 	public TimeTaken(OutputServer outputServer) {
 		super(outputServer);	
 		timeTakenData = new HashMap<Timestamp, Long>();
-		lastTimestamp = null;
+		lastTime = System.currentTimeMillis();
 	}
 
 	@Override
@@ -39,14 +39,10 @@ public class TimeTaken extends Output{
 
 	@Override
 	public void evaluateData(TickData data) {
-		if(lastTimestamp==null){
-			lastTimestamp = data.currentTime;			
-			return;
-		}
-		else{
-			Long timeTaken = new Long(data.currentTime.getTime() - lastTimestamp.getTime());
+			long currentTime = System.currentTimeMillis();
+			long timeTaken = currentTime - lastTime;
 			timeTakenData.put(data.currentTime, timeTaken);
-			lastTimestamp = data.currentTime;
-		}			
+			lastTime = currentTime;
+				
 	}
 }
