@@ -65,7 +65,7 @@ public class TestDataHandlerTest {
 			Pair<List<BuyOrder>, List<SellOrder>> snapshot;
 			List<BuyOrder> emptyBuyList = new ArrayList<BuyOrder>();
 			List<SellOrder> emptySellList = new ArrayList<SellOrder>();
-			Pair<List<BuyOrder>, List<SellOrder>> emptySnapshot = new Pair(emptyBuyList, emptySellList);
+			Pair<List<BuyOrder>, List<SellOrder>> emptySnapshot = new Pair<List<BuyOrder>, List<SellOrder>>(emptyBuyList, emptySellList);
 			// far too early
 			snapshot = dataHandler.getLastOrderSnapshot(last, new Timestamp(113,0,1,0,0,0,0));
 			assertEquals(emptySnapshot, snapshot);

@@ -243,7 +243,6 @@ public class UserOrderBook extends OrderBook {
 	 * @param priceLevel The order to change.
 	 * @param q the amount to decrement by.
 	 */
-	@SuppressWarnings("unused")
 	protected static void removeGhost(HashMap<Integer, Integer> ghost,int priceLevel, int q) {
 		if(ghost.containsKey(priceLevel)) {
 			int left = ghost.get(priceLevel) - q;

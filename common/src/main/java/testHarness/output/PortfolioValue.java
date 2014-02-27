@@ -16,13 +16,13 @@ import valueObjects.TickOutOfRangeException;
 import database.OutputServer;
 import database.StockHandle;
 
-public class PortfolioValueOutput extends Output{
+public class PortfolioValue extends Output{
 	
 	private Map<Timestamp, Integer> portfolioValueData;
 	private static final String slug = "testHarness.output.PortfolioValueOutput";
 	private static final String name = "Portfolio Value";
 	
-	public PortfolioValueOutput(OutputServer outputServer) {
+	public PortfolioValue(OutputServer outputServer) {
 		super(outputServer);	
 		portfolioValueData = new HashMap<Timestamp,Integer>();
 	}
