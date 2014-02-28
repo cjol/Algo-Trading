@@ -60,7 +60,7 @@ public class BollingerBands implements ITradingAlgorithm {
 			
 			//If a stock hits the higher band, sell; if it hits the lower band, buy
 			if (midMarketVal >= topBand && havePosition) {
-				havePosition = true;
+				havePosition = false;
 				marketView.sell(stock, (int)midMarketVal, 1); 
 			} else if (midMarketVal <= bottomBand && !havePosition) {
 				havePosition = true;
