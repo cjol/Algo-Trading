@@ -206,21 +206,22 @@ public class TestRequestDescription implements Serializable {
 					
 					// TODO: transitive dependencies
 					// some outputs are derived from other outputs - make sure these are requested too
-					for (Class<?> dependencyClass : ((Output) o).dependencies()) {
-						// don't request the same output twice
-						if(disjoint.contains(dependencyClass)) continue;
-						disjoint.add(dependencyClass);
-						
-						outputConstructor = dependencyClass.getConstructor(new Class<?>[]{OutputServer.class});
-						
-						//pass in server if user requested data should be committed
-						Object dependentOutput = (Output)outputConstructor.newInstance((OutputServer)null);
-
-						if(o instanceof Output) {
-							outputs.add((Output)dependentOutput);
-						} else throw new LoadClassException("an output as dependent of " + outputRequest.name + " that was not a subclass of Output");
+					if (((Output) o).dependencies() != null) {
+						for (Class<?> dependencyClass : ((Output) o).dependencies()) {
+							// don't request the same output twice
+							if(disjoint.contains(dependencyClass)) continue;
+							disjoint.add(dependencyClass);
+							
+							outputConstructor = dependencyClass.getConstructor(new Class<?>[]{OutputServer.class});
+							
+							//pass in server if user requested data should be committed
+							Object dependentOutput = (Output)outputConstructor.newInstance((OutputServer)null);
+	
+							if(o instanceof Output) {
+								outputs.add((Output)dependentOutput);
+							} else throw new LoadClassException("an output as dependent of " + outputRequest.name + " that was not a subclass of Output");
+						}
 					}
-					
 				} else throw new LoadClassException("an output as request that was not a subclass of Output");
 			}
 		}
