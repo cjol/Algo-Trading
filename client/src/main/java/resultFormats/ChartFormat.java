@@ -97,13 +97,14 @@ public class ChartFormat implements OutputFormat {
 			String key = JSONObject.getNames(obj)[0];
 			// if the first element is a Double assume the rest is going to be a
 			// Double
-			if (obj.get(key) instanceof Double) {
+			if (obj.get(key) instanceof Number) {
 				XYSeries series = new XYSeries(name);
 				int tickNum = 0;
+				// TODO - if we're going to sort, it would be quicker to sort longs than Strings
 				String[] timestamps = JSONObject.getNames(obj);
 				Arrays.sort(timestamps);
 				for (String timestamp : timestamps) {
-					series.add(tickNum, obj.getLong(timestamp));
+					series.add(tickNum, ((Number)obj.get(timestamp)).doubleValue());
 					tickNum++;
 				}
 				dataset.addSeries(series);

@@ -17,10 +17,13 @@ outputs:
       formats: 
         # type: One of json|chart
         # filename: if this is present the result will be saved to this file (absent means don't save)
+        # 			if you want to save AND display, put the format in once w/ filename and once w/o
         # combine: Not relevant for all formats, but if true will display a single result for all
         #          outputs of a particular format. Only combine on display, not save.
         - type: json
           filename: availableFunds.json
+        - type: chart
+          filename: availableFunds.png
     - name: testHarness.output.PortfolioValue
       respond: true
       commit: false
@@ -31,6 +34,8 @@ outputs:
         #          outputs of a particular format. Only combine on display, not save.
         - type: json
           filename: portfolioValue.json
+        - type: chart
+          filename: portfolioValue.png
     - name: testHarness.output.TimeTaken
       respond: true
       commit: false
@@ -39,6 +44,8 @@ outputs:
         # filename: if this is present the result will be saved to this file (absent means don't save)
         - type: json
           filename: timeTaken.json
+        - type: chart
+          filename: timeTaken.png
 params:
     - name: decayFactor
       value: 0.5
