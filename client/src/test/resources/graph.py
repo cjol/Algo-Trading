@@ -2,7 +2,7 @@
 
 import json
 from datetime import datetime
-from matplotlib.pyplot import plot_date
+from matplotlib import pyplot
 import os
 import sys
 
@@ -25,21 +25,22 @@ class Plot:
             zip(self.availableFunds, self.portfolioValue)]
         
     def plot(self, values, *args, **kwargs):
-        plot_date(self.times,values, 'b-', *args, **kwargs)
+        pyplot.plot_date(self.times,values, 'b-', *args, **kwargs)
 
     def plotAvailableFunds(self):
-        self.plot(self.availableFunds, color='g')
+        self.plot(self.availableFunds, color='g', label='Cash')
 
     def plotPortfolioValue(self):
-        self.plot(self.portfolioValue, color='r')
+        self.plot(self.portfolioValue, color='r', label='Security value')
 
     def plotAccountValue(self):
-        self.plot(self.accountValue, color='b')
+        self.plot(self.accountValue, color='b', label='Account value')
 
     def plotAll(self):
-        self.plotAvailableFunds()
-        self.plotPortfolioValue()
         self.plotAccountValue()
+        self.plotPortfolioValue()
+        self.plotAvailableFunds()
+        pylab.legend()
 
 if __name__ == "__main__":
     import pylab
