@@ -19,6 +19,7 @@ import resultFormats.OutputFormat;
 import testHarness.clientConnection.ClassDescription;
 import testHarness.clientConnection.TestRequestDescription;
 import testHarness.clientConnection.TestResultDescription;
+import testHarness.output.Output;
 import testHarness.output.result.Result;
 import config.YamlConfig;
 import config.YamlFormat;
@@ -165,6 +166,8 @@ public class FileLoader {
 			System.exit(2);
 		}
 		
+		// Some outputs should be derived locally rather than by the server 
+//		List<Output> localOutputs = new ArrayList<Output>();
 		
 		
 		

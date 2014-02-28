@@ -31,7 +31,7 @@ public class ChartFormat implements OutputFormat {
 	public ChartFormat(Result result) {
 		this.result = result;
 
-		chart = jsonToChart(result.getName(), result.asJSON());
+		chart = jsonToChart(result.getName(), result.getJsonObject());
 	}
 	public void save(String filename) {
 		try {
@@ -55,7 +55,7 @@ public class ChartFormat implements OutputFormat {
 		mainFrame.setVisible(true);
 	}
 
-	public static JFreeChart jsonToChart(String name, String jsondata) {
+	public static JFreeChart jsonToChart(String name, JSONObject jsondata) {
 		XYDataset dataset = createDataset(name, jsondata);
 
 		JFreeChart chart = createChart(name, dataset);
@@ -87,12 +87,12 @@ public class ChartFormat implements OutputFormat {
 		}
 		return chart;
 	}
-	private static XYDataset createDataset(String name, String jsondata) {
+	private static XYDataset createDataset(String name, JSONObject obj) {
 
 		XYSeriesCollection dataset = new XYSeriesCollection();
 
 		try {
-			JSONObject obj = new JSONObject(jsondata);
+//			JSONObject obj = new JSONObject(jsondata);
 
 			String key = JSONObject.getNames(obj)[0];
 			// if the first element is a Double assume the rest is going to be a
