@@ -4,7 +4,7 @@ tickSize:       100
 maxTicks:       100000
 startingFunds: 10000
 commissionRate: 0 # half of a basis point
-timeout:       600000
+timeout:       300000
 # outputs is a list
 outputs: 
     # name: fully qualified class name

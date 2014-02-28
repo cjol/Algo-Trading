@@ -17,8 +17,6 @@ import orderBooks.SellOrder;
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
 import testHarness.clientConnection.Options;
-import valueObjects.HighestBid;
-import valueObjects.LowestOffer;
 import valueObjects.TickOutOfRangeException;
 import database.StockHandle;
 
