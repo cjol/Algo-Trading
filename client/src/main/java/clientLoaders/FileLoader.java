@@ -184,6 +184,7 @@ public class FileLoader {
 			System.exit(3);
 		} catch (ClassNotFoundException e) {
 			System.err.println("Response from test server was of unknown type");
+			e.printStackTrace();
 			System.exit(4);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -237,7 +238,6 @@ public class FileLoader {
 				}
 			}
 		}
-		System.exit(0);
 	}
 	
 	private static class WrongResponseException extends Exception {

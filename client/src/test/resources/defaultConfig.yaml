@@ -21,7 +21,6 @@ outputs:
         # combine: Not relevant for all formats, but if true will display a single result for all
         #          outputs of a particular format. Only combine on display, not save.
         - type: chart
-          filename: totalWorth.png
     - name: testHarness.output.AvailableFunds
       respond: true
       commit: false
@@ -32,7 +31,6 @@ outputs:
         # combine: Not relevant for all formats, but if true will display a single result for all
         #          outputs of a particular format. Only combine on display, not save.
         - type: chart
-          filename: availableFunds.png
     - name: testHarness.output.PortfolioValue
       respond: true
       commit: false
