@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import orderBooks.BuyOrder;
 import orderBooks.Match;
@@ -17,7 +18,6 @@ import orderBooks.SellOrder;
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
 import testHarness.clientConnection.Options;
-import valueObjects.TickOutOfRangeException;
 import database.StockHandle;
 
 public class Depth implements ITradingAlgorithm {
@@ -187,18 +187,25 @@ public class Depth implements ITradingAlgorithm {
 				
 				try {
 					if (sd.val > 0) {
-						int bestBid = (int) o.getHighestBid().getValue(0);
+						//int bestBid = (int) o.getHighestBid().getValue(0);
+						Iterator<BuyOrder> bids = o.getAllBids();
+						if (bids == null || !bids.hasNext())
+							continue;
+						int bestBid = bids.next().getPrice();
 						// TODO: Check if we have sufficient funds
 						market.buy(s, bestBid, orderVolume);
-						break;
 					} else {
-						int bestOffer = (int) o.getLowestOffer().getValue(0);
+						Iterator<SellOrder> offers = o.getAllOffers();
+						if (offers == null || !offers.hasNext())
+							continue;
+						int bestOffer = offers.next().getPrice();
 						// TODO: Check if we already own stock/cap volume?
 						market.sell(s, bestOffer, orderVolume);
 					}	
-				} catch (TickOutOfRangeException e) {
-					// cannot occur: only looking at present values
-					throw new RuntimeException(e);
+					break;
+				} catch (NoSuchElementException e) {
+					// no data in order book
+					continue; 
 				}
 			}
 		}

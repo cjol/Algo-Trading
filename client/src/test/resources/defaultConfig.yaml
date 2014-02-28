@@ -1,7 +1,7 @@
 dataset:    small
 # tick size is in miliseconds
 tickSize:       100
-maxTicks:       100
+maxTicks:       10000
 startingFunds: 100000
 commissionRate: 0 # half of a basis point
 timeout:       300000
@@ -11,16 +11,6 @@ outputs:
     # respond: print output to user
     # commit: write output to database
     # formats: list of formats for display of this output
-    - name: testHarness.output.TotalWorth
-      respond: true
-      commit: false
-      formats: 
-        # type: One of json|chart
-        # filename: if this is present the result will be saved to this file (absent means don't save)
-        # 			if you want to save AND display, put the format in once w/ filename and once w/o
-        # combine: Not relevant for all formats, but if true will display a single result for all
-        #          outputs of a particular format. Only combine on display, not save.
-        - type: chart
     - name: testHarness.output.AvailableFunds
       respond: true
       commit: false
@@ -30,7 +20,9 @@ outputs:
         # 			if you want to save AND display, put the format in once w/ filename and once w/o
         # combine: Not relevant for all formats, but if true will display a single result for all
         #          outputs of a particular format. Only combine on display, not save.
-        - type: chart
+        # - type: chart
+        - type: json
+          filename: AvailableFunds.json
     - name: testHarness.output.PortfolioValue
       respond: true
       commit: false
@@ -40,13 +32,28 @@ outputs:
         # 			if you want to save AND display, put the format in once w/ filename and once w/o
         # combine: Not relevant for all formats, but if true will display a single result for all
         #          outputs of a particular format. Only combine on display, not save.
-        - type: chart
-          filename: portfolioValue.png
+        # - type: chart
+        # filename: portfolioValue.png
+        - type: json
+          filename: PortfolioValue.json
+    - name: testHarness.output.TimeTaken
+      respond: true
+      commit: false
+      formats: 
+        # type: One of json|chart
+        # filename: if this is present the result will be saved to this file (absent means don't save)
+        # 			if you want to save AND display, put the format in once w/ filename and once w/o
+        # combine: Not relevant for all formats, but if true will display a single result for all
+        #          outputs of a particular format. Only combine on display, not save.
+        # - type: chart
+        # filename: portfolioValue.png
+        - type: json
+          filename: TimeTaken.json
 params:
     - name: decayFactor
       value: 0.5
     - name: tradeThreshold
-      value: 0.5
+      value: 0.1
     - name: volumePercentage
       value: 10
     - name: stocks

@@ -15,8 +15,8 @@ def decode_series(path):
 
 class Plot:
     def __init__(self, pathPrefix="."):
-        (times, availableFunds) = decode_series(os.path.join(pathPrefix,"availableFunds.json"))
-        (times, portfolioValue) = decode_series(os.path.join(pathPrefix,"portfolioValue.json"))
+        (times, availableFunds) = decode_series(os.path.join(pathPrefix,"AvailableFunds.json"))
+        (times, portfolioValue) = decode_series(os.path.join(pathPrefix,"PortfolioValue.json"))
         # note times same for both series
         self.times = times
         self.availableFunds = availableFunds
