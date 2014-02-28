@@ -165,7 +165,7 @@ public class UserOrderBook extends OrderBook {
 		//buy anything the market did in this tick
 		while(available > 0 && !userOrders.isEmpty()) {
 			User userOrder = userOrders.first();
-			if(canTrade(userOrder.getPrice(), marketPrice, isUserOffer)) {
+			if(canTrade(marketPrice, userOrder.getPrice(), isUserOffer)) {
 				int userVolume = userOrder.getVolume();
 				int tradeVolume = (available > userVolume) ? userVolume : available;
 				
