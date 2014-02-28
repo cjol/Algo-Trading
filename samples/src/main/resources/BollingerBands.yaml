@@ -1,0 +1,50 @@
+dataset:    small
+# tick size is in miliseconds
+tickSize:       30000
+maxTicks:       1800
+startingFunds: 100000
+commissionRate: 0 # 50 half of a basis point
+timeout:       60000
+# outputs is a list
+outputs: 
+    # name: fully qualified class name
+    # respond: print output to user
+    # commit: write output to database
+    # formats: list of formats for display of this output
+    - name: testHarness.output.AvailableFunds
+      respond: true
+      commit: false
+      formats: 
+        # type: One of json|chart
+        # filename: if this is present the result will be saved to this file (absent means don't save)
+        # combine: Not relevant for all formats, but if true will display a single result for all
+        #          outputs of a particular format. Only combine on display, not save.
+        - type: json
+          filename: availableFunds.json
+    - name: testHarness.output.PortfolioValue
+      respond: true
+      commit: false
+      formats: 
+        # type: One of json|chart
+        # filename: if this is present the result will be saved to this file (absent means don't save)
+        # combine: Not relevant for all formats, but if true will display a single result for all
+        #          outputs of a particular format. Only combine on display, not save.
+        - type: json
+          filename: portfolioValue.json
+    - name: testHarness.output.TimeTaken
+      respond: true
+      commit: false
+      formats: 
+        # type: One of json|chart
+        # filename: if this is present the result will be saved to this file (absent means don't save)
+        - type: json
+          filename: timeTaken.json
+params:
+    - name: deviationWindowSize 
+      value: 15
+    - name: maWindowSize
+      value: 15
+    - name: deviations
+      value: 3
+    - name: ticker
+      value: MDAXEX
