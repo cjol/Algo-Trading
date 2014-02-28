@@ -22,7 +22,7 @@ public class TimeTaken extends Output{
 	public TimeTaken(OutputServer outputServer) {
 		super(outputServer);	
 		timeTakenData = new HashMap<Timestamp, Long>();
-		lastTime = System.currentTimeMillis();
+		lastTime = System.nanoTime();
 	}
 
 	@Override
@@ -38,7 +38,7 @@ public class TimeTaken extends Output{
 
 	@Override
 	public void evaluateData(TickData data) {
-			long currentTime = System.currentTimeMillis();
+			long currentTime = System.nanoTime();
 			long timeTaken = currentTime - lastTime;
 			timeTakenData.put(data.currentTime, timeTaken);
 			lastTime = currentTime;

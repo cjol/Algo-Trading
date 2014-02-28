@@ -110,6 +110,8 @@ public class TestRequestDescription implements Serializable {
 		List<Result> results = new LinkedList<Result>();
 		for(Output output : outputs) {
 			if(requested.contains(output.getClass().getName())) {
+				if (output.dependencies() != null)
+					output.deriveResults(outputs);
 				results.add(output.getResult());
 			}
 		}
@@ -189,7 +191,7 @@ public class TestRequestDescription implements Serializable {
 			for(OutputRequest outputRequest : request.outputsRequested) {
 				Class<?> classRequest = loader.loadClass(outputRequest.name);
 				
-				//remove duplicates, FIXME: This should potentially be an error
+				//remove duplicates
 				if(disjoint.contains(classRequest)) continue;
 				
 				disjoint.add(classRequest);
@@ -201,6 +203,25 @@ public class TestRequestDescription implements Serializable {
 				
 				if(o instanceof Output) {
 					outputs.add((Output) o);
+					
+					// TODO: transitive dependencies
+					// some outputs are derived from other outputs - make sure these are requested too
+					if (((Output) o).dependencies() != null) {
+						for (Class<?> dependencyClass : ((Output) o).dependencies()) {
+							// don't request the same output twice
+							if(disjoint.contains(dependencyClass)) continue;
+							disjoint.add(dependencyClass);
+							
+							outputConstructor = dependencyClass.getConstructor(new Class<?>[]{OutputServer.class});
+							
+							//pass in server if user requested data should be committed
+							Object dependentOutput = (Output)outputConstructor.newInstance((OutputServer)null);
+	
+							if(o instanceof Output) {
+								outputs.add((Output)dependentOutput);
+							} else throw new LoadClassException("an output as dependent of " + outputRequest.name + " that was not a subclass of Output");
+						}
+					}
 				} else throw new LoadClassException("an output as request that was not a subclass of Output");
 			}
 		}

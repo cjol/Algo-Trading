@@ -10,8 +10,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import valueObjects.HighestBid;
-import valueObjects.LowestOffer;
 import database.StockHandle;
 import database.TestDataHandler;
 

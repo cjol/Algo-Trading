@@ -19,6 +19,7 @@ import resultFormats.OutputFormat;
 import testHarness.clientConnection.ClassDescription;
 import testHarness.clientConnection.TestRequestDescription;
 import testHarness.clientConnection.TestResultDescription;
+import testHarness.output.Output;
 import testHarness.output.result.Result;
 import config.YamlConfig;
 import config.YamlFormat;
@@ -165,6 +166,10 @@ public class FileLoader {
 			System.exit(2);
 		}
 		
+		// Some outputs should be derived locally rather than by the server 
+//		List<Output> localOutputs = new ArrayList<Output>();
+		
+		
 		
 		//send and get result
 		List<Result> results = null;
@@ -179,6 +184,7 @@ public class FileLoader {
 			System.exit(3);
 		} catch (ClassNotFoundException e) {
 			System.err.println("Response from test server was of unknown type");
+			e.printStackTrace();
 			System.exit(4);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -232,7 +238,6 @@ public class FileLoader {
 				}
 			}
 		}
-		System.exit(0);
 	}
 	
 	private static class WrongResponseException extends Exception {

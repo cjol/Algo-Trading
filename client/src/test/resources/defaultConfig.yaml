@@ -1,44 +1,47 @@
 dataset:    small
 # tick size is in miliseconds
 tickSize:       100
-maxTicks:       100000
-startingFunds: 10000
+maxTicks:       100
+startingFunds: 100000
 commissionRate: 0 # half of a basis point
-timeout:       600000
+timeout:       300000
 # outputs is a list
 outputs: 
     # name: fully qualified class name
     # respond: print output to user
     # commit: write output to database
     # formats: list of formats for display of this output
+    - name: testHarness.output.TotalWorth
+      respond: true
+      commit: false
+      formats: 
+        # type: One of json|chart
+        # filename: if this is present the result will be saved to this file (absent means don't save)
+        # 			if you want to save AND display, put the format in once w/ filename and once w/o
+        # combine: Not relevant for all formats, but if true will display a single result for all
+        #          outputs of a particular format. Only combine on display, not save.
+        - type: chart
     - name: testHarness.output.AvailableFunds
       respond: true
       commit: false
       formats: 
         # type: One of json|chart
         # filename: if this is present the result will be saved to this file (absent means don't save)
+        # 			if you want to save AND display, put the format in once w/ filename and once w/o
         # combine: Not relevant for all formats, but if true will display a single result for all
         #          outputs of a particular format. Only combine on display, not save.
-        - type: json
-          filename: availableFunds.json
+        - type: chart
     - name: testHarness.output.PortfolioValue
       respond: true
       commit: false
       formats: 
         # type: One of json|chart
         # filename: if this is present the result will be saved to this file (absent means don't save)
+        # 			if you want to save AND display, put the format in once w/ filename and once w/o
         # combine: Not relevant for all formats, but if true will display a single result for all
         #          outputs of a particular format. Only combine on display, not save.
-        - type: json
-          filename: portfolioValue.json
-    - name: testHarness.output.TimeTaken
-      respond: true
-      commit: false
-      formats: 
-        # type: One of json|chart
-        # filename: if this is present the result will be saved to this file (absent means don't save)
-        - type: json
-          filename: timeTaken.json
+        - type: chart
+          filename: portfolioValue.png
 params:
     - name: decayFactor
       value: 0.5

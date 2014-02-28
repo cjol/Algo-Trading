@@ -1,7 +1,5 @@
 package sampleAlgos;
 
-import java.util.Iterator;
-
 import orderBooks.SellOrder;
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;

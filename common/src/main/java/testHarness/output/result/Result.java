@@ -10,11 +10,19 @@ public class Result implements Serializable{
 	 */
 	private static final long serialVersionUID = 2L;
 	private String jsonData;
+	private transient JSONObject jsonObject = null;
 	private String name;
 	private String slug;
 
 	public String getName() {
 		return name;
+	}
+	
+	public JSONObject getJsonObject() {
+		if (jsonObject == null) {
+			jsonObject = new JSONObject(jsonData);
+		}
+		return jsonObject;
 	}
 
 	public String getSlug() {
@@ -30,6 +38,7 @@ public class Result implements Serializable{
 	public Result(String slug, String name, JSONObject d) {
 		this.name = name;
 		this.slug = slug;
+		this.jsonObject = d;
 		this.jsonData = d.toString();
 	}
 	

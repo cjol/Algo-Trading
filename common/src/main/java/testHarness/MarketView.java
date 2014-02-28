@@ -152,7 +152,7 @@ public class MarketView {
 			
 			return matches.iterator();
 		} catch (SimulationAbortedException e) {
-			tryCleanAbort(Thread.currentThread());
+			tryCleanAbort();
 			throw e;
 		}
 	}
@@ -230,7 +230,7 @@ public class MarketView {
 			booksWithPosition.add(book);
 			return true;
 		} catch (SimulationAbortedException e) {
-			tryCleanAbort(Thread.currentThread());
+			tryCleanAbort();
 			throw e;
 		}
 	}
@@ -259,7 +259,7 @@ public class MarketView {
 			booksWithPosition.add(book);
 			return true;
 		} catch (SimulationAbortedException e) {
-			tryCleanAbort(Thread.currentThread());
+			tryCleanAbort();
 			throw e;
 		}
 	}
@@ -279,7 +279,7 @@ public class MarketView {
 			} else return false;
 			
 		} catch (SimulationAbortedException e) {
-			tryCleanAbort(Thread.currentThread());
+			tryCleanAbort();
 			throw e;
 		}
 	}
@@ -296,7 +296,7 @@ public class MarketView {
 			} else return false;
 			
 		} catch (SimulationAbortedException e) {
-			tryCleanAbort(Thread.currentThread());
+			tryCleanAbort();
 			throw e;
 		}
 	}
@@ -375,7 +375,7 @@ public class MarketView {
 		try {
 			res = dataHandler.getAllStocks(dataset);
 		} catch (SQLException e) {
-			tryCleanAbort(Thread.currentThread());
+			tryCleanAbort();
 			throw new SimulationAbortedException(e);
 		}
 		return res;
@@ -396,7 +396,7 @@ public class MarketView {
 			}
 			return new MultiIterator<>(orders);
 		} catch (SimulationAbortedException e) {
-			tryCleanAbort(Thread.currentThread());
+			tryCleanAbort();
 			throw e;
 		}
 	}
@@ -416,7 +416,7 @@ public class MarketView {
 			}
 			return new MultiIterator<>(orders);
 		} catch (SimulationAbortedException e) {
-			tryCleanAbort(Thread.currentThread());
+			tryCleanAbort();
 			throw e;
 		}
 	}
@@ -451,7 +451,7 @@ public class MarketView {
 			}
 			return out.iterator();
 		} catch (SimulationAbortedException e) {
-			tryCleanAbort(Thread.currentThread());
+			tryCleanAbort();
 			throw e;
 		}
 	}
@@ -474,11 +474,8 @@ public class MarketView {
 	/**
 	 * Called when the user's algorithm should terminate, to try to encourage
 	 * him to.
-	 * 
-	 * @param runningThread
 	 */
-	public void tryCleanAbort(Thread runningThread) {
+	public void tryCleanAbort() {
 		threadShouldBeAborting = true;
-		// TODO: Anything else?
 	}
 }

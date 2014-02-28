@@ -26,7 +26,7 @@ public class TestInstance implements Runnable{
 	private OutputServer outputServer;
 	
 	private MarketView marketView;
-	private Thread marketViewThread;
+	private TestThread marketViewThread;
 	
 	/**
 	 * 
@@ -71,18 +71,13 @@ public class TestInstance implements Runnable{
 					o.attachMarketView(marketView);
 				}
 				
-				startSim(options.timeout);
+				Exception outcome = startSim(options.timeout);
 				
 				result = null;
-				try {
-					if (marketView.isFinished()) {
-						result = TestRequestDescription.filterOutputs(desc, outputs);
-					}
-				} catch (SimulationAbortedException e) {
-					// timedout and thread has aborted -- handled by next case
-				}
-				if (result == null) {
-					result = new TestResultDescription(new Exception("Test timed out"));
+				if (outcome == null) { // success
+					result = TestRequestDescription.filterOutputs(desc, outputs);
+				} else {
+					result = new TestResultDescription(outcome);	
 				}
 			}
 											
@@ -103,10 +98,14 @@ public class TestInstance implements Runnable{
 	}
 	
 	/**
-	 * Starts market in another thread
+	 * Starts market in another thread. Returns null on success;
+	 * otherwise, returns an exception which occurred in the client thread
+	 * (or, possibly, a pseudo-exception on timeout if client thread does not
+	 * cleanly abort.)
+	 * 
 	 * @param timeout How long to give the market before terminating.
 	 */
-	private void startSim(long timeout)
+	private Exception startSim(long timeout)
 	{
 		marketViewThread = new TestThread(marketView);
 		
@@ -120,6 +119,18 @@ public class TestInstance implements Runnable{
 		if (marketViewThread.isAlive()) {
 			abortTest();
 		}
+		
+		if (marketViewThread.state == TestState.EXCEPTION) {
+			return marketViewThread.exception;
+		} else {
+			return null;
+		}
+	}
+	
+	public void abortTest() {
+		if (marketViewThread != null) {
+			marketViewThread.abortTest();
+		}
 	}
 	
 	/**
@@ -127,33 +138,58 @@ public class TestInstance implements Runnable{
 	 * @author Lawrence Esswood
 	 *
 	 */
-	private class TestThread extends Thread{
+	enum TestState {
+		NOTDEAD, // running or yet to start to run
+		SUCCESSFUL, // terminated successfully
+		EXCEPTION; // terminated exceptionally, possibly due to timeout
+	};
+	
+	private class TestThread extends Thread {
+		// time in milliseconds to wait for clean termination
+		private static final int ABORT_TIMEOUT = 1000;
 		final MarketView mv;
+		volatile TestState state = TestState.NOTDEAD;
+		volatile Exception exception = null;
+		
 		public TestThread(MarketView mv) {
 			this.mv = mv;
 		}
 		
 		@Override
 		public void run() {
-			mv.startSimulation();
+			try {
+				mv.startSimulation();	
+				this.state = TestState.SUCCESSFUL;
+			} catch (Exception e) {
+				// exception has propagated from MarketView; record error
+				// so client can be informed
+				this.state = TestState.EXCEPTION;
+				this.exception = e;
+				throw(e);
+			}	
 		};
-	};
-	
-	
-	/**
-	 * Trys to cleanly abort the test, then kills it.
-	 */
-	@SuppressWarnings("deprecation")
-	public void abortTest() {
-		if(marketView != null)
-		{
-			marketView.tryCleanAbort(marketViewThread);
+		
+		/**
+		 * Trys to cleanly abort the test, then kills it.
+		 */
+		@SuppressWarnings("deprecation")
+		public void abortTest() {
+			mv.tryCleanAbort();
+			try {
+				this.join(ABORT_TIMEOUT);	
+			} catch (InterruptedException e) {
+				// ignore 
+			}
 			
 			// A necessary evil as we don't control user code.
-			if(marketViewThread != null && marketViewThread.isAlive()) {
-				marketViewThread.stop();
+			if(this.isAlive()) {
+				this.stop();
+				this.state = TestState.EXCEPTION;
+				this.exception = new SimulationAbortedException("Test timed out ");
 			}
+			
+			// note if we don't have to uncleanly abort, then client thread
+			// will have propagated exception state and exception updated
 		}
-	}
-	
+	};
 }
