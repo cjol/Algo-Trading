@@ -14,9 +14,9 @@ def decode_series(path):
     return (times, values)
 
 class Plot:
-    def __init__(self, pathPrefix="."):
-        (times, availableFunds) = decode_series(os.path.join(pathPrefix,"AvailableFunds.json"))
-        (times, portfolioValue) = decode_series(os.path.join(pathPrefix,"PortfolioValue.json"))
+    def __init__(self, pathPrefix=".", pathSuffix=""):
+        (times, availableFunds) = decode_series(os.path.join(pathPrefix,"availableFunds"+pathSuffix+".json"))
+        (times, portfolioValue) = decode_series(os.path.join(pathPrefix,"portfolioValue"+pathSuffix+".json"))
         # note times same for both series
         self.times = times
         self.availableFunds = availableFunds
@@ -44,11 +44,15 @@ class Plot:
 
 if __name__ == "__main__":
     import pylab
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 3:
+        dataPath = sys.argv[1]
+        dataSuffix = sys.argv[2]
+        plot = Plot(dataPath, dataSuffix)
+    elif len(sys.argv) == 2:
         dataPath = sys.argv[1]
         plot = Plot(dataPath)
-    elif len(sys.argv) > 2:
-        print >>sys.stderr, "usage: %s [data path]" % sys.argv[0]
+    elif len(sys.argv) > 3:
+        print >>sys.stderr, "usage: %s [data path] [data suffix]" % sys.argv[0]
         sys.exit(1)
     else:
         plot = Plot()

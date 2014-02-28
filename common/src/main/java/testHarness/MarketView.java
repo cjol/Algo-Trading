@@ -195,12 +195,18 @@ public class MarketView {
 	 */
 	public BigDecimal getAvailableFunds() {
 		if (threadShouldBeAborting)
-			return null;
+			throw new SimulationAbortedException();
 		return availableFunds;
 	}
 	
 	public BigDecimal calculateCommission(BigDecimal amount) {
 		return amount.multiply(COMMISSION_RATE);
+	}
+	
+	public BigDecimal getFundsLessCommission() {
+		if (threadShouldBeAborting)
+			throw new SimulationAbortedException();
+		return availableFunds.subtract(calculateCommission(availableFunds));
 	}
 
 	/**

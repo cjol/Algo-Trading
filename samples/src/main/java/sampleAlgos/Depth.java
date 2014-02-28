@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.Map.Entry;
 
 import orderBooks.BuyOrder;
 import orderBooks.Match;
@@ -18,6 +18,7 @@ import orderBooks.SellOrder;
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
 import testHarness.clientConnection.Options;
+import valueObjects.TickOutOfRangeException;
 import database.StockHandle;
 
 public class Depth implements ITradingAlgorithm {
@@ -88,11 +89,11 @@ public class Depth implements ITradingAlgorithm {
 				o = orders.next();
 				bestPrice = o.getPrice();
 				
-				do {
+				 while (orders.hasNext()) {
 					o = orders.next();
 					int deltaPrice = Math.abs(bestPrice - o.getPrice());
 					priceVolume.addFirst(deltaPrice * o.getVolume());	
-				} while (orders.hasNext());
+				}
 			}
 			
 			double pressure = 0;
@@ -176,35 +177,46 @@ public class Depth implements ITradingAlgorithm {
 			// make an aggressive trade on the first one we can that is
 			// above threshold
 			for (StockDouble sd : normalizedPressure) {
-				if (sd.val < tradeThreshold) {
+				if (Math.abs(sd.val) < tradeThreshold) {
 					break;
 				}
 				StockHandle s = sd.stock;
 				OrderBook o = market.getOrderBook(s);
 				
 				int totalVolume = volume.get(s);
-				int orderVolume = totalVolume * 100 / volumePercentage;
+				int orderVolume = totalVolume * volumePercentage / 100;
 				
 				try {
 					if (sd.val > 0) {
-						//int bestBid = (int) o.getHighestBid().getValue(0);
-						Iterator<BuyOrder> bids = o.getAllBids();
-						if (bids == null || !bids.hasNext())
-							continue;
-						int bestBid = bids.next().getPrice();
-						// TODO: Check if we have sufficient funds
-						market.buy(s, bestBid, orderVolume);
+						int bestOffer = (int)o.getLowestOffer().getValue(0);
+						int totalPrice = bestOffer * orderVolume;
+						// buy at most what we have the capital to purchase
+						totalPrice = Math.min(totalPrice, market.getFundsLessCommission().intValue());
+						orderVolume = totalPrice / bestOffer;
+						if (!market.buy(s, bestOffer, orderVolume)) {
+							System.err.println("error buying");
+						}
 					} else {
-						Iterator<SellOrder> offers = o.getAllOffers();
-						if (offers == null || !offers.hasNext())
-							continue;
-						int bestOffer = offers.next().getPrice();
-						// TODO: Check if we already own stock/cap volume?
-						market.sell(s, bestOffer, orderVolume);
+						int bestBid = (int)o.getHighestBid().getValue(0);
+						
+						Iterator<Entry<StockHandle, Integer>> portfolio = market.getPortfolio();
+						int amountWeOwn = 0;
+						while (portfolio.hasNext()) {
+							Entry<StockHandle,Integer> position = portfolio.next();
+							if (position.getKey().equals(s)) {
+								amountWeOwn = position.getValue();
+							}
+						}
+						if (amountWeOwn > 0) {
+							orderVolume = Math.min(orderVolume, amountWeOwn);
+							if (!market.sell(s, bestBid, orderVolume)) {
+								System.err.println("error selling");
+							}
+						}
 					}	
 					break;
-				} catch (NoSuchElementException e) {
-					// no data in order book
+				} catch (TickOutOfRangeException e) {
+					// no data in order book -- try again
 					continue; 
 				}
 			}

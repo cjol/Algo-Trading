@@ -1,0 +1,36 @@
+dataset:    small
+# tick size is in miliseconds
+tickSize:       100
+maxTicks:       36000
+startingFunds: 100000
+commissionRate: 50 # half of a basis point
+timeout:       60000
+
+outputs: 
+    - name: testHarness.output.AvailableFunds
+      respond: true
+      commit: false
+      formats: 
+        - type: json
+          filename: availableFunds_depth.json
+    - name: testHarness.output.PortfolioValue
+      respond: true
+      commit: false
+      formats: 
+        - type: json
+          filename: portfolioValue_depth.json
+    - name: testHarness.output.TimeTaken
+      respond: true
+      commit: false
+      formats: 
+        - type: json
+          filename: timeTaken_depth.json
+params:
+    - name: decayFactor
+      value: 0.5
+    - name: tradeThreshold
+      value: 0.5
+    - name: volumePercentage
+      value: 1
+    - name: stocks
+      value: HOT,IFX,IUSA
