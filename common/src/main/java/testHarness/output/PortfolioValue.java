@@ -18,18 +18,18 @@ import database.StockHandle;
 
 public class PortfolioValue extends Output{
 	
-	private Map<Timestamp, Integer> portfolioValueData;
+	private Map<Timestamp, Double> portfolioValueData;
 	private static final String name = "Portfolio Value";
 	
 	public PortfolioValue(OutputServer outputServer) {
 		super(outputServer);	
-		portfolioValueData = new HashMap<Timestamp,Integer>();
+		portfolioValueData = new HashMap<Timestamp,Double>();
 	}
 
 	@Override
 	public Result getResult() {
 		JSONObject resultMap = new JSONObject();
-		for (Entry<Timestamp, Integer> portfolioValue : portfolioValueData.entrySet()) {
+		for (Entry<Timestamp, Double> portfolioValue : portfolioValueData.entrySet()) {
 			resultMap.put(portfolioValue.getKey().toString(), portfolioValue.getValue());
 		}
 		Result result = new Result(getSlug(), name, resultMap);
@@ -37,8 +37,8 @@ public class PortfolioValue extends Output{
 		return result;
 	}
 	
-	public static Integer getPortfolioValue(TickData td, MarketView market, boolean countReserved) {
-		int value = 0;
+	public static double getPortfolioValue(TickData td, MarketView market, boolean countReserved) {
+		double value = 0;
 		// go through actual portfolio
 		for (Entry<StockHandle, Integer> item : td.portfolio.entrySet()) {
 			StockHandle stock = item.getKey();

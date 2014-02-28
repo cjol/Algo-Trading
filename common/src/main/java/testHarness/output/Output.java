@@ -1,9 +1,11 @@
 package testHarness.output;
 
+import java.util.List;
+
 import testHarness.MarketView;
-import database.OutputServer;
 import testHarness.TickData;
 import testHarness.output.result.Result;
+import database.OutputServer;
 
 /**
  * Abstract class representing an output
@@ -16,6 +18,12 @@ public abstract class Output {
 	protected MarketView market;
 	
 	public abstract Result getResult();
+	
+	public Class<?>[] dependencies() {return null;}
+	
+	public void deriveResults(List<Output> outputs){
+		// by default does nothing since the output is not derived
+	}
 	
 	/**
 	 * Processes raw data from the test.
