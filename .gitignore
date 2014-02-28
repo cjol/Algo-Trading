@@ -29,10 +29,16 @@ local.properties
 # TeXlipse plugin
 .texlipse
 
+# Eclipse
 .classpath
+.project
 
 # External dependencies
 lib/
 
 # Maven output folder
 target/
+
+# Outputs from FileLoader
+*.json
+*.png

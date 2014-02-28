@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import Iterators.MultiIterator;
-import Iterators.ProtectedIterator;
 import orderBooks.BuyOrder;
 import orderBooks.MarketOrderBook;
 import orderBooks.Match;
@@ -21,6 +19,8 @@ import orderBooks.SellOrder;
 import orderBooks.UserOrderBook;
 import testHarness.clientConnection.Options;
 import testHarness.output.Output;
+import Iterators.MultiIterator;
+import Iterators.ProtectedIterator;
 import database.DatasetHandle;
 import database.StockHandle;
 import database.TestDataHandler;
@@ -34,6 +34,7 @@ public class MarketView {
 	private final BigDecimal STARTING_FUNDS;
 	// TICK_SIZE is in milliseconds
 	private final int TICK_SIZE;
+	private final BigDecimal COMMISSION_RATE;
 
 	private final ITradingAlgorithm algo;
 	private final List<Output> outputs; 
@@ -52,7 +53,7 @@ public class MarketView {
 	private BigDecimal availableFunds;
 	private BigDecimal reservedFunds = new BigDecimal(0);
 
-	private boolean threadShouldBeAborting = false;
+	private volatile boolean threadShouldBeAborting = false;
 	private int remaining_ticks;
 	
 	/**
@@ -75,6 +76,8 @@ public class MarketView {
 		
 		STARTING_FUNDS = new BigDecimal(options.startingFunds);
 		TICK_SIZE = options.tickSize;
+		BigDecimal commisionRate = new BigDecimal(options.commissionRate);
+		COMMISSION_RATE = commisionRate.divide(new BigDecimal(10000));
 		remaining_ticks = options.maxTicks;
 	}
 
@@ -82,7 +85,7 @@ public class MarketView {
 	 * Initialise the MarketView with defaults (will eventually be
 	 * parameterised). Must be called before any other methods.
 	 */
-	public void startSimulation() {
+	void startSimulation() {
 		availableFunds = STARTING_FUNDS;
 		currentTime = dataset.getStartTime();
 		endTime = dataset.getEndTime();
@@ -123,17 +126,18 @@ public class MarketView {
 				UserOrderBook book = bookIter.next();
 				
 				Iterator<Match> matcheIter = book.updateTime();
-				//TODO commission
 				while(matcheIter.hasNext()) {
 					Match m = matcheIter.next();
 					matches.add(m);
 					
+					BigDecimal amount = new BigDecimal(m.price * m.quantity);
+					BigDecimal commission = calculateCommission(amount);
 					if(m.isUserBid) {
 						addStockToPortfolio(m.stockHandle, m.quantity);
-						reservedFunds = reservedFunds.subtract(new BigDecimal(m.price * m.quantity));
+						reservedFunds = reservedFunds.subtract(amount.add(commission));
 					} else if(m.isUserOffer) {
 						removeReserveStock(m.stockHandle, m.quantity);
-						availableFunds = availableFunds.add(new BigDecimal(m.price * m.quantity));
+						availableFunds = availableFunds.add(amount.subtract(commission));
 					}
 				}
 				
@@ -166,7 +170,7 @@ public class MarketView {
 		if (threadShouldBeAborting)
 			throw new SimulationAbortedException();
 		if (!openedBooks.containsKey(stock)) {
-			OrderBook market = new MarketOrderBook(currentTime, stock, dataHandler);
+			OrderBook market = new MarketOrderBook(currentTime, stock, dataHandler, TICK_SIZE);
 			UserOrderBook user = new UserOrderBook(stock, market);
 			openedBooks.put(stock, user);
 		}
@@ -194,8 +198,10 @@ public class MarketView {
 			return null;
 		return availableFunds;
 	}
-
-	// TODO: The user needs to be able to cancel an order!
+	
+	public BigDecimal calculateCommission(BigDecimal amount) {
+		return amount.multiply(COMMISSION_RATE);
+	}
 
 	/**
 	 * Called by the user to place a buy offer to the market.
@@ -214,9 +220,10 @@ public class MarketView {
 			throw new SimulationAbortedException();
 		try
 		{
-			int totalPrice = price * volume;
+			BigDecimal totalPrice = new BigDecimal(price * volume);
+			BigDecimal toReserve = totalPrice.add(calculateCommission(totalPrice));
 			
-			if(!reserveFunds(totalPrice)) return false;
+			if(!reserveFunds(toReserve)) return false;
 			
 			UserOrderBook book = (UserOrderBook) getOrderBook(stock);
 			book.buy(volume, price, currentTime);
@@ -265,7 +272,9 @@ public class MarketView {
 		{
 			OrderBook ob = getOrderBook(stock);
 			if(ob.CancelBuyOrder(volume, price)) {
-				refundFunds(new BigDecimal(volume * price));
+				BigDecimal totalPrice = new BigDecimal(volume * price); 
+				BigDecimal toRefund = totalPrice.add(calculateCommission(totalPrice)); 
+				refundFunds(toRefund);
 				return true;
 			} else return false;
 			
@@ -292,13 +301,12 @@ public class MarketView {
 		}
 	}
 
-	private boolean reserveFunds(int totalPrice) {
-		BigDecimal totalBig = (new BigDecimal(totalPrice));
-		if (getAvailableFunds().compareTo(totalBig) < 0)
+	private boolean reserveFunds(BigDecimal totalPrice) {
+		if (getAvailableFunds().compareTo(totalPrice) < 0)
 			return false; // we don't have enough funds
 		
-		availableFunds = availableFunds.subtract(totalBig);
-		reservedFunds = reservedFunds.add(totalBig);
+		availableFunds = availableFunds.subtract(totalPrice);
+		reservedFunds = reservedFunds.add(totalPrice);
 		return true;
 	}
 	

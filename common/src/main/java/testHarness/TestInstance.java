@@ -1,11 +1,14 @@
-package testHarness.clientConnection;
+package testHarness;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.List;
 
-import testHarness.MarketView;
+import testHarness.clientConnection.ConnectionHandler;
+import testHarness.clientConnection.Options;
+import testHarness.clientConnection.TestRequestDescription;
+import testHarness.clientConnection.TestResultDescription;
 import testHarness.clientConnection.TestRequestDescription.LoadClassException;
 import testHarness.output.Output;
 import database.DatasetHandle;
@@ -59,7 +62,7 @@ public class TestInstance implements Runnable{
 				System.exit(-1); // DB error fatal
 			}
 			if (dataset == null) {
-				result = new TestResultDescription("Dataset " + datasetName + " not found.");
+				result = new TestResultDescription(new Exception("Dataset " + datasetName + " not found."));
 			} else {
 				List<Output> outputs = TestRequestDescription.getOutputs(desc, outputServer);
 				marketView = new MarketView(TestRequestDescription.getAlgo(desc), outputs, dataHandler, dataset, options);
@@ -70,9 +73,17 @@ public class TestInstance implements Runnable{
 				
 				startSim(options.timeout);
 				
-				result = (marketView.isFinished()) ?
-				     	 TestRequestDescription.filterOutputs(desc, outputs):
-						 new TestResultDescription("Test timed out");
+				result = null;
+				try {
+					if (marketView.isFinished()) {
+						result = TestRequestDescription.filterOutputs(desc, outputs);
+					}
+				} catch (SimulationAbortedException e) {
+					// timedout and thread has aborted -- handled by next case
+				}
+				if (result == null) {
+					result = new TestResultDescription(new Exception("Test timed out"));
+				}
 			}
 											
 			connection.sendResults(result);
@@ -80,7 +91,7 @@ public class TestInstance implements Runnable{
 		} catch (IOException | ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException | LoadClassException io) {
 			io.printStackTrace();
 			try {
-				connection.sendResults(new TestResultDescription(io.getMessage()));
+				connection.sendResults(new TestResultDescription(io));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -104,6 +115,9 @@ public class TestInstance implements Runnable{
 		{
 			marketViewThread.join(timeout);
 		} catch (InterruptedException e) {
+			// ignore
+		}
+		if (marketViewThread.isAlive()) {
 			abortTest();
 		}
 	}

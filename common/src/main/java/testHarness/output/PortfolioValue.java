@@ -16,13 +16,12 @@ import valueObjects.TickOutOfRangeException;
 import database.OutputServer;
 import database.StockHandle;
 
-public class PortfolioValueOutput extends Output{
+public class PortfolioValue extends Output{
 	
 	private Map<Timestamp, Integer> portfolioValueData;
-	private static final String slug = "testHarness.output.PortfolioValueOutput";
 	private static final String name = "Portfolio Value";
 	
-	public PortfolioValueOutput(OutputServer outputServer) {
+	public PortfolioValue(OutputServer outputServer) {
 		super(outputServer);	
 		portfolioValueData = new HashMap<Timestamp,Integer>();
 	}
@@ -33,7 +32,7 @@ public class PortfolioValueOutput extends Output{
 		for (Entry<Timestamp, Integer> portfolioValue : portfolioValueData.entrySet()) {
 			resultMap.put(portfolioValue.getKey().toString(), portfolioValue.getValue());
 		}
-		Result result = new Result(slug, name, resultMap);
+		Result result = new Result(getSlug(), name, resultMap);
 		if(outputServer != null) outputServer.store(result);
 		return result;
 	}

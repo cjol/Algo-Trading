@@ -1,10 +1,10 @@
 dataset:    small
 # tick size is in miliseconds
-tickSize:       100
-maxTicks:       100000
-startingFunds: 10000
-commissionRate: 0 # half of a basis point
-timeout:       600000
+tickSize:       10000
+maxTicks:       600
+startingFunds: 100000
+commissionRate: 0 # 50 half of a basis point
+timeout:       60000
 # outputs is a list
 outputs: 
     # name: fully qualified class name
@@ -20,7 +20,7 @@ outputs:
         # combine: Not relevant for all formats, but if true will display a single result for all
         #          outputs of a particular format. Only combine on display, not save.
         - type: json
-          filename: availableFunds.json
+          filename: availableFunds_BAH.json
     - name: testHarness.output.PortfolioValue
       respond: true
       commit: false
@@ -30,7 +30,7 @@ outputs:
         # combine: Not relevant for all formats, but if true will display a single result for all
         #          outputs of a particular format. Only combine on display, not save.
         - type: json
-          filename: portfolioValue.json
+          filename: portfolioValue_BAH.json
     - name: testHarness.output.TimeTaken
       respond: true
       commit: false
@@ -40,11 +40,5 @@ outputs:
         - type: json
           filename: timeTaken.json
 params:
-    - name: decayFactor
-      value: 0.5
-    - name: tradeThreshold
-      value: 0.5
-    - name: volumePercentage
-      value: 10
-    - name: stocks
-      value: HOT,IFX,IUSA
+    - name: ticker
+      value: HOT 

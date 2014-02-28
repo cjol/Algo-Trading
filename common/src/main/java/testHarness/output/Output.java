@@ -34,4 +34,8 @@ public abstract class Output {
 	public void attachMarketView(MarketView marketView) {
 		market = marketView;
 	}
+	
+	public String getSlug() {
+		return this.getClass().getCanonicalName();
+	}
 }

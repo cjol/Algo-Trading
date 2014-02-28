@@ -113,7 +113,7 @@ public class UserBookTest {
 	private static class FakeMarketBook extends MarketOrderBook {
 		public FakeMarketBook(Timestamp startTime, StockHandle handle,
 				TestDataHandler dataHandler) {
-			super(startTime, handle, dataHandler);
+			super(startTime, handle, dataHandler, 0);
 			buyOrders.add(new BuyOrder(handle,50,100));
 			buyOrders.add(new BuyOrder(handle,40,200));
 			buyOrders.add(new BuyOrder(handle,30,300));

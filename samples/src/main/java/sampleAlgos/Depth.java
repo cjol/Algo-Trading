@@ -1,6 +1,7 @@
 package sampleAlgos;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -22,28 +23,51 @@ import valueObjects.TickOutOfRangeException;
 import database.StockHandle;
 
 public class Depth implements ITradingAlgorithm {
-	private static final double DECAY_FACTOR = 0.5; // TODO
-	private static final double TRADE_THRESHOLD = 1; // TODO
-	private static final int VOLUME_PERCENTAGE = 10;
-	
 	@Override
 	public void run(MarketView market, Options options) {
-		new DepthImpl(market).run();
+		new DepthImpl(market, options).run();
 	}
 	
 	private class DepthImpl {
-		private MarketView market;
+		private final double decayFactor;
+		private final double tradeThreshold;
+		private final int volumePercentage;
+		private final MarketView market;
+		private final List<String> configuredStocks;
 		private List<StockHandle> stocks;
 		private Map<StockHandle,Double> pressure;
 		private Map<StockHandle,Integer> volume;
 		private List<StockDouble> normalizedPressure;
 		
-		public DepthImpl(MarketView market) {
+		public DepthImpl(MarketView market, Options options) {
+			decayFactor = Double.parseDouble(options.getParam("decayFactor"));
+			tradeThreshold = Double.parseDouble(options.getParam("tradeThreshold"));
+			volumePercentage = Integer.parseInt(options.getParam("volumePercentage"));
+			
+			String rawUserStocks = options.getParam("stocks");
+			if (rawUserStocks != null) {
+				List<String> userStocks;
+				userStocks = Arrays.asList(rawUserStocks.split(","));
+				configuredStocks = Collections.unmodifiableList(userStocks);
+			} else {
+				configuredStocks = null;
+			}
+			
 			this.market = market;
 		}
 		
 		public void run() {
-			stocks = market.getAllStocks();
+			List<StockHandle> marketStocks = market.getAllStocks();
+			if (configuredStocks == null) {
+				stocks = marketStocks;
+			} else {
+				stocks = new LinkedList<StockHandle>();
+				for (StockHandle s : marketStocks) {
+					if (configuredStocks.contains(s.getTicker())) {
+						stocks.add(s);
+					}
+				}
+			}
 			
 			while (!market.isFinished()) {
 				tick(market.tick());
@@ -75,7 +99,7 @@ public class Depth implements ITradingAlgorithm {
 			
 			double pressure = 0;
 			for (int pv : priceVolume) {
-				pressure = pressure * DECAY_FACTOR;
+				pressure = pressure * decayFactor;
 				pressure += pv;
 			}
 			
@@ -154,23 +178,23 @@ public class Depth implements ITradingAlgorithm {
 			// make an aggressive trade on the first one we can that is
 			// above threshold
 			for (StockDouble sd : normalizedPressure) {
-				if (sd.val < TRADE_THRESHOLD) {
+				if (sd.val < tradeThreshold) {
 					break;
 				}
 				StockHandle s = sd.stock;
 				OrderBook o = market.getOrderBook(s);
 				
 				int totalVolume = volume.get(s);
-				int orderVolume = totalVolume * 100 / VOLUME_PERCENTAGE;
+				int orderVolume = totalVolume * 100 / volumePercentage;
 				
 				try {
 					if (sd.val > 0) {
-						int bestBid = (int)new HighestBid(o).getValue(0);
+						int bestBid = (int) o.getHighestBid().getValue(0);
 						// TODO: Check if we have sufficient funds
 						market.buy(s, bestBid, orderVolume);
 						break;
 					} else {
-						int bestOffer = (int)new LowestOffer(o).getValue(0);
+						int bestOffer = (int) o.getLowestOffer().getValue(0);
 						// TODO: Check if we already own stock/cap volume?
 						market.sell(s, bestOffer, orderVolume);
 					}	

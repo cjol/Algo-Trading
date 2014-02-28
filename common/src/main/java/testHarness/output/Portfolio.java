@@ -15,7 +15,6 @@ import database.StockHandle;
 public class Portfolio extends Output {
 	
 	private Map<Timestamp, Map<StockHandle, Integer>> portfolioList;
-	private static final String slug = "testHarness.output.Portfolio";
 	private static final String name = "Portfolio Contents";
 	
 	public Portfolio(OutputServer outputServer) {
@@ -35,7 +34,7 @@ public class Portfolio extends Output {
 			}
 			portfolioMap.put(portfolio.getKey().toString(), portfolioItems);
 		}
-		Result result = new Result(slug, name, portfolioMap);
+		Result result = new Result(getSlug(), name, portfolioMap);
 		if (outputServer != null) outputServer.store(result);
 		return result;
 	}
