@@ -77,7 +77,7 @@ public class MarketView {
 		STARTING_FUNDS = new BigDecimal(options.startingFunds);
 		TICK_SIZE = options.tickSize;
 		BigDecimal commisionRate = new BigDecimal(options.commissionRate);
-		COMMISSION_RATE = commisionRate.divide(new BigDecimal(10000));
+		COMMISSION_RATE = commisionRate.divide(new BigDecimal(1000000));
 		remaining_ticks = options.maxTicks;
 	}
 
