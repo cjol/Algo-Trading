@@ -1,7 +1,7 @@
 dataset:    small
 # tick size is in miliseconds
-tickSize:       60000
-maxTicks:       900
+tickSize:       10000
+maxTicks:       2880
 startingFunds: 100000
 commissionRate: 0 # 50 half of a basis point
 timeout:       60000
@@ -37,4 +37,4 @@ outputs:
           filename: portfolio.json
 params:
     - name: ticker
-      value: MDAXEX
+      value: SIE

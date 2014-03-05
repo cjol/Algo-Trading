@@ -1,9 +1,9 @@
 dataset:    small
 # tick size is in miliseconds
-tickSize:       100
-maxTicks:       36000
+tickSize:       10000
+maxTicks:       2880
 startingFunds: 100000
-commissionRate: 50 # half of a basis point
+commissionRate: 0 # half of a basis point
 timeout:       60000
 
 outputs: 
@@ -12,19 +12,25 @@ outputs:
       commit: false
       formats: 
         - type: json
-          filename: availableFunds_depth.json
+          filename: availableFunds.json
     - name: testHarness.output.PortfolioValue
       respond: true
       commit: false
       formats: 
         - type: json
-          filename: portfolioValue_depth.json
+          filename: portfolioValue.json
     - name: testHarness.output.TimeTaken
       respond: true
       commit: false
       formats: 
         - type: json
-          filename: timeTaken_depth.json
+          filename: timeTaken.json
+    - name: testHarness.output.Portfolio
+      respond: true
+      commit: false
+      formats:
+        - type: json
+          filename: portfolio.json
 params:
     - name: decayFactor
       value: 0.5
@@ -33,4 +39,4 @@ params:
     - name: volumePercentage
       value: 1
     - name: stocks
-      value: HOT,IFX,IUSA
+      value: SIE

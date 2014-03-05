@@ -19,7 +19,7 @@ public class BollingerBandsFast implements ITradingAlgorithm {
 	@Override
 	public void run(MarketView marketView, Options options) {
 		int windowSize = Integer.parseInt(options.getParam("windowSize"));
-		int deviations = Integer.parseInt(options.getParam("deviations"));
+		double deviations = Double.parseDouble(options.getParam("deviations"));
 		String stockName = options.getParam("ticker");
 		
 		StockHandle stock = null;

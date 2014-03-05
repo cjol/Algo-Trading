@@ -37,7 +37,7 @@ outputs:
           filename: portfolio.json
 params:
     - name: windowSize
-      value: 350 
+      value: 350
     - name: deviations
       value: 3
     - name: ticker
