@@ -47,8 +47,10 @@ outputs:
           filename: portfolio.json
 params:
     - name: slowWindow
-      value: 300 
+      value: 850
     - name: fastWindow
-      value: 50 
+      value: 85
     - name: ticker
       value: SIE
+    - name: leverage
+      value: 1

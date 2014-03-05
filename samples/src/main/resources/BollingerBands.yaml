@@ -42,3 +42,5 @@ params:
       value: 3
     - name: ticker
       value: SIE
+    - name: leverage
+      value: 1

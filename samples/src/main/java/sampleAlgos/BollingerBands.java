@@ -21,6 +21,7 @@ public class BollingerBands implements ITradingAlgorithm {
 		int windowSize = Integer.parseInt(options.getParam("windowSize"));
 		double deviations = Double.parseDouble(options.getParam("deviations"));
 		String stockName = options.getParam("ticker");
+		int leverage = Integer.parseInt(options.getParam("leverage"));
 		
 		StockHandle stock = null;
 		for (StockHandle s: marketView.getAllStocks()) {
@@ -75,9 +76,9 @@ public class BollingerBands implements ITradingAlgorithm {
 			
 			//If a stock hits the higher band, sell; if it hits the lower band, buy
 			if (midMarketVal >= topBand && havePosition) {
-				marketView.sell(stock, (int)hbVal, 1); 
+				marketView.sell(stock, (int)hbVal, leverage); 
 			} else if (midMarketVal <= bottomBand && !havePosition) {
-				marketView.buy(stock, (int)loVal, 1);
+				marketView.buy(stock, (int)loVal, leverage);
 			}
 		}
 

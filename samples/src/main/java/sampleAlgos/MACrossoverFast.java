@@ -19,6 +19,7 @@ public class MACrossoverFast implements ITradingAlgorithm {
 		int slowWindow = Integer.parseInt(options.getParam("slowWindow"));
 		int fastWindow = Integer.parseInt(options.getParam("fastWindow"));
 		String stockName = options.getParam("ticker");
+		int leverage = Integer.parseInt(options.getParam("leverage"));
 		
 		StockHandle stock = null;
 		for (StockHandle s: marketView.getAllStocks()) {
@@ -91,9 +92,9 @@ public class MACrossoverFast implements ITradingAlgorithm {
 			//minimize the possibility of the market moving against us
 			//and our orders not being filled
 			if (slowVal < fastVal && !havePosition) {
-				marketView.buy(stock, (int)loVal, 1);
+				marketView.buy(stock, (int)loVal, leverage);
 			} else if (slowVal > fastVal && havePosition) {
-				marketView.sell(stock, (int)hbVal, 1);
+				marketView.sell(stock, (int)hbVal, leverage);
 			}
 		}
 
