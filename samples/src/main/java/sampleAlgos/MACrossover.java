@@ -1,5 +1,8 @@
 package sampleAlgos;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
+
 import database.StockHandle;
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
@@ -37,8 +40,6 @@ public class MACrossover implements ITradingAlgorithm {
 		//int prevState = 0;
 		int currState = 0;
 		
-		boolean havePosition = false;
-		
 		while (!marketView.isFinished()) {
 			marketView.tick();
 			double slowVal;
@@ -52,20 +53,25 @@ public class MACrossover implements ITradingAlgorithm {
 				//Better luck next time
 			}
 			
-			if (slowVal < fastVal) currState = 1;
-			else if (slowVal > fastVal) currState = -1;
-			else currState = 0;
+			boolean havePosition = false; 
+			
+			Iterator<Entry<StockHandle, Integer>> portfolio = marketView.getPortfolio();
+			
+			while (portfolio.hasNext()) {
+				Entry<StockHandle, Integer> entry = portfolio.next();
+				if (entry.getKey() == stock && entry.getValue() > 0) {
+					havePosition = true;
+				}
+			}
 			
 			//Bull market?
-			if (currState == 1 && !havePosition) {
-				havePosition = true;
+			if (slowVal < fastVal && !havePosition) {
 				try {
 					marketView.buy(stock, (int) lo.getValue(0), 1);
 				} catch (TickOutOfRangeException e) {
 					e.printStackTrace();
 				}
-			} else if (currState == -1 && havePosition) {
-				havePosition = false;
+			} else if (slowVal > fastVal && havePosition) {
 				try {
 					marketView.sell(stock, (int) hb.getValue(0), 1);
 				} catch (TickOutOfRangeException e) {

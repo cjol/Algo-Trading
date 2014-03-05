@@ -21,9 +21,24 @@ public class MovingAverage implements IValued {
 	@Override
 	public double getValue(int ticksBack) throws TickOutOfRangeException {
 		//Sum the previous windowSize values and divide by the windowSize.
+		
+		//Hack to save against TickOutOfRangeExceptions: if cannot retrieve the value,
+		//try the next one
+		boolean first = true;
+		double lastSuccessful = 0.0;
 		double sum = 0.0;
 		for (int i = 0; i < windowSize; i++) {
-			sum += underlying.getValue(ticksBack + i);
+			double val;
+			try {
+				val = underlying.getValue(ticksBack + i);
+			} catch (TickOutOfRangeException e) {
+				if (first) throw e;
+				val = lastSuccessful;
+			}
+			
+			sum += val;
+			lastSuccessful = val;
+			first = false;
 		}
 		
 		return sum / (double)windowSize;

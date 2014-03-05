@@ -14,7 +14,7 @@ import valueObjects.MovingStandardDeviation;
 import valueObjects.TickOutOfRangeException;
 import valueObjects.TwoAverage;
 
-public class BollingerBands implements ITradingAlgorithm {
+public class BollingerBandsFast implements ITradingAlgorithm {
 
 	@Override
 	public void run(MarketView marketView, Options options) {
@@ -30,21 +30,18 @@ public class BollingerBands implements ITradingAlgorithm {
 			}
 		}
 		
+		
 		if (stock == null) return;
+		
+		double[] midMarketValues = new double[windowSize];
+		int noValues = 0;
 		
 		IValued hb = marketView.getOrderBook(stock).getHighestBid();
 		IValued lo = marketView.getOrderBook(stock).getLowestOffer();
 		
-		IValued midMarket = new TwoAverage(hb, lo);
-		
-		IValued movingAverage = new MovingAverage(midMarket, windowSize);
-		IValued movingStDev = new MovingStandardDeviation(movingAverage, windowSize);
-
 		while (!marketView.isFinished()) {
 			marketView.tick();
 			
-			double topBand;
-			double bottomBand;
 			double midMarketVal;
 			double hbVal;
 			double loVal;
@@ -53,14 +50,33 @@ public class BollingerBands implements ITradingAlgorithm {
 				hbVal = hb.getValue(0);
 				loVal = lo.getValue(0);
 				midMarketVal = (hbVal + loVal) * 0.5;
-				double maVal = movingAverage.getValue(0);
-				double stdVal = movingStDev.getValue(0);
 				
-				topBand = maVal + deviations * stdVal;
-				bottomBand = maVal - deviations * stdVal;
+				if (noValues == windowSize) {
+					for (int i = 1; i < windowSize; i++) {midMarketValues[i-1] = midMarketValues[i];}
+					midMarketValues[windowSize - 1] = midMarketVal;
+				} else {
+					midMarketValues[noValues] = midMarketVal;
+					noValues++;
+				}
 			} catch (TickOutOfRangeException e) {
 				continue;
 			}
+			
+			if (!(noValues == windowSize)) continue;
+			
+			double sum = 0.0;
+			double sumsq = 0.0;
+			
+			for (int i = 0; i < noValues; i++) {
+				sum += midMarketValues[i];
+				sumsq += midMarketValues[i] * midMarketValues[i];
+			}
+			
+			double maVal = sum / noValues;
+			double stdVal = Math.sqrt(sumsq / noValues - maVal * maVal);
+			
+			double topBand = maVal + deviations * stdVal;
+			double bottomBand = maVal - deviations * stdVal;
 			
 			boolean havePosition = false; 
 			

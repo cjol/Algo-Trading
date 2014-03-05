@@ -24,15 +24,32 @@ public class MovingStandardDeviation implements IValued {
 		
 		double sum = 0.0;
 		double sumsq = 0.0;
-		
+	
+		//Hack to save against TickOutOfRangeExceptions: if cannot retrieve the value,
+		//try the next one
+		boolean first = true;
+		double lastSuccessful = 0.0;
+
 		for (int i = 0; i < windowSize; i++) {
-			double value = underlying.getValue(i + ticksBack);
+			double value;
+			try {
+				value = underlying.getValue(i + ticksBack);
+			} catch (TickOutOfRangeException e) {
+				if (first) throw e;
+				
+				value = lastSuccessful;
+			}
 			
 			sum += value;
 			sumsq += value * value;
+			lastSuccessful = value;
+			first = false;
 		}
 		
-		return sumsq - sum * sum;
+		sum /= windowSize;
+		sumsq /= windowSize;
+		
+		return Math.sqrt(sumsq - sum * sum);
 	}
 
 }

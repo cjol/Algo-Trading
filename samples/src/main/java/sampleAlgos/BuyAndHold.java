@@ -1,5 +1,8 @@
 package sampleAlgos;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
+
 import orderBooks.SellOrder;
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
@@ -19,22 +22,27 @@ public class BuyAndHold implements ITradingAlgorithm {
 			}
 		}
 		
-		if (stock == null) return;
-		
-		int account = marketView.getAvailableFunds().intValue();
-		
-		boolean bought = false;
+		if (stock == null) return;		
 		
 		while (!marketView.isFinished()) {
 			marketView.tick();
 			
-			if (!bought) {
+			boolean havePosition = false; 
+			
+			Iterator<Entry<StockHandle, Integer>> portfolio = marketView.getPortfolio();
+			
+			while (portfolio.hasNext()) {
+				Entry<StockHandle, Integer> entry = portfolio.next();
+				if (entry.getKey() == stock) {
+					havePosition = true;
+				}
+			}
+			
+			if (!havePosition) {
 				SellOrder order = marketView.getOrderBook(stock).getAllOffers().next();
 				if (order == null) continue;
 				
-				//int amount = (account / order.getPrice()) - 1;
 				marketView.buy(stock, order.getPrice(), 1);
-				bought = true;
 			}
 		}
 	}

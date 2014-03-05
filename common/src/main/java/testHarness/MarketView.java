@@ -141,6 +141,20 @@ public class MarketView {
 					}
 				}
 				
+				//All orders are fill-or-kill (hack for the demo to work around
+				//the limitations of the dataset).
+				Iterator<BuyOrder> bids = book.getMyBids();
+				while (bids.hasNext()) {
+					BuyOrder bo = bids.next();
+					cancelBuy(bo.getStockHandle(), bo.getPrice(), bo.getVolume());
+				}
+				
+				Iterator<SellOrder> offers = book.getMyOffers();
+				while (offers.hasNext()) {
+					SellOrder so = offers.next();
+					cancelSell(so.getStockHandle(), so.getPrice(), so.getVolume());
+				}
+				
 				if(book.isComplete()) bookIter.remove();
 			}
 			

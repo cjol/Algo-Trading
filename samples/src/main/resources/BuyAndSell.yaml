@@ -4,7 +4,7 @@ tickSize:       60000
 maxTicks:       900
 startingFunds: 100000
 commissionRate: 0 # 50 half of a basis point
-timeout:       600000
+timeout:       6000000
 # outputs is a list
 outputs: 
     # name: fully qualified class name
@@ -15,28 +15,18 @@ outputs:
       respond: true
       commit: false
       formats: 
-        # type: One of json|chart
-        # filename: if this is present the result will be saved to this file (absent means don't save)
-        # combine: Not relevant for all formats, but if true will display a single result for all
-        #          outputs of a particular format. Only combine on display, not save.
         - type: json
           filename: availableFunds.json
     - name: testHarness.output.PortfolioValue
       respond: true
       commit: false
       formats: 
-        # type: One of json|chart
-        # filename: if this is present the result will be saved to this file (absent means don't save)
-        # combine: Not relevant for all formats, but if true will display a single result for all
-        #          outputs of a particular format. Only combine on display, not save.
         - type: json
           filename: portfolioValue.json
     - name: testHarness.output.TimeTaken
       respond: true
       commit: false
       formats: 
-        # type: One of json|chart
-        # filename: if this is present the result will be saved to this file (absent means don't save)
         - type: json
           filename: timeTaken.json
     - name: testHarness.output.Portfolio
@@ -46,9 +36,5 @@ outputs:
         - type: json
           filename: portfolio.json
 params:
-    - name: slowWindow
-      value: 100 
-    - name: fastWindow
-      value: 10
     - name: ticker
-      value: MDAXEX 
+      value: MDAXEX

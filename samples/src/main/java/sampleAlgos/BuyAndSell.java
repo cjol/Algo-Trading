@@ -17,22 +17,30 @@ public class BuyAndSell implements ITradingAlgorithm {
 		/*
 		 * Buys and sells one stock with a certain time interval
 		 */
-		Iterator<StockHandle> stocks = marketView.getAllStocks().iterator();
-		stocks.next();
-		stocks.next();
-		stocks.next();
-		StockHandle stock = stocks.next();
+		String stockName = options.getParam("ticker");
+		
+		StockHandle stock = null;
+		for (StockHandle s: marketView.getAllStocks()) {
+			if (s.getTicker().equals(stockName)) {
+				stock = s;
+				break;
+			}
+		}
+		
+		if (stock == null) return;
+		
 		OrderBook book = null;
 		boolean buyOrSell = true;
-		final int ticksBetween = 100;
+		final int ticksBetween = 10;
 		
 		int currTick = 0;
 		while (!marketView.isFinished()) {
 			currTick++;
+			marketView.tick();
+			
 			if (currTick < ticksBetween) continue;
 			currTick = 0;
-			
-			marketView.tick();
+
 			book = marketView.getOrderBook(stock);
 			if(buyOrSell){
 				if(book.getAllOffers().hasNext()){

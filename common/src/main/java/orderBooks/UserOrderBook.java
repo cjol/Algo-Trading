@@ -134,8 +134,8 @@ public class UserOrderBook extends OrderBook {
 		}
 		
 		//match things the market did not.
-		match(ghostBids,parent.getAllBids(),outstandingOffers.iterator(), userMatches, true);
-		match(ghostOffers,parent.getAllOffers(),outstandingBids.iterator(), userMatches, false);
+		match(ghostBids,parent.getAllBids(),outstandingOffers.descendingIterator(), userMatches, true);
+		match(ghostOffers,parent.getAllOffers(),outstandingBids.descendingIterator(), userMatches, false);
 		
 		return userMatches.iterator();
 	}

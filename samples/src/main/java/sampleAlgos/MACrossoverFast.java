@@ -7,19 +7,17 @@ import database.StockHandle;
 import testHarness.ITradingAlgorithm;
 import testHarness.MarketView;
 import testHarness.clientConnection.Options;
-import valueObjects.Addition;
 import valueObjects.IValued;
 import valueObjects.MovingAverage;
-import valueObjects.MovingStandardDeviation;
 import valueObjects.TickOutOfRangeException;
 import valueObjects.TwoAverage;
 
-public class BollingerBands implements ITradingAlgorithm {
+public class MACrossoverFast implements ITradingAlgorithm {
 
 	@Override
 	public void run(MarketView marketView, Options options) {
-		int windowSize = Integer.parseInt(options.getParam("windowSize"));
-		int deviations = Integer.parseInt(options.getParam("deviations"));
+		int slowWindow = Integer.parseInt(options.getParam("slowWindow"));
+		int fastWindow = Integer.parseInt(options.getParam("fastWindow"));
 		String stockName = options.getParam("ticker");
 		
 		StockHandle stock = null;
@@ -32,35 +30,51 @@ public class BollingerBands implements ITradingAlgorithm {
 		
 		if (stock == null) return;
 		
+		int windowSize = slowWindow > fastWindow ? slowWindow : fastWindow;
+		double[] midMarketValues = new double[windowSize];
+		int noValues = 0;
+		
 		IValued hb = marketView.getOrderBook(stock).getHighestBid();
 		IValued lo = marketView.getOrderBook(stock).getLowestOffer();
 		
-		IValued midMarket = new TwoAverage(hb, lo);
-		
-		IValued movingAverage = new MovingAverage(midMarket, windowSize);
-		IValued movingStDev = new MovingStandardDeviation(movingAverage, windowSize);
-
 		while (!marketView.isFinished()) {
 			marketView.tick();
-			
-			double topBand;
-			double bottomBand;
-			double midMarketVal;
 			double hbVal;
 			double loVal;
+			double midMarketVal;
 			
 			try {
 				hbVal = hb.getValue(0);
 				loVal = lo.getValue(0);
 				midMarketVal = (hbVal + loVal) * 0.5;
-				double maVal = movingAverage.getValue(0);
-				double stdVal = movingStDev.getValue(0);
 				
-				topBand = maVal + deviations * stdVal;
-				bottomBand = maVal - deviations * stdVal;
-			} catch (TickOutOfRangeException e) {
+				if (noValues == windowSize) {
+					for (int i = 1; i < windowSize; i++) {midMarketValues[i-1] = midMarketValues[i];}
+					midMarketValues[windowSize - 1] = midMarketVal;
+				} else {
+					midMarketValues[noValues] = midMarketVal;
+					noValues++;
+				}
+			} catch(TickOutOfRangeException e) {
 				continue;
+				//Better luck next time
 			}
+			
+			if (!(noValues == windowSize)) continue;
+			
+			double slowVal = 0.0;
+			double fastVal = 0.0;
+			
+			for (int i = noValues - 1; i > noValues - slowWindow - 1; i--) {
+				slowVal += midMarketValues[i];
+			}
+			
+			for (int i = noValues - 1; i > noValues - fastWindow - 1; i--) {
+				fastVal += midMarketValues[i];
+			}
+			
+			slowVal /= slowWindow;
+			fastVal /= fastWindow;
 			
 			boolean havePosition = false; 
 			
@@ -73,11 +87,13 @@ public class BollingerBands implements ITradingAlgorithm {
 				}
 			}
 			
-			//If a stock hits the higher band, sell; if it hits the lower band, buy
-			if (midMarketVal >= topBand && havePosition) {
-				marketView.sell(stock, (int)hbVal, 1); 
-			} else if (midMarketVal <= bottomBand && !havePosition) {
+			//Buy at the highest bid and sell at the lowest offer to
+			//minimize the possibility of the market moving against us
+			//and our orders not being filled
+			if (slowVal < fastVal && !havePosition) {
 				marketView.buy(stock, (int)loVal, 1);
+			} else if (slowVal > fastVal && havePosition) {
+				marketView.sell(stock, (int)hbVal, 1);
 			}
 		}
 
