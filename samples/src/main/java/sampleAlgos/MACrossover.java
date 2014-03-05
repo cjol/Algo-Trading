@@ -19,6 +19,7 @@ public class MACrossover implements ITradingAlgorithm {
 		int slowWindow = Integer.parseInt(options.getParam("slowWindow"));
 		int fastWindow = Integer.parseInt(options.getParam("fastWindow"));
 		String stockName = options.getParam("ticker");
+		int leverage = Integer.parseInt(options.getParam("leverage"));
 		
 		StockHandle stock = null;
 		for (StockHandle s: marketView.getAllStocks()) {
@@ -67,13 +68,13 @@ public class MACrossover implements ITradingAlgorithm {
 			//Bull market?
 			if (slowVal < fastVal && !havePosition) {
 				try {
-					marketView.buy(stock, (int) lo.getValue(0), 1);
+					marketView.buy(stock, (int) lo.getValue(0), leverage);
 				} catch (TickOutOfRangeException e) {
 					e.printStackTrace();
 				}
 			} else if (slowVal > fastVal && havePosition) {
 				try {
-					marketView.sell(stock, (int) hb.getValue(0), 1);
+					marketView.sell(stock, (int) hb.getValue(0), leverage);
 				} catch (TickOutOfRangeException e) {
 					e.printStackTrace();
 				}
