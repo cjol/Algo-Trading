@@ -59,7 +59,7 @@ def decode_portfolio(path):
     return (t,[d[u'MDAXEX'] if u'MDAXEX' in d else 0 for d in v])
 
 def plot_portfolio():
-    (t,v) = decode_portfolio("/home/mildbyte/git/Algo-Trading/portfolio.json")
+    (t,v) = decode_portfolio("portfolio.json")
     plot(t,v)
 
 def plot_averages(sWnd, fWnd):
